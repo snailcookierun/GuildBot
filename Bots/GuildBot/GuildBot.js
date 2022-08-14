@@ -4,6 +4,43 @@
  * by @snailcookierun
 */
 
+/* Global functions */
+const isNumber = (n) => Number(n) != null;
+const isUnsigned = (n) => isNumber(n) && Number(n) >= 0;
+
+/* Global data structures */
+var Users = [];
+
+function printUsersTickets() {
+  var text = "";
+  var i = 0;
+  var last = Users.length - 1;
+  for (i=0; i<last; i++) {
+    text += Users[i].name + ": " + Users[i].tickets + "\n";
+  }
+  text += Users[i].name + ": " + Users[i].tickets;
+  return text;
+}
+
+function isUserNameValid(name) {
+  if (isNumber(name)) {
+    return;
+  }
+  // duplication check
+  const notSame = (n) => n != name;
+  var username = [];
+  Users.forEach(u => username.push(u.name));
+  return username.every(notSame);
+}
+
+function findUser(name) {
+  for (let i=0; i < Users.length; i++) {
+    if(name == Users[i].name) {
+      return Users[i];
+    }
+  }
+}
+
 /**
  * addUser: add user
  * user struct: {name:(string), tickets:(int), log:(array<damage_struct>)}
@@ -13,25 +50,41 @@
  * damage_struct should be {boss:(string), level:(int), damage:(int)}
 */
 function addUser(commands) {
-  if(commands.length == 2){
-    user = {name:commands[1], tickets:0, log:[]}
-    return [user.name, user.tickets, user.log];
-  } else if (commands.length == 3 && Number(commands[2]) != null && Number(commands[2]) >= 0){
-    user = {name:commands[1], tickets:Number(commands[2]), log:[]}
-    return [user.name, user.tickets, user.log];
+  if(commands.length == 2 && isUserNameValid(commands[1])){ // /유저추가 이름
+    user = {name:commands[1], tickets:0, log:[]};
+    Users.push(user);
+    return printUsersTickets();
+  } else if (commands.length == 3 && isUserNameValid(commands[1]) && isUnsigned(commands[2]) && Number(commands[2]) <= 9){
+    user = {name:commands[1], tickets:Number(commands[2]), log:[]};
+    Users.push(user);
+    return printUsersTickets();
+  } else if (commands.length >= 3) { 
+    commands.shift();
+    if(commands.every(isUserNameValid)) {
+      commands.forEach(u => Users.push({name:u, tickets:0, log:[]}));
+      return printUsersTickets();
+    } else {
+      return "명령어 오입력\n- /유저추가 이름\n- /유저추가 이름 티켓수(0~9)\n- /유저추가 이름1 이름2";
+    }
   } else {
-    return "명령어 오입력: '/유저추가 이름' 또는 '/유저추가 이름 티켓수'";
+    return "명령어 오입력\n- /유저추가 이름\n- /유저추가 이름 티켓수(0~9)\n- /유저추가 이름1 이름2";
   }
 }
 
-// Process command with parsing msg
+/**
+ * processCommand: Process command with parsing msg
+ * trim multi-whitespace cases and map to specific commands
+ */
 function processCommand(msg) {
-
-  commands = msg.trim().split(/\s+/);
-  switch (commands[0]) {
-    default : return "알 수 없는 명령어입니다."; break;
-    case '/유저추가': return addUser(commands); break;
-  }
+  try {
+    commands = msg.trim().split(/\s+/);
+    switch (commands[0]) {
+      default : return "알 수 없는 명령어입니다. '/명령어'"; break;
+      case '/유저추가': return addUser(commands); break;
+    }
+  } catch(e) {
+    Log.debug(e + ", " + e.lineNumber);
+}
 }
 
 
