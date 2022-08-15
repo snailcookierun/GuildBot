@@ -169,3 +169,5 @@ function processCommand(msg) {
     case '/보스셋팅': return setBossLevel(commands); break;
   }
 }
+
+exports.processCommand = processCommand;
