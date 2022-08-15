@@ -5,6 +5,8 @@
  * 편의를 위해 TypeScript으로 작성하였으며, tsc을 통해 메신저봇R과 호환되는 JavaScript ES5로 컴파일 할 수 있습니다.
 */
 
+import { stringify } from "querystring";
+
 /* Global functions */
 const isNumber = (n) => !isNaN(Number(n))
 const isUnsigned = (n) => isNumber(n) && Number(n) >= 0;
@@ -62,7 +64,7 @@ class _Users {
 
   /* printTickets: print remained tickets of users */
   printTickets(): string {
-    var text = "";
+    var text = "유저 당 잔여 티켓 수\n";
     var i = 0;
     var last = this.userList.length - 1;
     for (i = 0; i < last; i++) {
@@ -98,17 +100,32 @@ class Boss {
   name: Array<string>;
   hps: Array<number>;
   curLevel: number;
-  curHp: number;
+  curDamage: number;
   curUsers: Array<User>;
 
   // constructor - type:BOSS_TYPE, name:boss's nickname
   constructor(type: BOSS_TYPE, name: Array<string>) {
     this.type = type;
     this.name = name;
-    this.hps = [];
-    this.curLevel = 1;
-    this.curHp = 0;
+    this.hps = [0];
+    this.curLevel = 0;
+    this.curDamage = 0;
     this.curUsers = [];
+  }
+
+  isLevelExist(n:number) :boolean {
+    return this.hps.hasOwnProperty(n);
+  }
+
+  printHps(): string {
+    var text = this.type + " 보스의 단계 별 체력\n";
+    var i = 1;
+    var last = this.hps.length - 1;
+    for (i = 1; i < last; i++) {
+      text += (i) + "단계: " + this.hps[i] + "\n";
+    }
+    text += (i) + "단계: " + this.hps[i];
+    return text;
   }
 }
 
@@ -137,6 +154,8 @@ class _Bosses {
   find(str: string): Boss {
     return this.bossList[this.rBossList[str]];
   }
+
+  
 
 }
 const Bosses = new _Bosses(bossList, rBossList);
@@ -181,15 +200,15 @@ class _Commands {
   }
 
   addDamage(commands: Array<string>): string {
-    return "";
+    return "현재 지원되지 않는 명령어입니다.";
   }
 
-  deleteDamage(commands: Array<string>): string {
-    return "";
+  revertDamage(commands: Array<string>): string {
+    return "현재 지원되지 않는 명령어입니다.";
   }
 
   moveBossLevel(commands: Array<string>): string {
-    return "";
+    return "현재 지원되지 않는 명령어입니다.";
   }
 
   setBossLevel(commands: Array<string>): string {
@@ -197,9 +216,35 @@ class _Commands {
       if(!Bosses.isNameExist(commands[1])) {
         return "없는 보스명입니다.\n - 보스명: " + Object.keys(rBossList).join(" ");
       }
-      return "있다";
+      var boss = Bosses.find(commands[1]);
+      var level = Number(commands[2]);
+      if(!boss.isLevelExist(level)) {
+        return boss.type + " " + level + "단계는 현재 입력되지 않은 단계입니다.";
+      }
+      boss.curLevel = (level); //level index starts with 0
+      boss.curDamage = 0;
+      boss.curUsers = [];
+      return boss.type + " " + level + "단계로 셋팅되었습니다.";
     } else {
       return "명령어 오입력\n- /보스셋팅 보스명 단계(1~n)";
+    }
+  }
+
+  addBossHp(commands: Array<string>): string {
+    if(commands.length >= 3 && !isNumber(commands[1])){
+      if(!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Object.keys(rBossList).join(" ");
+      }
+      var newHps = commands.slice(2);
+      if(!newHps.every(isNumber)){
+        return "체력이 숫자가 아닙니다.";
+      }
+      var boss = Bosses.find(commands[1]);
+      var newHpsNumber = newHps.map(x => Number(x));
+      boss.hps = boss.hps.concat(newHpsNumber);
+      return boss.printHps();
+    } else {
+      return "명령어 오입력\n- /체력추가 보스명 체력1 체력2";
     }
   }
 }
@@ -219,11 +264,12 @@ function processCommand(msg: string): string {
     case '/ㄷ':
     case '/ㄷㄹ': return Commands.addDamage(commands); break;
     case '/딜오타':
-    case '/ㄷㅇㅌ': return Commands.deleteDamage(commands); break;
+    case '/ㄷㅇㅌ': return Commands.revertDamage(commands); break;
     case '/이달':
-    case '/이어달리기': //TODO
+    case '/이어달리기':
     case '/컷': return Commands.moveBossLevel(commands); break;
     case '/보스셋팅': return Commands.setBossLevel(commands); break;
+    case '/체력추가': return Commands.addBossHp(commands); break;
   }
 }
 
