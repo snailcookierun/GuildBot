@@ -2,12 +2,13 @@
  * GuildBot: chatbot system to manage guild battle
  * 길드봇: 토벌을 관리해주는 챗봇 시스템입니다. 
  * by @snailcookierun
- * 편의를 위해 TypeScript으로 작성하였으며, tsc을 통해 메신저봇R과 호환되는 ES5로 컴파일 할 수 있습니다.
+ * 편의를 위해 TypeScript으로 작성하였으며, tsc을 통해 메신저봇R과 호환되는 JavaScript ES5로 컴파일 할 수 있습니다.
 */
 
 /* Global functions */
 const isNumber = (n) => !isNaN(Number(n))
 const isUnsigned = (n) => isNumber(n) && Number(n) >= 0;
+const isDuplicateExist = arr => new Set(arr).size !== arr.length;
 
 /* Global constants and data structures */
 /* enum BOSS_TYPE */
@@ -44,7 +45,38 @@ class User {
   }
 }
 
-var Users: Array<User> = [];
+class _Users {
+  userList : Array<User>;
+
+  constructor() {
+    this.userList = [];
+  }
+
+  printTickets() : string {
+    var text = "";
+    var i = 0;
+    var last = this.userList.length - 1;
+    for (i = 0; i < last; i++) {
+      text += this.userList[i].name + ": " + this.userList[i].tickets + "\n";
+  }
+    text += this.userList[i].name + ": " + this.userList[i].tickets;
+    return text;
+  }
+
+  isNameValid(name:string) : boolean {
+    if (isNumber(name)) {
+      return false;
+    }
+    // duplication check
+    var username: Array<string> = [];
+    this.userList.forEach(u => username.push(u.name));
+    return !username.includes(name);
+  }
+  push(user:User) {
+    this.userList.push(user);
+  }
+}
+const Users = new _Users;
 
 /**
  * class Boss - type(BOSS_TYPE): {name:(BOSS_NAME), hps:(array<int>), curLevel:(int), curHp:(int), curUsers:(array<string>)}
@@ -72,27 +104,7 @@ const Bosses: { [key in BOSS_TYPE]: Boss } = {
   [BOSS_TYPE.LICORICE]: new Boss(BOSS_TYPE.LICORICE)
 };
 
-function printUsersTickets() : string {
-  var text = "";
-  var i = 0;
-  var last = Users.length - 1;
-  for (i = 0; i < last; i++) {
-    text += Users[i].name + ": " + Users[i].tickets + "\n";
-  }
-  text += Users[i].name + ": " + Users[i].tickets;
-  return text;
-}
 
-function isUserNameValid(name:string) : boolean {
-  if (isNumber(name)) {
-    return false;
-  }
-  // duplication check
-  const notSame = (n) => n != name;
-  var username: Array<string> = [];
-  Users.forEach(u => username.push(u.name));
-  return !username.includes(name);
-}
 
 
 /**
@@ -104,21 +116,28 @@ function isUserNameValid(name:string) : boolean {
  * damage_struct should be {boss:(string), level:(int), damage:(int)}
 */
 function addUser(commands: Array<string>) : string {
-  if (commands.length == 2 && isUserNameValid(commands[1])) { // /유저추가 이름
-    var user = { name: commands[1], tickets: 0, log: [] };
-    Users.push(user);
-    return printUsersTickets();
-  } else if (commands.length == 3 && isUserNameValid(commands[1]) && isUnsigned(commands[2]) && Number(commands[2]) <= 9) { // /유저추가 이름 티켓수
-    var user = { name: commands[1], tickets: Number(commands[2]), log: [] };
-    Users.push(user);
-    return printUsersTickets();
+  if (commands.length == 2) { // /유저추가 이름
+    if (!Users.isNameValid(commands[1])) {
+      return "유효하지 않는 닉네임입니다.";
+    }
+    Users.push(new User(commands[1],0));
+    return Users.printTickets();
+  } else if (commands.length == 3 && isUnsigned(commands[2]) && Number(commands[2]) <= 9) { // /유저추가 이름 티켓수
+    if (!Users.isNameValid(commands[1])) {
+      return "유효하지 않는 닉네임입니다.";
+    }
+    Users.push(new User(commands[1],Number(commands[2])));
+    return Users.printTickets();
   } else if (commands.length >= 3) { // /유저추가 이름1 이름2
     commands.shift();
-    if (commands.every(isUserNameValid)) {
-      commands.forEach(u => Users.push({ name: u, tickets: 0, log: [] }));
-      return printUsersTickets();
+    if (commands.every(u => Users.isNameValid(u))) {
+      if (isDuplicateExist(commands)) {
+        return "중복 닉네임이 있습니다.";
+      }
+      commands.forEach(u => Users.push(new User(u,0)));
+      return Users.printTickets();
     } else {
-      return "명령어 오입력\n- /유저추가 이름\n- /유저추가 이름 티켓수(0~9)\n- /유저추가 이름1 이름2";
+      return "유효하지 않는 닉네임입니다.";
     }
   } else {
     return "명령어 오입력\n- /유저추가 이름\n- /유저추가 이름 티켓수(0~9)\n- /유저추가 이름1 이름2";
