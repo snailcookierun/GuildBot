@@ -15,7 +15,7 @@ const isDuplicateExist = arr => new Set(arr).size !== arr.length;
 
 /* Global constants and data structures */
 /* enum BOSS_TYPE */
-/* Boss가 추가될 경우 BOSS_TYPE과 bossList에 추가해야 함 */
+/* Boss가 추가될 경우 BOSS_TYPE과 bossList에 추가해야 함. 보스 체력도 입력해주시면 감사. */
 enum BOSS_TYPE {
   DRAGON = "용",
   ANGEL = "천사",
@@ -95,6 +95,7 @@ const Users = new _Users;
 
 /**
  * class Boss - type(BOSS_TYPE), name:(Array<string>), hps:(array<int>), curLevel:(int), curHp:(int), curUsers:(array<string>)}
+ * level indices are same with hps indices.
  */
 class Boss {
   type: BOSS_TYPE;
@@ -139,6 +140,27 @@ const bossList: { [key in BOSS_TYPE]: Boss } = {
   [BOSS_TYPE.ANGEL]: new Boss(BOSS_TYPE.ANGEL, ["천사", "천", "대천사", "ㅊㅅ", "ㅊ"]),
   [BOSS_TYPE.LICORICE]: new Boss(BOSS_TYPE.LICORICE, ["감초", "감", "ㄱㅊ", "ㄱ"])
 };
+// Why are the bosses hps same...?
+bossList[BOSS_TYPE.DRAGON].hps = bossList[BOSS_TYPE.DRAGON].hps.concat(
+  [  1050,  1712,  2656,  3924,  5522,  7399,  9444, 11479, 12788, 13566,
+    14392, 15268, 16198, 16852, 17534, 18242, 18979, 19746, 20342, 20957,
+    21590, 22243, 22916, 23608, 24322, 25056, 25814, 26594, 27397, 28225,
+    29079, 29957, 30863, 31795, 32756, 33746, 34766, 35817, 36900
+  ]
+);
+bossList[BOSS_TYPE.ANGEL].hps = bossList[BOSS_TYPE.ANGEL].hps.concat(
+  [  1050,  1712,  2656,  3924,  5522,  7399,  9444, 11479, 12788, 13566,
+    14392, 15268, 16198, 16852, 17534, 18242, 18979, 19746, 20342, 20957,
+    21590, 22243, 22916, 23608, 24322, 25056, 25814, 26594, 27397, 28225,
+    29079, 29957, 30863, 31795, 32756, 33746, 34766, 35817, 36900
+  ]
+);bossList[BOSS_TYPE.LICORICE].hps = bossList[BOSS_TYPE.LICORICE].hps.concat(
+  [  1050,  1712,  2656,  3924,  5522,  7399,  9444, 11479, 12788, 13566,
+    14392, 15268, 16198, 16852, 17534, 18242, 18979, 19746, 20342, 20957,
+    21590, 22243, 22916, 23608, 24322, 25056, 25814, 26594, 27397, 28225,
+    29079, 29957, 30863, 31795, 32756, 33746, 34766, 35817, 36900
+  ]
+);
 const rBossList: { [key: string]: BOSS_TYPE } = Object.keys(bossList).reduce((acc, propName) =>
   bossList[propName].name.reduce((a, name) => { a[name] = propName; return a; }, acc), {});
 
@@ -170,7 +192,7 @@ const Bosses = new _Bosses(bossList, rBossList);
 class _Commands {
 
   printCommands(commands: Array<string>): string {
-    var text = "현재 지원되는 명령어입니다.\n- /체력추가\n- /체력수정- /보스체력\n- /보스셋팅\n- /딜량(딜, ㄷㄹ, ㄷ)\n- /딜오타(ㄷㅇㅌ)\n- /잔여(ㅈㅇ)\n- /컷(ㅋ)";
+    var text = "현재 지원되는 명령어입니다.\n- /체력추가\n- /체력수정\n- /보스체력\n- /보스셋팅\n- /딜량(딜, ㄷㄹ, ㄷ)\n- /딜오타(ㄷㅇㅌ)\n- /잔여(ㅈㅇ)\n- /컷(ㅋ)";
     return text;
   }
 
