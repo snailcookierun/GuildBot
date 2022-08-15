@@ -6,7 +6,7 @@
 */
 
 /* Global functions */
-const isNumber = (n) => Number(n) != null;
+const isNumber = (n) => !isNaN(Number(n))
 const isUnsigned = (n) => isNumber(n) && Number(n) >= 0;
 
 /* Global constants and data structures */
@@ -72,7 +72,7 @@ const Bosses: { [key in BOSS_TYPE]: Boss } = {
   [BOSS_TYPE.LICORICE]: new Boss(BOSS_TYPE.LICORICE)
 };
 
-function printUsersTickets() {
+function printUsersTickets() : string {
   var text = "";
   var i = 0;
   var last = Users.length - 1;
@@ -83,24 +83,17 @@ function printUsersTickets() {
   return text;
 }
 
-function isUserNameValid(name) {
+function isUserNameValid(name:string) : boolean {
   if (isNumber(name)) {
-    return;
+    return false;
   }
   // duplication check
   const notSame = (n) => n != name;
   var username: Array<string> = [];
   Users.forEach(u => username.push(u.name));
-  return username.every(notSame);
+  return !username.includes(name);
 }
 
-function findUser(name) {
-  for (let i = 0; i < Users.length; i++) {
-    if (name == Users[i].name) {
-      return Users[i];
-    }
-  }
-}
 
 /**
  * addUser: add user
@@ -110,16 +103,16 @@ function findUser(name) {
  * (array<damage_struct>) log: damage log for each boss/level/damage
  * damage_struct should be {boss:(string), level:(int), damage:(int)}
 */
-function addUser(commands) {
+function addUser(commands: Array<string>) : string {
   if (commands.length == 2 && isUserNameValid(commands[1])) { // /유저추가 이름
     var user = { name: commands[1], tickets: 0, log: [] };
     Users.push(user);
     return printUsersTickets();
-  } else if (commands.length == 3 && isUserNameValid(commands[1]) && isUnsigned(commands[2]) && Number(commands[2]) <= 9) {
+  } else if (commands.length == 3 && isUserNameValid(commands[1]) && isUnsigned(commands[2]) && Number(commands[2]) <= 9) { // /유저추가 이름 티켓수
     var user = { name: commands[1], tickets: Number(commands[2]), log: [] };
     Users.push(user);
     return printUsersTickets();
-  } else if (commands.length >= 3) {
+  } else if (commands.length >= 3) { // /유저추가 이름1 이름2
     commands.shift();
     if (commands.every(isUserNameValid)) {
       commands.forEach(u => Users.push({ name: u, tickets: 0, log: [] }));
@@ -132,27 +125,27 @@ function addUser(commands) {
   }
 }
 
-function addDamage(commands) {
-
+function addDamage(commands:Array<string>) :string {
+  return "";
 }
 
-function deleteDamage(commands) {
-
+function deleteDamage(commands:Array<string>) :string {
+  return "";
 }
 
-function moveBossLevel(commands) {
-
+function moveBossLevel(commands:Array<string>) :string {
+  return "";
 }
 
-function setBossLevel(commands) {
-
+function setBossLevel(commands:Array<string>) :string {
+  return "";
 }
 
 /**
  * processCommand: Process command with parsing msg
  * trim multi-whitespace cases and map to specific commands
  */
-function processCommand(msg) {
+function processCommand(msg:string) : string {
   var commands = msg.trim().split(/\s+/);
   switch (commands[0]) {
     default: return "알 수 없는 명령어입니다.\n- /명령어"; break;
