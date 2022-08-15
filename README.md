@@ -12,6 +12,7 @@ Written by @snailcookierun
 - Create 'GuildBot'
 
 ## How to compile
+- Move to Bots/GuildBot directory `cd Bots/GuildBot`
 - Compile main.ts `tsc main.ts --outDir modules`
 - Copy `GuildBot.js` to `GuildBot` directory and overwrite the existing file
 - Copy `modules/main.js` to `GuildBot/modules` directory
