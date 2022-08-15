@@ -114,7 +114,7 @@ class Boss {
   }
 
   isLevelExist(n:number) :boolean {
-    return this.hps.hasOwnProperty(n);
+    return (n > 0) && this.hps.hasOwnProperty(n);
   }
 
   printHps(): string {
@@ -200,7 +200,24 @@ class _Commands {
   }
 
   addDamage(commands: Array<string>): string {
-    return "현재 지원되지 않는 명령어입니다.";
+    if(commands.length == 3 && !isNumber(commands[1]) && isNumber(commands[2])){
+      if(!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Object.keys(rBossList).join(" ");
+      }
+      if(!isNumber(commands[2])) {
+        return "딜량이 숫자가 아닙니다.";
+      }
+      var boss = Bosses.find(commands[1]);
+      if(boss.curLevel <= 0) {
+        return " 보스셋팅이 되어 있지 않습니다.\n- /보스셋팅 보스명 단계(1~n)";
+      }
+      var damage = Number(commands[2]);
+      boss.curDamage += damage;
+      var remained = boss.hps[boss.curLevel] - boss.curDamage;
+      return boss.type + " " + boss.curLevel + "단계 잔여 체력: " + remained + "만";
+    } else {
+      return "명령어 오입력\n- /딜량(딜, ㄷㄹ, ㄷ) 보스명 딜량";
+    }
   }
 
   revertDamage(commands: Array<string>): string {
@@ -219,9 +236,9 @@ class _Commands {
       var boss = Bosses.find(commands[1]);
       var level = Number(commands[2]);
       if(!boss.isLevelExist(level)) {
-        return boss.type + " " + level + "단계는 현재 입력되지 않은 단계입니다.";
+        return boss.type + " " + level + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
       }
-      boss.curLevel = (level); //level index starts with 0
+      boss.curLevel = (level);
       boss.curDamage = 0;
       boss.curUsers = [];
       return boss.type + " " + level + "단계로 셋팅되었습니다.";
