@@ -1,5 +1,7 @@
 # GuildBot
+
 Written by @snailcookierun
+
 © 2022 snailcookierun, all rights reserved.
 
 ## Development environment setup
