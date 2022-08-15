@@ -267,6 +267,9 @@ class _Commands {
         return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
+      if(boss.curLevel <= 0) {
+        return " 보스셋팅이 되어 있지 않습니다.\n- /보스셋팅 보스명 단계(1~n)";
+      }
       return boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만";
     } else {
       return "명령어 오입력\n- /잔여(ㅈㅇ) 보스명"
