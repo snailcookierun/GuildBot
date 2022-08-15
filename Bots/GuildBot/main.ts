@@ -285,7 +285,7 @@ class _Commands {
       var text = boss.isLevelExist(boss.curLevel) ? "잔여: " + boss.getRemained() + "만" : "/체력추가 를 통해 체력을 설정해주세요.";
       return boss.type + " " + boss.curLevel + "단계로 넘어갑니다.\n" + text;
     } else {
-      return "명령어 오입력\n- /컷 보스명";
+      return "명령어 오입력\n- /컷(ㅋ) 보스명";
     }
   }
 
