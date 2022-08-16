@@ -6,6 +6,7 @@
 */
 
 import { stringify } from "querystring";
+import { NumberLiteralType } from "typescript";
 
 /* Global functions */
 const isNumber = (n) => !isNaN(Number(n))
@@ -22,9 +23,16 @@ enum BOSS_TYPE {
   LICORICE = "감초"
 }
 
+const bossTypeMap = (fn:Function) => (Object.keys(BOSS_TYPE) as (keyof typeof BOSS_TYPE)[]).map(
+  (key, index) => {return fn(BOSS_TYPE[key]);}
+)
+
+const MAX_COUNTS = 8; //max count for each boss
+const TICKETS_PER_DAY = 3; //charged tickets per day
+const MAX_TICKETS = 9; //max tickets for each user
 
 /**
- * class Log - boss:(BOSS_TYPE), level:(int), damage:(int)
+ * class Log - boss:(BOSS_TYPE), level:(number), damage:(number)
  */
 class Log {
   boss: BOSS_TYPE;
@@ -39,20 +47,39 @@ class Log {
 }
 
 /**
- * class User - name:(string), tickets:(int), log:(array<Log>)
+ * class User - name:(string), tickets:(number), counts:({BOSS_TYPE:number}) log:(array<Log>)
  * (string) name: user's name
- * (int) tickets: current remained tickets
+ * (number) tickets: current remained tickets
+ * ({BOSS_TYPE:number}) counts: counts battles with each boss
  * (array<Log>) log: damage log for each boss/level/damage
+ * 
 */
 class User {
   name: string;
   tickets: number;
+  counts: {[key in BOSS_TYPE]: number};
   log: Array<Log>;
 
   constructor(name: string, tickets: number) {
     this.name = name;
     this.tickets = tickets;
+    this.counts = Object.assign({}, ...bossTypeMap((x) => ({[x]: 0})));    
     this.log = [];
+  }
+
+  printRemainedTickets(): string {
+    return this.tickets.toString();
+  }
+
+  printRemainedCounts(): string {
+    var arr = bossTypeMap((x) => x + " " + (MAX_COUNTS - this.counts[x]));
+    return arr.join(", ");
+  }
+
+  
+  printTicketsAndCounts(): string {
+    var arr = bossTypeMap((x) => x + " " + (MAX_COUNTS - this.counts[x]));
+    return "티켓 수: " + this.tickets + "\n잔여 횟수: " + arr.join(", ");
   }
 }
 
@@ -64,26 +91,36 @@ class _Users {
   }
 
   /* printTickets: print remained tickets of users */
-  printTickets(): string {
-    var text = "유저 당 잔여 티켓 수\n";
-    var i = 0;
-    var last = this.userList.length - 1;
-    for (i = 0; i < last; i++) {
-      text += this.userList[i].name + ": " + this.userList[i].tickets + "\n";
-    }
-    text += this.userList[i].name + ": " + this.userList[i].tickets;
-    return text;
+  printRemainedTickets(): string {
+    var arr = this.userList.map((x) => (x.name + ": " + x.printRemainedTickets()));
+    return "유저 별 잔여 티켓 수\n" + arr.join("\n");
+  }
+
+  /* printCounts: print remained counts for each boss of users */
+  printRemainedCounts(): string {
+    var arr = this.userList.map((x) => (x.name + ": " + x.printRemainedCounts()));
+    return "유저 별 잔여 토벌 횟수\n" + arr.join("\n");
+  }
+
+  printUserList(): string {
+    return this.userList.map(x => x.name).join(", ");
   }
 
   /* isNameValid: check name is valid */
-  isNameValid(name: string): boolean {
+  isNewNameValid(name: string): boolean {
     if (isNumber(name)) {
       return false;
     }
     // duplication check
-    var username: Array<string> = [];
-    this.userList.forEach(u => username.push(u.name));
-    return !username.includes(name);
+    var username = this.userList.map((x) => (x.name));
+    if (username.includes(name)) {
+      return false;
+    }
+    // check with boss keywords
+    if (Object.keys(rBossList).includes(name)) {
+      return false;
+    }
+    return true;
   }
 
   /* push: add user */
@@ -94,7 +131,7 @@ class _Users {
 const Users = new _Users;
 
 /**
- * class Boss - type(BOSS_TYPE), name:(Array<string>), hps:(array<int>), curLevel:(int), curHp:(int), curUsers:(array<string>)}
+ * class Boss - type(BOSS_TYPE), name:(Array<string>), hps:(array<number>), curLevel:(number), curHp:(number), curUsers:(array<string>)}
  * level indices are same with hps indices.
  */
 class Boss {
@@ -104,6 +141,8 @@ class Boss {
   curLevel: number;
   curDamage: number;
   curUsers: Array<User>;
+  maxDamage: number;
+  minDamage: number;
 
   // constructor - type:BOSS_TYPE, name:boss's nickname
   constructor(type: BOSS_TYPE, name: Array<string>) {
@@ -113,6 +152,8 @@ class Boss {
     this.curLevel = 0;
     this.curDamage = 0;
     this.curUsers = [];
+    this.maxDamage = 0;
+    this.minDamage = 0;
   }
 
   isLevelExist(n:number) :boolean {
@@ -145,20 +186,23 @@ bossList[BOSS_TYPE.DRAGON].hps = bossList[BOSS_TYPE.DRAGON].hps.concat(
   [  1050,  1712,  2656,  3924,  5522,  7399,  9444, 11479, 12788, 13566,
     14392, 15268, 16198, 16852, 17534, 18242, 18979, 19746, 20342, 20957,
     21590, 22243, 22916, 23608, 24322, 25056, 25814, 26594, 27397, 28225,
-    29079, 29957, 30863, 31795, 32756, 33746, 34766, 35817, 36900
+    29079, 29957, 30863, 31795, 32756, 33746, 34766, 35817, 36900, 38016,
+    39165, 40349, 41569, 42825
   ]
 );
 bossList[BOSS_TYPE.ANGEL].hps = bossList[BOSS_TYPE.ANGEL].hps.concat(
   [  1050,  1712,  2656,  3924,  5522,  7399,  9444, 11479, 12788, 13566,
     14392, 15268, 16198, 16852, 17534, 18242, 18979, 19746, 20342, 20957,
     21590, 22243, 22916, 23608, 24322, 25056, 25814, 26594, 27397, 28225,
-    29079, 29957, 30863, 31795, 32756, 33746, 34766, 35817, 36900
+    29079, 29957, 30863, 31795, 32756, 33746, 34766, 35817, 36900, 38016,
+    39165, 40349, 41569, 42825
   ]
 );bossList[BOSS_TYPE.LICORICE].hps = bossList[BOSS_TYPE.LICORICE].hps.concat(
   [  1050,  1712,  2656,  3924,  5522,  7399,  9444, 11479, 12788, 13566,
     14392, 15268, 16198, 16852, 17534, 18242, 18979, 19746, 20342, 20957,
     21590, 22243, 22916, 23608, 24322, 25056, 25814, 26594, 27397, 28225,
-    29079, 29957, 30863, 31795, 32756, 33746, 34766, 35817, 36900
+    29079, 29957, 30863, 31795, 32756, 33746, 34766, 35817, 36900, 38016,
+    39165, 40349, 41569, 42825
   ]
 );
 const rBossList: { [key: string]: BOSS_TYPE } = Object.keys(bossList).reduce((acc, propName) =>
@@ -198,25 +242,27 @@ class _Commands {
 
   addUser(commands: Array<string>): string {
     if (commands.length == 2) { // /유저추가 이름
-      if (!Users.isNameValid(commands[1])) {
+      if (!Users.isNewNameValid(commands[1])) {
         return "유효하지 않는 닉네임입니다.";
       }
-      Users.push(new User(commands[1], 0));
-      return Users.printTickets();
+      var user = new User(commands[1], 0);
+      Users.push(user);
+      return user.name + " 님이 추가되었습니다.\n" + user.printTicketsAndCounts();
     } else if (commands.length == 3 && isUnsigned(commands[2]) && Number(commands[2]) <= 9) { // /유저추가 이름 티켓수
-      if (!Users.isNameValid(commands[1])) {
+      if (!Users.isNewNameValid(commands[1])) {
         return "유효하지 않는 닉네임입니다.";
       }
-      Users.push(new User(commands[1], Number(commands[2])));
-      return Users.printTickets();
+      var user = new User(commands[1], Number(commands[2]));
+      Users.push(user);
+      return user.name + " 님이 추가되었습니다.\n" + user.printTicketsAndCounts();
     } else if (commands.length >= 3) { // /유저추가 이름1 이름2
       commands.shift();
-      if (commands.every(u => Users.isNameValid(u))) {
+      if (commands.every(u => Users.isNewNameValid(u))) {
         if (isDuplicateExist(commands)) {
           return "중복 닉네임이 있습니다.";
         }
         commands.forEach(u => Users.push(new User(u, 0)));
-        return Users.printTickets();
+        return Users.printUserList();
       } else {
         return "유효하지 않는 닉네임입니다.";
       }
