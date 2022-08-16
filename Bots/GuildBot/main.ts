@@ -63,7 +63,7 @@ class User {
   constructor(name: string, tickets: number) {
     this.name = name;
     this.tickets = tickets;
-    this.counts = Object.assign({}, ...bossTypeMap((x) => ({[x]: 0})));    
+    this.counts = Object.assign({}, ...bossTypeMap((x) => ({[x]: MAX_COUNTS})));    
     this.log = [];
   }
 
@@ -72,13 +72,13 @@ class User {
   }
 
   printRemainedCounts(): string {
-    var arr = bossTypeMap((x) => x + " " + (MAX_COUNTS - this.counts[x]));
+    var arr = bossTypeMap((x) => x + " " + (this.counts[x]));
     return arr.join(", ");
   }
 
   
   printTicketsAndCounts(): string {
-    var arr = bossTypeMap((x) => x + " " + (MAX_COUNTS - this.counts[x]));
+    var arr = bossTypeMap((x) => x + " " + (this.counts[x]));
     return "티켓 수: " + this.tickets + "\n잔여 횟수: " + arr.join(", ");
   }
 }
@@ -103,7 +103,7 @@ class _Users {
   }
 
   printUserList(): string {
-    return this.userList.map(x => x.name).join(", ");
+    return "유저 리스트\n" + this.userList.map(x => x.name).join(", ");
   }
 
   /* isNameValid: check name is valid */
@@ -123,9 +123,28 @@ class _Users {
     return true;
   }
 
+  isNameExist(name: string): boolean {
+    var arr = this.userList.map(x => x.name);
+    return arr.includes(name);
+  }
+
+  find(name: string): User {
+    for(var u of this.userList) {
+      if(u.name == name) return u;
+    }
+    return this.userList[0];
+  }
+
   /* push: add user */
   push(user: User) {
     this.userList.push(user);
+  }
+
+  /* remove: remove user with name */
+  remove(name: string) {
+    var u = this.find(name); 
+    var index = this.userList.indexOf(u);
+    this.userList.splice(index,1);
   }
 }
 const Users = new _Users;
@@ -241,7 +260,7 @@ class _Commands {
   }
 
   addUser(commands: Array<string>): string {
-    if (commands.length == 2) { // /유저추가 이름
+    if (commands.length == 2 && !isNumber(commands[1])) { // /유저추가 이름
       if (!Users.isNewNameValid(commands[1])) {
         return "유효하지 않는 닉네임입니다.";
       }
@@ -268,6 +287,60 @@ class _Commands {
       }
     } else {
       return "명령어 오입력\n- /유저추가 이름\n- /유저추가 이름 티켓수(0~9)\n- /유저추가 이름1 이름2";
+    }
+  }
+
+  changeUser(commands: Array<string>): string {
+    if(commands.length == 3 && !isNumber(commands[1]) && isUnsigned(commands[2])){  // /유저수정 이름 티켓수
+        if(!Users.isNameExist(commands[1])) {
+          return commands[1] + " 님은 없는 닉네임입니다.";
+        }
+        var u = Users.find(commands[1]);    
+        var tickets = Number(commands[2]);
+        if (tickets > MAX_TICKETS) {
+          return "티켓 수가 최대치(" + MAX_TICKETS + ")보다 큽니다.";
+        }
+        u.tickets = tickets;
+        return u.name + " 님의 티켓 수가 " + u.tickets + "로 수정되었습니다.";
+    } else if (commands.length == 4 && !isNumber(commands[1]) && !isNumber(commands[2]) && isUnsigned(commands[3])){  // /유저수정 이름 보스명 잔여횟수
+        if(!Users.isNameExist(commands[1])) {
+          return commands[1] + " 님은 없는 닉네임입니다.";
+        }
+        var u = Users.find(commands[1]);
+        if(!Bosses.isNameExist(commands[2])) {
+          return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        }
+        var boss = Bosses.find(commands[2]);
+        var counts = Number(commands[3]);
+        if (counts > MAX_COUNTS) {
+          return "잔여 횟수가 최대치(" + MAX_COUNTS + ")보다 큽니다.";
+        }
+        u.counts[boss.type] = counts;
+        return u.name + " 님의 " + boss.type + " 보스 잔여 횟수가 " + u.counts[boss.type] + "로 수정되었습니다.";
+    } else {
+      return "명령어 오입력\n- /유저수정 이름 티켓수(0~n)\n- /유저수정 이름 보스명 잔여횟수(0~n)"
+    }
+  }
+
+  removeUser(commands: Array<string>): string {
+    if (commands.length == 2 && !isNumber(commands[1])) { // /유저추가 이름
+      if(!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      Users.remove(commands[1]);
+      return Users.printUserList();
+    } else if (commands.length >= 3) { // /유저추가 이름1 이름2
+      commands.shift();
+      if (commands.every(name => Users.isNameExist(name))) {
+        var nameSet = new Set(commands);
+        var names = Array.from(nameSet);
+        names.forEach(n => Users.remove(n));
+        return Users.printUserList();
+      } else {
+        return "없는 닉네임이 있습니다.";
+      }     
+    } else {
+      return "명령어 오입력\n- /유저삭제 이름\n- /유저삭제 이름1 이름2";
     }
   }
 
@@ -427,6 +500,8 @@ function processCommand(msg: string): string {
   switch (commands[0]) {
     default: return "알 수 없는 명령어입니다.\n- /명령어"; break;
     case '/유저추가': return Commands.addUser(commands); break;
+    case '/유저수정': return Commands.changeUser(commands); break;
+    case '/유저삭제': return Commands.removeUser(commands); break;
     case '/딜':
     case '/딜량':
     case '/ㄷ':
