@@ -411,7 +411,13 @@ class _Commands {
   }
 
   printRemained(commands: Array<string>): string {
-    if(commands.length == 2 && !isNumber(commands[1])){
+    if(commands.length == 1) {
+      var arr = Object.keys(Bosses.bossList).map(function(k,i){
+        var boss = Bosses.bossList[k];
+        return boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만";
+      });
+      return arr.join("\n");
+    }else if(commands.length == 2 && !isNumber(commands[1])){
       if(!Bosses.isNameExist(commands[1])) {
         return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
       }
@@ -421,7 +427,7 @@ class _Commands {
       }
       return boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만";
     } else {
-      return "명령어 오입력\n- /잔여(ㅈㅇ) 보스명"
+      return "명령어 오입력\n- /잔여(ㅈㅇ)\n- /잔여 보스명"
     }
   }
 
