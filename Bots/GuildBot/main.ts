@@ -63,23 +63,26 @@ class User {
   constructor(name: string, tickets: number) {
     this.name = name;
     this.tickets = tickets;
-    this.counts = Object.assign({}, ...bossTypeMap((x) => ({[x]: MAX_COUNTS})));    
+    this.counts = Object.assign({}, ...bossTypeMap((x) => ({[x]: 0})));    
     this.log = [];
   }
 
-  printRemainedTickets(): string {
+  printTickets(): string {
     return this.tickets.toString();
   }
 
-  printRemainedCounts(): string {
+  printCounts(): string {
     var arr = bossTypeMap((x) => x + " " + (this.counts[x]));
     return arr.join(", ");
   }
 
-  
   printTicketsAndCounts(): string {
     var arr = bossTypeMap((x) => x + " " + (this.counts[x]));
-    return "티켓 수: " + this.tickets + "\n잔여 횟수: " + arr.join(", ");
+    return "잔여 티켓 수: " + this.tickets + "\n참여 횟수: " + arr.join(", ");
+  }
+
+  printInfo(): string {
+    return this.name + "\n" + this.printTicketsAndCounts();
   }
 }
 
@@ -91,15 +94,15 @@ class _Users {
   }
 
   /* printTickets: print remained tickets of users */
-  printRemainedTickets(): string {
-    var arr = this.userList.map((x) => (x.name + ": " + x.printRemainedTickets()));
+  printTickets(): string {
+    var arr = this.userList.map((x) => (x.name + ": " + x.printTickets()));
     return "유저 별 잔여 티켓 수\n" + arr.join("\n");
   }
 
-  /* printCounts: print remained counts for each boss of users */
-  printRemainedCounts(): string {
-    var arr = this.userList.map((x) => (x.name + ": " + x.printRemainedCounts()));
-    return "유저 별 잔여 토벌 횟수\n" + arr.join("\n");
+  /* printCounts: print counts for each boss of users */
+  printCounts(): string {
+    var arr = this.userList.map((x) => (x.name + ": " + x.printCounts()));
+    return "유저 별 토벌 참여 횟수\n" + arr.join("\n");
   }
 
   printUserList(): string {
@@ -301,8 +304,8 @@ class _Commands {
           return "티켓 수가 최대치(" + MAX_TICKETS + ")보다 큽니다.";
         }
         u.tickets = tickets;
-        return u.name + " 님의 티켓 수가 " + u.tickets + "로 수정되었습니다.";
-    } else if (commands.length == 4 && !isNumber(commands[1]) && !isNumber(commands[2]) && isUnsigned(commands[3])){  // /유저수정 이름 보스명 잔여횟수
+        return u.name + " 님의 잔여 티켓 수가 " + u.tickets + "로 수정되었습니다.";
+    } else if (commands.length == 4 && !isNumber(commands[1]) && !isNumber(commands[2]) && isUnsigned(commands[3])){  // /유저수정 이름 보스명 참여횟수
         if(!Users.isNameExist(commands[1])) {
           return commands[1] + " 님은 없는 닉네임입니다.";
         }
@@ -313,12 +316,12 @@ class _Commands {
         var boss = Bosses.find(commands[2]);
         var counts = Number(commands[3]);
         if (counts > MAX_COUNTS) {
-          return "잔여 횟수가 최대치(" + MAX_COUNTS + ")보다 큽니다.";
+          return "참여 횟수가 최대치(" + MAX_COUNTS + ")보다 큽니다.";
         }
         u.counts[boss.type] = counts;
-        return u.name + " 님의 " + boss.type + " 보스 잔여 횟수가 " + u.counts[boss.type] + "로 수정되었습니다.";
+        return u.name + " 님의 " + boss.type + " 보스 참여 횟수가 " + u.counts[boss.type] + "로 수정되었습니다.";
     } else {
-      return "명령어 오입력\n- /유저수정 이름 티켓수(0~n)\n- /유저수정 이름 보스명 잔여횟수(0~n)"
+      return "명령어 오입력\n- /유저수정 이름 티켓수(0~9)\n- /유저수정 이름 보스명 참여횟수(0~8)"
     }
   }
 
@@ -341,6 +344,33 @@ class _Commands {
       }     
     } else {
       return "명령어 오입력\n- /유저삭제 이름\n- /유저삭제 이름1 이름2";
+    }
+  }
+
+  printUser(commands: Array<string>): string {
+    if(commands.length == 2 && !isNumber(commands[1])) { // /유저 이름
+      if(!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var u = Users.find(commands[1]);
+      return u.printInfo();
+    } else if (commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {  // /유저 이름 [티켓, 횟수, 보스명]
+      if(!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var u = Users.find(commands[1]);
+      if(commands[2] == "티켓") {
+        return u.name + " 님의 잔여 티켓 수: " + u.printTickets();
+      } else if(commands[2] == "횟수") {
+        return u.name + " 님의 보스 별 참여 횟수\n" + u.printCounts();
+      } else if(Bosses.isNameExist(commands[2])) {
+        var boss = Bosses.find(commands[2]);
+        return u.name + " 님의 " + boss.type + " 참여 횟수: " + u.counts[boss.type];
+      } else {
+        return "명령어 오입력\n- /유저(확인, ㅎㅇ) 이름\n- /유저(확인, ㅎㅇ) 이름 [티켓, 횟수, 보스명]";
+      }
+    } else {
+      return "명령어 오입력\n- /유저(확인, ㅎㅇ) 이름\n- /유저(확인, ㅎㅇ) 이름 [티켓, 횟수, 보스명]";
     }
   }
 
@@ -502,6 +532,9 @@ function processCommand(msg: string): string {
     case '/유저추가': return Commands.addUser(commands); break;
     case '/유저수정': return Commands.changeUser(commands); break;
     case '/유저삭제': return Commands.removeUser(commands); break;
+    case '/ㅎㅇ':
+    case '/확인':
+    case '/유저': return Commands.printUser(commands); break;
     case '/딜':
     case '/딜량':
     case '/ㄷ':
@@ -512,6 +545,8 @@ function processCommand(msg: string): string {
     case '/ㅈㅇ': return Commands.printRemained(commands); break;
     case '/이달':
     case '/이어달리기':
+    case '/이어하기':
+    case '/ㅇㄷ':
     case '/ㅋ':
     case '/컷': return Commands.moveBossLevel(commands); break;
     case '/보스세팅':
