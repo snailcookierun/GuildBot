@@ -30,6 +30,8 @@ const bossTypeMap = (fn:Function) => (Object.keys(BOSS_TYPE) as (keyof typeof BO
 const MAX_COUNTS = 8; //max count for each boss
 const TICKETS_PER_DAY = 3; //charged tickets per day
 const MAX_TICKETS = 9; //max tickets for each user
+const MAX_TOTAL_COUNTS = 540; // max count for one season
+const MAX_BOSS_COUNTS = 240; // max boss count for one season
 
 /**
  * class Log - boss:(BOSS_TYPE), level:(number), damage:(number)
@@ -83,6 +85,12 @@ class User {
 
   printInfo(): string {
     return this.name + "\n" + this.printTicketsAndCounts();
+  }
+
+  resetCountsAndLogs() {
+    var arr = bossTypeMap(x => this.counts[x]);
+    arr.forEach(x => x = 0);
+    this.log = [];
   }
 }
 
@@ -163,6 +171,7 @@ class Boss {
   curLevel: number;
   curDamage: number;
   curUsers: Array<User>;
+  counts: number;
   maxDamage: number;
   minDamage: number;
 
@@ -174,6 +183,7 @@ class Boss {
     this.curLevel = 0;
     this.curDamage = 0;
     this.curUsers = [];
+    this.counts = 0;
     this.maxDamage = 0;
     this.minDamage = 0;
   }
@@ -195,6 +205,12 @@ class Boss {
 
   getRemained(): number {
     return this.hps[this.curLevel] - this.curDamage;
+  }
+
+  setLevel(level: number) {
+    this.curLevel = (level);
+    this.curDamage = 0;
+    this.curUsers = [];
   }
 }
 
@@ -234,10 +250,12 @@ const rBossList: { [key: string]: BOSS_TYPE } = Object.keys(bossList).reduce((ac
 class _Bosses {
   bossList: { [key in BOSS_TYPE]: Boss };
   rBossList: { [key: string]: BOSS_TYPE };
+  totalCounts: number;
 
   constructor(bossList: { [key in BOSS_TYPE]: Boss }, rBossList: { [key: string]: BOSS_TYPE }) {
     this.bossList = bossList;
     this.rBossList = rBossList;
+    this.totalCounts = 0;
   }
 
   isNameExist(str: string): boolean {
@@ -319,7 +337,7 @@ class _Commands {
           return "참여 횟수가 최대치(" + MAX_COUNTS + ")보다 큽니다.";
         }
         u.counts[boss.type] = counts;
-        return u.name + " 님의 " + boss.type + " 보스 참여 횟수가 " + u.counts[boss.type] + "로 수정되었습니다.";
+        return u.name + " 님의 " + boss.type + " 참여 횟수가 " + u.counts[boss.type] + "로 수정되었습니다.";
     } else {
       return "명령어 오입력\n- /유저수정 이름 티켓수(0~9)\n- /유저수정 이름 보스명 참여횟수(0~8)"
     }
@@ -371,6 +389,47 @@ class _Commands {
       }
     } else {
       return "명령어 오입력\n- /유저(확인, ㅎㅇ) 이름\n- /유저(확인, ㅎㅇ) 이름 [티켓, 횟수, 보스명]";
+    }
+  }
+
+  addTickets(commands: Array<string>): string {
+    if(commands.length == 1) {
+      var addedTickets = TICKETS_PER_DAY;
+      var maxedTicketUsers = Users.userList.filter(x => (x.tickets + addedTickets) > MAX_TICKETS);
+      Users.userList.forEach(x => x.tickets = (x.tickets + addedTickets) > MAX_TICKETS ? MAX_TICKETS : (x.tickets + addedTickets));  //Limit the number of tickets up to MAX_TICKETS
+      var str = "티켓 수가 +" + addedTickets + "만큼 충전되었습니다.";
+      if (maxedTicketUsers.length > 0) {
+        str += "\n티켓 초과 유저: " + maxedTicketUsers.map(x => x.name).join(", ");
+      }
+      return str;
+    } else {
+      return "명령어 오입력\n- /티켓충전"
+    }
+  }
+
+  resetSeason(commands: Array<string>): string {
+    if(commands.length == 1) {
+      Bosses.totalCounts = 0;
+      Users.userList.forEach(x => x.tickets = TICKETS_PER_DAY);
+      Users.userList.forEach(x => x.resetCountsAndLogs());
+      Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].setLevel(1));
+      return "새로운 시즌을 시작합니다.\n토벌 횟수: " + Bosses.totalCounts + "/" + MAX_TOTAL_COUNTS;
+    } else {
+      return "명령어 오입력\n- /시즌시작"
+    }
+  }
+
+  printTotalCounts(commands: Array<string>): string {
+    if(commands.length == 1) {
+      return "토벌 진행 횟수: " + Bosses.totalCounts + "/" + MAX_TOTAL_COUNTS;
+    } else if(commands.length == 2 && !isNumber(commands[1])) {
+      if(!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      return boss.type + " 토벌 진행 횟수: " + boss.counts + "/" + MAX_BOSS_COUNTS;
+    } else {
+      return "명령어 오입력\n- /횟수(ㅎㅅ)\n- /횟수 보스명"
     }
   }
 
@@ -437,9 +496,7 @@ class _Commands {
         return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
-      boss.curLevel += 1;
-      boss.curDamage = 0;
-      boss.curUsers = [];
+      boss.setLevel(boss.curLevel+1);
       var text = boss.isLevelExist(boss.curLevel) ? "잔여: " + boss.getRemained() + "만" : "/체력추가 를 통해 체력을 설정해주세요.";
       return boss.type + " " + boss.curLevel + "단계로 넘어갑니다.\n" + text;
     } else {
@@ -457,11 +514,8 @@ class _Commands {
       if(!boss.isLevelExist(level)) {
         return boss.type + " " + level + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
       }
-      boss.curLevel = (level);
-      boss.curDamage = 0;
-      boss.curUsers = [];
-      var remained = boss.hps[boss.curLevel] - boss.curDamage;
-      return boss.type + " " + level + "단계로 셋팅되었습니다.\n잔여: " + remained + "만";
+      boss.setLevel(level);
+      return boss.type + " " + level + "단계로 셋팅되었습니다.\n잔여: " + boss.getRemained() + "만";
     } else {
       return "명령어 오입력\n- /보스셋팅 보스명 단계(1~n)";
     }
@@ -538,9 +592,13 @@ function processCommand(msg: string): string {
     case '/유저추가': return Commands.addUser(commands); break;
     case '/유저수정': return Commands.changeUser(commands); break;
     case '/유저삭제': return Commands.removeUser(commands); break;
+    case '/티켓충전': return Commands.addTickets(commands); break;
+    case '/시즌시작': return Commands.resetSeason(commands); break;
     case '/ㅎㅇ':
     case '/확인':
     case '/유저': return Commands.printUser(commands); break;
+    case '/ㅎㅅ':
+    case '/횟수': return Commands.printTotalCounts(commands); break;
     case '/딜':
     case '/딜량':
     case '/ㄷ':
