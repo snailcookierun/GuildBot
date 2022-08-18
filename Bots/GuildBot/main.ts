@@ -34,17 +34,31 @@ const MAX_TOTAL_COUNTS = 540; // max count for one season
 const MAX_BOSS_COUNTS = 240; // max boss count for one season
 
 /**
+ * enum LOG_TYPE - 미입력, 기본, 막타, 이달, 중복
+ */
+
+enum LOG_TYPE {
+  NONE = "미입력",
+  NORMAL = "기본",
+  LAST = "막타",
+  RELAY = "이달",
+  DUPLICATE = "중복"
+}
+
+/**
  * class Log - boss:(BOSS_TYPE), level:(number), damage:(number)
  */
 class Log {
   boss: BOSS_TYPE;
   level: number;
   damage: number;
+  type: LOG_TYPE;
 
-  constructor(boss: BOSS_TYPE, level: number, damage: number) {
+  constructor(boss: BOSS_TYPE, level: number, damage: number, type:LOG_TYPE) {
     this.boss = boss;
     this.level = level;
     this.damage = damage;
+    this.type = type;
   }
 }
 
@@ -447,6 +461,54 @@ class _Commands {
     }
   }
 
+  addLog(commands: Array<string>): string {
+    if((commands.length == 3 ||  commands.length == 4) && !isNumber(commands[1]) && !isNumber(commands[2])){
+      if(!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      if(!Bosses.isNameExist(commands[2])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var user = Users.find(commands[1]);
+      var boss = Bosses.find(commands[2]);
+      var addStr = "";
+      var isRelayOrDuplicate = false;
+      var logType = LOG_TYPE.NONE;
+      if (commands.length == 4) {
+        if (!isNumber[commands[3]]) {
+          if(commands[3] == LOG_TYPE.RELAY) {
+            addStr = "\n이어하기 참여입니다."
+            isRelayOrDuplicate = true;
+            logType = LOG_TYPE.RELAY;
+          } else if (commands[3] == LOG_TYPE.DUPLICATE) {
+            addStr = "\n중복 참여입니다."; 
+            isRelayOrDuplicate = true;
+            logType = LOG_TYPE.DUPLICATE;
+          } else {
+          return "명령어 오입력\n- /참여(ㅊㅇ) 이름 보스명";
+          }
+        } else if (Number(commands[3]) == boss.curLevel) {
+          addStr = "\n이제 단계를 입력하지 않아도 됩니다.";
+        } else {
+          return "현재 " + boss.type + " 단계("+ boss.curLevel +")와 입력한 단계(" + commands[3] + ")가 다릅니다."
+        }
+      }
+      if (!isRelayOrDuplicate && boss.curUsers.includes(user)) {
+        return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 참여하셨습니다.";
+      }
+      // TODO: make method functions in User and Boss (dec/inc tickets and counts of user and boss + add logs + update curUser)
+      user.log.push(new Log(boss.type, boss.curLevel, 0, logType));
+      boss.curUsers.push(user);
+      return user.name + " 님이 " + boss.type + " " + boss.curLevel + "단계에 참여합니다." + addStr; 
+    } else {
+      return "명령어 오입력\n- /참여(ㅊㅇ) 이름 보스명";
+    }
+  }
+
+  revertLog(commands: Array<string>): string {
+    return "현재 구현 중입니다.";
+  }
+
   addDamage(commands: Array<string>): string {
     if(commands.length == 3 && !isNumber(commands[1]) && isNumber(commands[2])){
       if(!Bosses.isNameExist(commands[1])) {
@@ -614,6 +676,10 @@ function processCommand(msg: string): string {
     case '/유저': return Commands.printUser(commands); break;
     case '/ㅎㅅ':
     case '/횟수': return Commands.printTotalCounts(commands); break;
+    case '/ㅊㅇ':
+    case '/참여': return Commands.addLog(commands); break;
+    case '/ㅇㅌ':
+    case '/오타': return Commands.revertLog(commands); break;
     case '/딜':
     case '/딜량':
     case '/ㄷ':
