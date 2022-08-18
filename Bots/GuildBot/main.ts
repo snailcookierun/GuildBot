@@ -343,6 +343,20 @@ class _Commands {
     }
   }
 
+  changeUserName(commands: Array<string>): string {
+    if(commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) { // /이름변경 이름 새이름
+      if(!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var u = Users.find(commands[1]); 
+      var prevName = u.name; 
+      u.name = commands[2];
+      return prevName + " 님의 이름이 " + u.name + " 으로 변경되었습니다."
+    } else {
+      return "명령어 오입력\n- /이름변경 이름 새이름";
+    }
+  }
+
   removeUser(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) { // /유저추가 이름
       if(!Users.isNameExist(commands[1])) {
@@ -591,6 +605,7 @@ function processCommand(msg: string): string {
     default: return "알 수 없는 명령어입니다.\n- /명령어"; break;
     case '/유저추가': return Commands.addUser(commands); break;
     case '/유저수정': return Commands.changeUser(commands); break;
+    case '/이름변경': return Commands.changeUserName(commands); break;
     case '/유저삭제': return Commands.removeUser(commands); break;
     case '/티켓충전': return Commands.addTickets(commands); break;
     case '/시즌시작': return Commands.resetSeason(commands); break;
