@@ -626,7 +626,7 @@ class _Commands {
       user.addParticipate(boss.type, boss.curLevel, logType);
       boss.addParticipate(user);
       Bosses.increaseTotalCounts();
-      return user.name + " 님이 " + boss.type + " " + boss.curLevel + "단계에 참여합니다." + addStr;
+      return user.name + " 님이 " + boss.type + " " + boss.curLevel + "단계에 참여합니다.\n토핑!! 덱!!! 보스!!!! 연모!!!!!" + addStr;
     } else {
       return "명령어 오입력\n- /참여(ㅊㅇ) 이름 보스명";
     }
