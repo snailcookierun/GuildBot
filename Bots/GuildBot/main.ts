@@ -523,6 +523,23 @@ class _Commands {
     }
   }
 
+  printLogs(commands: Array<string>): string {
+    if (commands.length == 2 && !isNumber(commands[1])) {
+      if (Bosses.isNameExist(commands[1])) {
+        var b = Bosses.find(commands[1]);
+        return JSON.stringify(b);
+
+      } else if (Users.isNameExist(commands[1])) {
+        var u = Users.find(commands[1]);
+        return JSON.stringify(u.log);
+      } else {
+        return "명령어 오입력\n- /로그 이름 또는 보스명"
+      }
+    } else {
+      return "명령어 오입력\n- /로그 이름 또는 보스명";
+    }
+  }
+
   addTickets(commands: Array<string>): string {
     if (commands.length == 1) {
       var addedTickets = TICKETS_PER_DAY;
@@ -545,6 +562,7 @@ class _Commands {
       Users.userList.forEach(x => x.resetCountsAndLogs());
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].setLevel(1));
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].counts = 0);
+      Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].relayUsers[1] = []);
       return "새로운 시즌을 시작합니다.\n토벌 횟수: " + Bosses.totalCounts + "/" + MAX_TOTAL_COUNTS;
     } else {
       return "명령어 오입력\n- /시즌시작"
@@ -679,20 +697,38 @@ class _Commands {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
+      var boss:Boss;
       var numFoundedLogs: number = bossTypeMap(x => user.numFoundLogs(x, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE)).reduce((a, b) => a + b, 0);
       if (numFoundedLogs > 1) {
-        return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량"
+        return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량";
+      } else if (numFoundedLogs < 1) {
+        //Check if the user is relay user
+        if (Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user))) {
+          var bosses = Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user));
+          if (bosses.length > 1) {
+            return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량";
+          } else {
+            boss = Bosses.bossList[bosses[0]];
+          }
+        } else {
+          return commands[1] + " 님은 현재 참여 중인 보스 기록이 없습니다.\n- /참여 이름 보스명";
+        }
+      } else { //numFoundedLogs == 1
+        var userLogs: Log[] = bossTypeMap(x => user.findLogsIfUnique(x, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE));
+        boss = Bosses.bossList[userLogs[0].boss];
       }
-      if (numFoundedLogs < 1) {
-        return commands[1] + " 님은 현재 참여 중인 보스 기록이 없습니다.\n- /참여 이름 보스명"
-      }
-      var userLogs: Log[] = bossTypeMap(x => user.findLogsIfUnique(x, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE));
-      var boss = Bosses.bossList[userLogs[0].boss];
+
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
+      if (!boss.isLevelExist(boss.curLevel)) {
+        return boss.type + " " + boss.curLevel + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
+      }
       if (!(boss.curUsers.includes(user) || boss.relayUsers[boss.curLevel].includes(user))) {
         return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 참여 중이지 않습니다.";
+      }
+      if (boss.getRemained() + 2 <= Number(commands[2])) {
+        return "입력한 딜량(" + commands[2] + "만)이 현재 잔여 체력(" + boss.getRemained() + "만)보다 큽니다."
       }
 
       var logType = LOG_TYPE.NORMAL;
@@ -724,6 +760,9 @@ class _Commands {
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
+      if (!boss.isLevelExist(boss.curLevel)) {
+        return boss.type + " " + boss.curLevel + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
+      }
       if (!(boss.curUsers.includes(user) || boss.relayUsers[boss.curLevel].includes(user))) {
         return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 참여 중이지 않습니다.";
       }
@@ -731,6 +770,9 @@ class _Commands {
         return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 대한 참여 기록이 없습니다.";
       } else if (user.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) > 1) {
         return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 대한 2개 이상의 참여 기록이 있습니다. 버그이므로 관리자에게 문의하세요.";
+      }
+      if (boss.getRemained() + 2 <= Number(commands[3])) {
+        return "입력한 딜량(" + commands[3] + "만)이 현재 잔여 체력(" + boss.getRemained() + "만)보다 큽니다."
       }
 
       var logType = LOG_TYPE.NORMAL;
@@ -867,6 +909,9 @@ class _Commands {
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      if (boss.curUsers.length < 1 && boss.relayUsers[boss.curLevel].length < 1) {
+        return "현재 단계에 참여한 인원이 없습니다.";
       }
 
       boss.curUsers.map(u => u.findLogsIfUnique(boss.type, boss.curLevel, 0, LOG_TYPE.NONE)).forEach(l => l.type = LOG_TYPE.LAST);
@@ -1035,6 +1080,7 @@ function processCommand(msg: string): string {
     case '/ㅎㅇ':
     case '/확인':
     case '/유저': return Commands.printUser(commands); break;
+    case '/로그': return Commands.printLogs(commands); break;
     case '/ㅎㅅ':
     case '/횟수': return Commands.printTotalCounts(commands); break;
     case '/ㅊㅇ':
@@ -1055,6 +1101,7 @@ function processCommand(msg: string): string {
     case '/컷취소': return Commands.revertMoveBossLevel(commands); break;
     case '/보스세팅':
     case '/보스셋팅': return Commands.setBossLevelDeprecated(commands); break;
+    case '/sudo보스셋팅': return Commands.setBossLevel(commands); break;
     case '/보스체력': return Commands.printBossHp(commands); break;
     case '/체력추가': return Commands.addBossHp(commands); break;
     case '/체력수정': return Commands.replaceBossHp(commands); break;
