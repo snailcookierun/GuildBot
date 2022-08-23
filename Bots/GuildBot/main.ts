@@ -6,6 +6,7 @@
 */
 
 import { log } from "console";
+import { userInfo } from "os";
 import { stringify } from "querystring";
 import { NoSubstitutionTemplateLiteral, NumberLiteralType } from "typescript";
 
@@ -595,6 +596,9 @@ class _Commands {
 
   printTotalCounts(commands: Array<string>): string {
     if (commands.length == 1) {
+      if(Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
       var arr = Object.keys(Bosses.bossList).map(x => x + ": " + Bosses.bossList[x].counts + "/" + MAX_BOSS_COUNTS);
       return "토벌 진행 횟수: " + Bosses.totalCounts + "/" + MAX_TOTAL_COUNTS + "\n" + arr.join(", ");
     } else if (commands.length == 2 && !isNumber(commands[1])) {
@@ -602,6 +606,9 @@ class _Commands {
         return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";;
+      }
       return boss.type + " 토벌 진행 횟수: " + boss.counts + "/" + MAX_BOSS_COUNTS;
     } else {
       return "명령어 오입력\n- /횟수(ㅎㅅ)\n- /횟수 보스명"
@@ -661,6 +668,9 @@ class _Commands {
 
   revertParticipate(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
+      if(Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
       if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
@@ -720,6 +730,9 @@ class _Commands {
 
   addDamage(commands: Array<string>): string {
     if (commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
+      if(Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
       if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
@@ -829,6 +842,9 @@ class _Commands {
 
   revertDamage(commands: Array<string>): string {
     if ((commands.length == 2 || commands.length == 3) && !isNumber(commands[1])) {
+      if(Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
       if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
@@ -886,6 +902,9 @@ class _Commands {
 
   changeDamage(commands: Array<string>): string {
     if (commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
+      if(Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
       if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
@@ -1050,6 +1069,9 @@ class _Commands {
 
   printCalledUsers(commands: Array<string>): string {
     if (commands.length == 2 && isUnsigned(commands[1])) {
+      if(Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
       var n = Number(commands[1]);
       if(n < 0 || n > MAX_TICKETS) {
         return "명령어 오입력\n- /소환(ㅅㅎ) 잔여티켓수(0~9)";
@@ -1097,6 +1119,41 @@ class _Commands {
       return "유저,보스,단계,딜량,타입\n" + str;
     } else {
       return "명령어 오입력\n- /딜로그";
+    }
+  }
+
+  printDamageSheet(commands: Array<string>): string {
+    if(commands.length == 2 && !isNumber(commands[1])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      if (Users.userList.length < 1) {
+        return "유저가 없습니다.";
+      }
+      var levels = Array.from(Array(boss.curLevel).keys()).map(x => x+1);
+      var resultStr = Users.userList.map(function(user){
+        if(user.log.length > 0){
+          var damageLogs = levels.map(function(level){
+            var matchedLog = user.log.filter(l => ((l.boss == boss.type) && (l.level == level)));
+            if (matchedLog.length > 0) {
+              var damages = matchedLog.map(l => l.damage);
+              return Math.max.apply(null,damages);
+            } else {
+              return 0;
+            }
+          })
+          return user.name + "," + damageLogs.join(",");
+        } else {
+          return user.name + "," + Array(boss.curLevel).fill(0).join(",");
+        }
+      }).join("\n");
+      return boss.type + "," + levels.join(",") + "\n" + resultStr;
+    } else {
+      return "명령어 오입력\n- /딜시트 보스명";
     }
   }
 
@@ -1197,6 +1254,7 @@ function processCommand(msg: string): string {
     case '/ㄷㅇㅌ': return Commands.changeDamage(commands); break;
     case '/딜취소': return Commands.revertDamage(commands); break;
     case '/딜로그': return Commands.printDamageLogs(commands); break;
+    case '/딜시트': return Commands.printDamageSheet(commands); break;
     case '/잔여':
     case '/ㅈㅇ': return Commands.printRemained(commands); break;
     case '/ㄷㄱ':
