@@ -39,6 +39,7 @@ function unionArray<T>(x: Array<T>, y: Array<T>) {
   }
   return result;
 }
+function average(arr: Array<number>){ if(arr.length > 0){return Math.round(arr.reduce( ( p, c ) => p + c, 0 ) / arr.length);}else{return 0;}}
 
 
 /* Global constants and data structures */
@@ -1157,6 +1158,81 @@ class _Commands {
     }
   }
 
+
+  printUserDamage(commands: Array<string>): string {
+    if (commands.length == 2 && !isNumber(commands[1])) {
+      if(Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
+      if (user.log.length < 1) {
+        return user.name + " 님의 딜량 기록이 없습니다.";
+      }
+      var str = Object.keys(Bosses.bossList).map(x => Bosses.bossList[x].type + ": " + (
+        user.log.filter(l => (l.boss == Bosses.bossList[x].type)).map(l => l.level + "/" + l.damage + "/" + l.type).join(", "))).join("\n");
+      return user.name + " 님의 딜량 기록입니다.\n" + str;
+    } else if (commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
+      if (user.log.length < 1) {
+        return user.name + " 님의 딜량 기록이 없습니다.";
+      }
+      if (!Bosses.isNameExist(commands[2])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[2]);
+      var str = user.log.filter(l => (l.boss == boss.type)).map(l => l.level + "/" + l.damage + "/" + l.type).join(", ");
+      return user.name + " 님의 " + boss.type + " 딜량 기록입니다.\n" + str;
+    } else {
+      return "명령어 오입력\n- /딜확인(ㄷㅎㅇ) 유저\n- /딜확인 유저 보스명"
+    }
+  }
+
+  printUserAvgDamage(commands: Array<string>): string {
+    if (commands.length == 2 && !isNumber(commands[1])) {
+      if(Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
+      if (user.log.length < 1) {
+        return user.name + " 님의 딜량 기록이 없습니다.";
+      }
+      if (Object.keys(Bosses.bossList).every(x => user.log.filter(l => (l.boss == Bosses.bossList[x].type) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).length < 1)) {
+        return user.name + " 님은 평균을 내기 위한 충분한 딜량 기록을 가지고 있지 않습니다.";
+      }
+      var str = Object.keys(Bosses.bossList).map(x => Bosses.bossList[x].type + ": " + (
+        average(user.log.filter(l => (l.boss == Bosses.bossList[x].type) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage)))).join("\n");
+      return user.name + " 님의 딜량 평균입니다.\n" + str;
+    } else if (commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
+      if (user.log.length < 1) {
+        return user.name + " 님의 딜량 기록이 없습니다.";
+      }
+      if (!Bosses.isNameExist(commands[2])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[2]);
+      if (user.log.filter(l => (l.boss == boss.type) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).length < 1) {
+        return user.name + " 님은 평균을 내기 위한 충분한 " + boss.type + " 딜량 기록을 가지고 있지 않습니다.";
+      }
+      var avg = average(user.log.filter(l => (l.boss == boss.type) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage));
+      return user.name + " 님의 " + boss.type + " 딜량 평균: " + avg;
+    } else {
+      return "명령어 오입력\n- /딜평균(ㄷㅍㄱ) 유저\n- /딜확인 유저 보스명"
+    }
+  }
+
   printBossHp(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
@@ -1252,9 +1328,14 @@ function processCommand(msg: string): string {
     case '/딜오타':
     case '/딜수정':
     case '/ㄷㅇㅌ': return Commands.changeDamage(commands); break;
+    case '/ㄷㅊㅅ':
     case '/딜취소': return Commands.revertDamage(commands); break;
     case '/딜로그': return Commands.printDamageLogs(commands); break;
     case '/딜시트': return Commands.printDamageSheet(commands); break;
+    case '/ㄷㅎㅇ':
+    case '/딜확인': return Commands.printUserDamage(commands); break;
+    case '/ㄷㅍㄱ':
+    case '/딜평균': return Commands.printUserAvgDamage(commands); break;
     case '/잔여':
     case '/ㅈㅇ': return Commands.printRemained(commands); break;
     case '/ㄷㄱ':
