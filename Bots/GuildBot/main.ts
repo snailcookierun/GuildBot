@@ -631,6 +631,9 @@ class _Commands {
       if (!isDuplicateAllowed && boss.loggedUsers.includes(user) && !(boss.isRelayLogged && (boss.relayUsers[boss.curLevel])[0] == user)) {
         return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 참여한 기록이 있습니다.";
       }
+      if (boss.loggedUsers.includes(user) && boss.isRelayLogged && (boss.relayUsers[boss.curLevel])[0] == user) {
+        addStr = "\n이어달리기 참여입니다.";
+      }
       user.addParticipate(boss.type, boss.curLevel, logType);
       boss.addParticipate(user);
       Bosses.increaseTotalCounts();
