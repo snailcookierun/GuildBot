@@ -101,12 +101,14 @@ class Log {
 class User {
   name: string;
   tickets: number;
+  relics: number;
   counts: { [key in BOSS_TYPE]: number };
   log: Array<Log>;
 
   constructor(name: string, tickets: number) {
     this.name = name;
     this.tickets = tickets;
+    this.relics = 0;
     this.counts = Object.assign({}, ...bossTypeMap((x) => ({ [x]: 0 })));
     this.log = [];
   }
@@ -585,6 +587,7 @@ class _Commands {
     if (commands.length == 1) {
       Bosses.totalCounts = 0;
       Users.userList.forEach(x => x.tickets = TICKETS_PER_DAY);
+      Users.userList.forEach(x => x.relics = 0);
       Users.userList.forEach(x => x.resetCountsAndLogs());
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].setLevel(1));
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].counts = 0);
@@ -1293,6 +1296,30 @@ class _Commands {
       return "명령어 오입력\n- /체력수정 보스명 단계 체력";
     }
   }
+
+  addRelics(commands: Array<string>): string {
+    if(commands.length == 3 && !isNumber(commands[1]) && isUnsigned(commands[2])) {
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
+      user.relics = Number(commands[2]);
+      return user.name + " 님의 유물 수가 " + user.relics + "개로 업데이트 되었습니다.";
+    } else {
+      return "명령어 오입력\n- /유물(ㅇㅁ) 이름 개수"
+    }
+  }
+
+  printRelics(commands: Array<string>): string {
+    if(commands.length = 1) {
+      if (Users.userList.length < 1) {
+        return "유저가 없습니다.";
+      }
+      return "유물 현황\n" + Users.userList.map(u => u.name + ": " + u.relics).join("\n");
+    } else {
+      return "명령어 오입력\n- /유물현황(ㅇㅁㅎㅎ)"
+    }
+  }
 }
 const Commands = new _Commands();
 
@@ -1346,6 +1373,10 @@ function processCommand(msg: string): string {
     case '/ㅋ':
     case '/컷': return Commands.moveBossLevel(commands); break;
     case '/컷취소': return Commands.revertMoveBossLevel(commands); break;
+    case '/ㅇㅁ':
+    case '/유물': return Commands.addRelics(commands); break;
+    case '/ㅇㅁㅎㅎ':
+    case '/유물현황': return Commands.printRelics(commands); break;
     case '/보스세팅':
     case '/보스셋팅': return Commands.setBossLevelDeprecated(commands); break;
     case '/sudo보스셋팅': return Commands.setBossLevel(commands); break;
