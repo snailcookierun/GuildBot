@@ -297,7 +297,7 @@ class Boss {
     this.curDamage = 0;
     this.curUsers = [];
     this.loggedUsers = [];
-    this.relayUsers = {};
+    this.relayUsers[this.curLevel] = [];
     this.isRelayLogged = false;
   }
 
@@ -401,8 +401,9 @@ const Bosses = new _Bosses(bossList, rBossList);
 class _Commands {
 
   printCommands(commands: Array<string>): string {
-    var text = "현재 지원되는 명령어입니다.\n- /체력추가\n- /체력수정\n- /보스체력\n- /보스셋팅\n- /딜량(딜, ㄷㄹ, ㄷ)\n- /딜오타(ㄷㅇㅌ)\n- /잔여(ㅈㅇ)\n- /컷(ㅋ)";
-    return text;
+    var text = "현재 지원되는 명령어입니다.\n- /";
+    var commandsArray = ['참여','오타','딜','딜오타','딜취소','컷','컷취소','잔여','유저추가','유저수정','이름변경','유저삭제','확인','횟수','체력추가','체력수정','보스체력'];
+    return text + commandsArray.join("\n- /");
   }
 
   addUser(commands: Array<string>): string {
@@ -989,7 +990,7 @@ class _Commands {
   }
 
   setBossLevelDeprecated(commands: Array<string>): string {
-    return "'/보스셋팅' 명령어는 삭제되었습니다.\n'/컷취소'를 이용해주세요.";
+    return "'/보스셋팅' 명령어는 삭제되었습니다.\n'/컷'이나 '/컷취소'를 이용해주세요.";
   }
 
   setBossLevel(commands: Array<string>): string {
