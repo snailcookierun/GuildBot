@@ -273,7 +273,7 @@ class Boss {
   minDamage: number;
 
   // constructor - type:BOSS_TYPE, name:boss's nickname
-  constructor(type: BOSS_TYPE, name: Array<string>) {
+  constructor(type: BOSS_TYPE, name: Array<string>, max: number, min: number) {
     this.type = type;
     this.name = name;
     this.hps = [0];
@@ -284,8 +284,8 @@ class Boss {
     this.relayUsers = {};
     this.isRelayLogged = false;
     this.counts = 0;
-    this.maxDamage = 0;
-    this.minDamage = 0;
+    this.maxDamage = max;
+    this.minDamage = min;
   }
 
   isLevelExist(n: number): boolean {
@@ -348,9 +348,9 @@ class Boss {
 }
 
 const bossList: { [key in BOSS_TYPE]: Boss } = {
-  [BOSS_TYPE.DRAGON]: new Boss(BOSS_TYPE.DRAGON, ["용", "레벨", "드래곤", "ㅇ", "ㄼ", "ㄹㅂ"]),
-  [BOSS_TYPE.ANGEL]: new Boss(BOSS_TYPE.ANGEL, ["천사", "천", "대천사", "ㅊㅅ", "ㅊ"]),
-  [BOSS_TYPE.LICORICE]: new Boss(BOSS_TYPE.LICORICE, ["감초", "감", "ㄱㅊ", "ㄱ"])
+  [BOSS_TYPE.DRAGON]: new Boss(BOSS_TYPE.DRAGON, ["용", "레벨", "드래곤", "ㅇ", "ㄼ", "ㄹㅂ"], 4000, 3300),
+  [BOSS_TYPE.ANGEL]: new Boss(BOSS_TYPE.ANGEL, ["천사", "천", "대천사", "ㅊㅅ", "ㅊ"], 6000, 4000),
+  [BOSS_TYPE.LICORICE]: new Boss(BOSS_TYPE.LICORICE, ["감초", "감", "ㄱㅊ", "ㄱ"], 6000, 4000)
 };
 // Why are the bosses hps same...?
 bossList[BOSS_TYPE.DRAGON].hps = bossList[BOSS_TYPE.DRAGON].hps.concat(
@@ -417,7 +417,7 @@ class _Commands {
 
   printCommands(commands: Array<string>): string {
     var text = "현재 지원되는 명령어입니다.\n- /";
-    var commandsArray = ['참여','오타','딜','딜오타','딜취소','컷','컷취소','잔여','소환','단계','유저추가','유저수정','이름변경','유저삭제','확인','딜확인','딜평균','횟수','체력추가','체력수정','보스체력'];
+    var commandsArray = ['참여','오타','딜','딜오타','딜취소','컷','컷취소','잔여','계산','소환','단계','유저추가','유저수정','이름변경','유저삭제','확인','딜확인','딜평균','횟수','체력추가','체력수정','보스체력','유물','유물현황'];
     return text + commandsArray.join("\n- /");
   }
 
@@ -1055,6 +1055,42 @@ class _Commands {
     }
   }
 
+  calculateRemained(commands: Array<string>): string {
+    if ((commands.length == 2 || commands.length == 3) && !isNumber(commands[1])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if(boss.minDamage <= 0 || boss.maxDamage <= 0 || boss.minDamage >= boss.maxDamage) {
+        return boss.type + "의 최소 또는 최대 딜이 입력되어 있지 않습니다."
+      }
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      var remained = boss.getRemained();
+      var str = boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만\n";
+      if(commands.length == 3) {
+        if (isNatural(commands[2])) {
+          remained = Number(commands[2]);
+          str = boss.type + " " + remained + "만\n"; 
+        } else {
+          return "명령어 오입력\n- /계산 보스명 잔여체력(1~n)";
+        }
+      }
+      var start = Math.ceil(remained/boss.maxDamage);
+      var end = Math.floor(remained/boss.minDamage);
+      if(start <= 1 || end <= 1 || end < start) {
+        return "잔여 체력이 계산하기에 충분하지 않습니다.";
+      }
+      var len = (end == start) ? 2 : end-start+1;
+      var numArr = Array.from(Array(len).keys()).map(x => x+start);
+      str += numArr.map(n => n + "명, " + Math.round(remained/n) + "만").join("\n");
+      return str;
+    } else {
+      return "명령어 오입력\n- /계산(ㄱㅅ) 보스명\n- /계산 보스명 잔여체력(1~n)";
+    }
+  }
+
   printCurAndLoggedUsers(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
@@ -1365,6 +1401,9 @@ function processCommand(msg: string): string {
     case '/딜평균': return Commands.printUserAvgDamage(commands); break;
     case '/잔여':
     case '/ㅈㅇ': return Commands.printRemained(commands); break;
+    case '/ㄳ':
+    case '/ㄱㅅ':
+    case '/계산': return Commands.calculateRemained(commands); break;
     case '/ㄷㄱ':
     case '/단계':
     case '/참여자': return Commands.printCurAndLoggedUsers(commands); break;
