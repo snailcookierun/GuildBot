@@ -503,20 +503,14 @@ class _Commands {
       if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
+      var u = Users.find(commands[1]);
+      if (u.log.length > 0) {
+        return "시즌 초기화 이후에 사용해주세요.";
+      }
       Users.remove(commands[1]);
       return Users.printUserList();
-    } else if (commands.length >= 3) { // /유저삭제 이름1 이름2
-      commands.shift();
-      if (commands.every(name => Users.isNameExist(name))) {
-        var nameSet = new Set(commands);
-        var names = Array.from(nameSet);
-        names.forEach(n => Users.remove(n));
-        return Users.printUserList();
-      } else {
-        return "없는 닉네임이 있습니다.";
-      }
     } else {
-      return "명령어 오입력\n- /유저삭제 이름\n- /유저삭제 이름1 이름2";
+      return "명령어 오입력\n- /유저삭제 이름";
     }
   }
 
@@ -557,10 +551,10 @@ class _Commands {
         var u = Users.find(commands[1]);
         return JSON.stringify(u.log);
       } else {
-        return "명령어 오입력\n- /로그 이름 또는 보스명"
+        return "명령어 오입력\n- /디버그 이름 또는 보스명"
       }
     } else {
-      return "명령어 오입력\n- /로그 이름 또는 보스명";
+      return "명령어 오입력\n- /디버그 이름 또는 보스명";
     }
   }
 
