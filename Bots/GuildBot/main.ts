@@ -5,6 +5,7 @@
  * 편의를 위해 TypeScript으로 작성하였으며, tsc을 통해 메신저봇R과 호환되는 JavaScript ES5로 컴파일 할 수 있습니다.
 */
 
+import { log } from "console";
 import { stringify } from "querystring";
 import { NoSubstitutionTemplateLiteral, NumberLiteralType } from "typescript";
 
@@ -28,6 +29,16 @@ function moveItemToFront<T>(arr: Array<T>, value: T) {
   }
   return arr;
 }
+function unionArray<T>(x: Array<T>, y: Array<T>) {
+  var result:Array<T> = [];
+  var concatArr = x.concat(y);
+  for (const e of concatArr) {
+    if (!result.includes(e))
+      result.push(e);
+  }
+  return result;
+}
+
 
 /* Global constants and data structures */
 /* enum BOSS_TYPE */
@@ -402,7 +413,7 @@ class _Commands {
 
   printCommands(commands: Array<string>): string {
     var text = "현재 지원되는 명령어입니다.\n- /";
-    var commandsArray = ['참여','오타','딜','딜오타','딜취소','컷','컷취소','잔여','유저추가','유저수정','이름변경','유저삭제','확인','횟수','체력추가','체력수정','보스체력'];
+    var commandsArray = ['참여','오타','딜','딜오타','딜취소','컷','컷취소','잔여','소환','단계','유저추가','유저수정','이름변경','유저삭제','확인','횟수','체력추가','체력수정','보스체력'];
     return text + commandsArray.join("\n- /");
   }
 
@@ -557,6 +568,10 @@ class _Commands {
       var str = "티켓 수가 +" + addedTickets + "만큼 충전되었습니다.";
       if (maxedTicketUsers.length > 0) {
         str += "\n티켓 초과 유저: " + maxedTicketUsers.map(x => x.name).join(", ");
+      }
+      var names = Users.userList.filter(u => u.tickets >= (MAX_TICKETS - TICKETS_PER_DAY + 1)).map(u => u.name + "(" + u.tickets + ")");
+      if (names.length >= 1) {
+        str += "\n잔여 티켓이 " + (MAX_TICKETS - TICKETS_PER_DAY + 1) + "개 이상 남으신 분들입니다.\n" + names.join(", ");
       }
       return str;
     } else {
@@ -890,12 +905,15 @@ class _Commands {
       user.changeDamage(log.boss, log.level, log.damage, log.type, newDamage);
       return user.name + " 님의 " + log.boss + " " + log.level + "단계 딜량이 " + log.damage + "만으로 수정되었습니다.";
     } else {
-      return "명령어 오입력\n- /딜오타(딜수정, ㄷㅇㅌ) 이름 딜량(1~n)"
+      return "명령어 오입력\n- /딜오타(딜수정, ㄷㅇㅌ) 이름 딜량(1~n)";
     }
   }
 
   printRemained(commands: Array<string>): string {
     if (commands.length == 1) {
+      if(Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
       var arr = Object.keys(Bosses.bossList).map(function (k, i) {
         var boss = Bosses.bossList[k];
         return boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만";
@@ -911,7 +929,58 @@ class _Commands {
       }
       return boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만";
     } else {
-      return "명령어 오입력\n- /잔여(ㅈㅇ)\n- /잔여 보스명"
+      return "명령어 오입력\n- /잔여(ㅈㅇ)\n- /잔여 보스명";
+    }
+  }
+
+  printCurAndLoggedUsers(commands: Array<string>): string {
+    if (commands.length == 2 && !isNumber(commands[1])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      var names = unionArray(boss.curUsers.map(x => x.name), boss.loggedUsers.map(x => x.name));
+      return boss.type + " " + boss.curLevel + "단계 참여자입니다.\n" + names.join(", ");
+    } else {
+      return "명령어 오입력\n- /단계(참여자,ㄷㄱ) 보스명";
+    }
+  }
+
+  printCalledUsers(commands: Array<string>): string {
+    if (commands.length == 2 && isUnsigned(commands[1])) {
+      var n = Number(commands[1]);
+      if(n < 0 || n > MAX_TICKETS) {
+        return "명령어 오입력\n- /소환(ㅅㅎ) 잔여티켓수(0~9)";
+      }
+      var names = Users.userList.filter(u => u.tickets >= n).map(u => u.name + "(" + u.tickets + ")");
+      if (names.length < 1) {
+        return "잔여 티켓이 " + n + "개 이상 남으신 분이 없습니다.";
+      } else {
+        return "잔여 티켓이 " + n + "개 이상 남으신 분들입니다.\n" + names.join(", ");
+      }
+    } else if (commands.length == 3 && !isNumber(commands[1]) && isUnsigned(commands[2])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      var n = Number(commands[2]);
+      if(n < 0 || n > MAX_COUNTS) {
+        return "명령어 오입력\n- /소환 보스명 잔여횟수(0~8)";
+      }
+      var names = Users.userList.filter(u => (MAX_COUNTS - u.counts[boss.type]) >= n).map(u => u.name + "(" + (MAX_COUNTS - u.counts[boss.type]) + ")");
+      if (names.length < 1) {
+        return boss.type + " 잔여 횟수가 " + n + "개 이상 남으신 분이 없습니다.";
+      } else {
+        return boss.type + " 잔여 횟수가 " + n + "회 이상 남으신 분들입니다.\n" + names.join(", ");
+      }
+    } else {
+      return "명령어 오입력\n- /소환(ㅅㅎ) 잔여티켓수(0~9)\n- /소환 보스명 잔여횟수(0~8)";
     }
   }
 
@@ -1111,6 +1180,11 @@ function processCommand(msg: string): string {
     case '/딜취소': return Commands.revertDamage(commands); break;
     case '/잔여':
     case '/ㅈㅇ': return Commands.printRemained(commands); break;
+    case '/ㄷㄱ':
+    case '/단계':
+    case '/참여자': return Commands.printCurAndLoggedUsers(commands); break;
+    case '/ㅅㅎ':
+    case '/소환': return Commands.printCalledUsers(commands); break;
     case '/ㅋ':
     case '/컷': return Commands.moveBossLevel(commands); break;
     case '/컷취소': return Commands.revertMoveBossLevel(commands); break;
