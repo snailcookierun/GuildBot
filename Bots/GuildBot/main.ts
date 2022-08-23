@@ -348,9 +348,9 @@ class Boss {
 }
 
 const bossList: { [key in BOSS_TYPE]: Boss } = {
-  [BOSS_TYPE.DRAGON]: new Boss(BOSS_TYPE.DRAGON, ["용", "레벨", "드래곤", "ㅇ", "ㄼ", "ㄹㅂ"], 4000, 3300),
-  [BOSS_TYPE.ANGEL]: new Boss(BOSS_TYPE.ANGEL, ["천사", "천", "대천사", "ㅊㅅ", "ㅊ"], 6000, 4000),
-  [BOSS_TYPE.LICORICE]: new Boss(BOSS_TYPE.LICORICE, ["감초", "감", "ㄱㅊ", "ㄱ"], 6000, 4000)
+  [BOSS_TYPE.DRAGON]: new Boss(BOSS_TYPE.DRAGON, ["용", "레벨", "드래곤", "ㅇ", "ㄼ", "ㄹㅂ"], 3900, 3300),
+  [BOSS_TYPE.ANGEL]: new Boss(BOSS_TYPE.ANGEL, ["천사", "천", "대천사", "ㅊㅅ", "ㅊ"], 5500, 4000),
+  [BOSS_TYPE.LICORICE]: new Boss(BOSS_TYPE.LICORICE, ["감초", "감", "ㄱㅊ", "ㄱ"], 5500, 4000)
 };
 // Why are the bosses hps same...?
 bossList[BOSS_TYPE.DRAGON].hps = bossList[BOSS_TYPE.DRAGON].hps.concat(
@@ -417,7 +417,7 @@ class _Commands {
 
   printCommands(commands: Array<string>): string {
     var text = "현재 지원되는 명령어입니다.\n- /";
-    var commandsArray = ['참여','오타','딜','딜오타','딜취소','컷','컷취소','잔여','계산','소환','단계','유저추가','유저수정','이름변경','유저삭제','확인','딜확인','딜평균','횟수','체력추가','체력수정','보스체력','유물','유물현황'];
+    var commandsArray = ['참여','오타','딜','딜오타','딜취소','컷','컷취소','잔여','계산','소환','단계','유저추가','유저수정','이름변경','유저삭제','확인','딜확인','딜평균','횟수','딜시트','딜로그','체력추가','체력수정','보스체력','유물','유물현황'];
     return text + commandsArray.join("\n- /");
   }
 
@@ -1333,6 +1333,40 @@ class _Commands {
     }
   }
 
+  replaceMaxDamage(commands: Array<string>): string {
+    if(commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      var newMaxDamage = Number(commands[2]);
+      if (newMaxDamage <= boss.minDamage) {
+        return "입력한 딜량("+ newMaxDamage + ")이 현재 최소 딜량(" + boss.minDamage + ")보다 작습니다.";
+      }
+      boss.maxDamage = newMaxDamage;
+      return boss.type + " 최대 딜량이 " + boss.maxDamage + "만으로 수정되었습니다.";
+    } else {
+      return "명령어 오입력\n- /최대딜수정 보스명 딜량";
+    }
+  }
+
+  replaceMinDamage(commands: Array<string>): string {
+    if(commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      var newMinDamage = Number(commands[2]);
+      if (newMinDamage >= boss.maxDamage) {
+        return "입력한 딜량("+ newMinDamage + ")이 현재 최대 딜량(" + boss.maxDamage + ")보다 큽니다.";
+      }
+      boss.minDamage = newMinDamage;
+      return boss.type + " 최소 딜량이 " + boss.minDamage + "만으로 수정되었습니다.";
+    } else {
+      return "명령어 오입력\n- /최소딜수정 보스명 딜량";
+    }
+  }
+
   addRelics(commands: Array<string>): string {
     if(commands.length == 3 && !isNumber(commands[1]) && isUnsigned(commands[2])) {
       if (!Users.isNameExist(commands[1])) {
@@ -1377,7 +1411,7 @@ function processCommand(msg: string): string {
     case '/ㅎㅇ':
     case '/확인':
     case '/유저': return Commands.printUser(commands); break;
-    case '/로그': return Commands.printLogs(commands); break;
+    case '/디버그': return Commands.printLogs(commands); break;
     case '/ㅎㅅ':
     case '/횟수': return Commands.printTotalCounts(commands); break;
     case '/ㅊㅇ':
@@ -1422,6 +1456,8 @@ function processCommand(msg: string): string {
     case '/보스체력': return Commands.printBossHp(commands); break;
     case '/체력추가': return Commands.addBossHp(commands); break;
     case '/체력수정': return Commands.replaceBossHp(commands); break;
+    case '/최대딜수정': return Commands.replaceMaxDamage(commands); break;
+    case '/최소딜수정': return Commands.replaceMinDamage(commands); break;
     case '/명령어': return Commands.printCommands(commands); break;
   }
 }
