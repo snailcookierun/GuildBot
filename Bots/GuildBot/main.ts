@@ -416,9 +416,9 @@ const Bosses = new _Bosses(bossList, rBossList);
 class _Commands {
 
   printCommands(commands: Array<string>): string {
-    var text = "현재 지원되는 명령어입니다.\n- /";
-    var commandsArray = ['참여','오타','딜','딜오타','딜취소','컷','컷취소','잔여','계산','소환','단계','유저추가','유저수정','이름변경','유저삭제','확인','딜확인','딜평균','횟수','딜시트','딜로그','체력추가','체력수정','보스체력','유물','유물현황'];
-    return text + commandsArray.join("\n- /");
+    var text = "명령어 링크입니다.\n";
+    var link = "https://snailcookierun.notion.site/826e99d07410464ab64394ea7ac8cf4b";
+    return text + link;
   }
 
   addUser(commands: Array<string>): string {
@@ -936,8 +936,13 @@ class _Commands {
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
-      if (boss.curUsers.length < 1 && boss.relayUsers[boss.curLevel].length < 1) {
-        return "현재 단계에 참여한 인원이 없습니다.";
+      if (boss.curUsers.length < 1) {
+        if (boss.relayUsers[boss.curLevel].length < 1) {
+          return "현재 단계에 참여한 인원이 없습니다.";
+        } else if (boss.loggedUsers.length < 1 && boss.isRelayLogged == false) { //이어하기 컷
+        } else {
+          return "현재 단계에 참여한 인원이 없습니다.";
+        }
       }
 
       boss.curUsers.map(u => u.findLogsIfUnique(boss.type, boss.curLevel, 0, LOG_TYPE.NONE)).forEach(l => l.type = LOG_TYPE.LAST);
@@ -1095,8 +1100,12 @@ class _Commands {
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
-      var names = unionArray(boss.curUsers.map(x => x.name), boss.loggedUsers.map(x => x.name));
-      return boss.type + " " + boss.curLevel + "단계 참여자입니다.\n" + names.join(", ");
+      if (boss.curUsers.length < 1 && boss.loggedUsers.length < 1) {
+        return boss.type + " " + boss.curLevel + "단계 참여자가 없습니다.\n";
+      } else {
+        var names = unionArray(boss.curUsers.map(x => x.name), boss.loggedUsers.map(x => x.name));
+        return boss.type + " " + boss.curLevel + "단계 참여자입니다.\n" + names.join(", ");
+      }
     } else {
       return "명령어 오입력\n- /단계(참여자,ㄷㄱ) 보스명";
     }
@@ -1175,15 +1184,21 @@ class _Commands {
           var damageLogs = levels.map(function(level){
             var matchedLog = user.log.filter(l => ((l.boss == boss.type) && (l.level == level)));
             if (matchedLog.length > 0) {
-              var damages = matchedLog.map(l => l.damage);
-              return Math.max.apply(null,damages);
+              if(matchedLog.some(l => l.type == LOG_TYPE.DUPLICATE || l.type == LOG_TYPE.NORMAL)) {
+                var damages = matchedLog.map(l => l.damage);
+                return Math.max.apply(null,damages) + "";
+              } else if (matchedLog.some(l => l.type == LOG_TYPE.LAST)) {
+                return LOG_TYPE.LAST;
+              } else {
+                return LOG_TYPE.RELAY;
+              }
             } else {
-              return 0;
+              return "미참";
             }
           })
           return user.name + "," + damageLogs.join(",");
         } else {
-          return user.name + "," + Array(boss.curLevel).fill(0).join(",");
+          return user.name + "," + Array(boss.curLevel).fill("미참").join(",");
         }
       }).join("\n");
       return boss.type + "," + levels.join(",") + "\n" + resultStr;
