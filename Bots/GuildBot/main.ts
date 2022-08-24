@@ -585,6 +585,7 @@ class _Commands {
       Users.userList.forEach(x => x.resetCountsAndLogs());
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].setLevel(1));
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].counts = 0);
+      Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].relayUsers = {});
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].relayUsers[1] = []);
       return "새로운 시즌을 시작합니다.\n토벌 횟수: " + Bosses.totalCounts + "/" + MAX_TOTAL_COUNTS;
     } else {
@@ -983,7 +984,7 @@ class _Commands {
       }
       //re-calculate damages
       var prevDamageLogs = prevLoggedUsers.map(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel-1)) && (l.damage > 0)).map(l => l.damage));
-      var prevDamage = (prevDamageLogs.length > 0) ? prevDamageLogs.flat().reduce((a,b)=>(a+b),0) : 0;
+      var prevDamage = (prevDamageLogs.length > 0) ? prevDamageLogs.map(x => (x.length > 0) ? x.reduce(function (a, b) { return (a + b); }, 0) : 0).reduce(function (a, b) { return (a + b); }, 0) : 0;
       var prevIsRelayLogged = prevLoggedUsers.filter(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel-1)) && (l.damage > 0) && (l.type == LOG_TYPE.RELAY))).length == 1;
 
       boss.relayUsers[boss.curLevel] = [];
