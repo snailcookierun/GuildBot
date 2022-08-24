@@ -1196,7 +1196,7 @@ class _Commands {
             var matchedLog = user.log.filter(l => ((l.boss == boss.type) && (l.level == level)));
             if (matchedLog.length > 0) {
               if(matchedLog.some(l => l.type == LOG_TYPE.DUPLICATE || l.type == LOG_TYPE.NORMAL)) {
-                var damages = matchedLog.map(l => l.damage);
+                var damages = matchedLog.filter(l => l.type == LOG_TYPE.DUPLICATE || l.type == LOG_TYPE.NORMAL).map(l => l.damage);
                 return Math.max.apply(null,damages) + "";
               } else if (matchedLog.some(l => l.type == LOG_TYPE.LAST)) {
                 return LOG_TYPE.LAST;
