@@ -1119,7 +1119,7 @@ class _Commands {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
       if (boss.curUsers.length < 1 && boss.loggedUsers.length < 1) {
-        return boss.type + " " + boss.curLevel + "단계 참여자가 없습니다.\n";
+        return boss.type + " " + boss.curLevel + "단계 참여자가 없습니다.";
       } else {
         var names = unionArray(boss.curUsers.map(x => x.name), boss.loggedUsers.map(x => x.name));
         return boss.type + " " + boss.curLevel + "단계 참여자입니다.\n" + names.join(", ");
@@ -1138,10 +1138,12 @@ class _Commands {
       if(n < 0 || n > MAX_TICKETS) {
         return "명령어 오입력\n- /소환(ㅅㅎ) 잔여티켓수(0~9)";
       }
-      var names = Users.userList.filter(u => u.tickets >= n).map(u => u.name + "(" + u.tickets + ")");
-      if (names.length < 1) {
+      var list = Users.userList.filter(u => u.tickets >= n);
+      if (list.length < 1) {
         return "잔여 티켓이 " + n + "개 이상 남으신 분이 없습니다.";
       } else {
+        list.sort(function(a,b){return b.tickets - a.tickets;});
+        var names = list.map(u => u.name + "(" + u.tickets + ")");
         return "잔여 티켓이 " + n + "개 이상 남으신 분들입니다.\n" + names.join(", ");
       }
     } else if (commands.length == 3 && !isNumber(commands[1]) && isUnsigned(commands[2])) {
@@ -1156,14 +1158,45 @@ class _Commands {
       if(n < 0 || n > MAX_COUNTS) {
         return "명령어 오입력\n- /소환 보스명 잔여횟수(0~8)";
       }
-      var names = Users.userList.filter(u => (MAX_COUNTS - u.counts[boss.type]) >= n).map(u => u.name + "(" + (MAX_COUNTS - u.counts[boss.type]) + ")");
-      if (names.length < 1) {
+      var list = Users.userList.filter(u => (MAX_COUNTS - u.counts[boss.type]) >= n);
+      if (list.length < 1) {
         return boss.type + " 잔여 횟수가 " + n + "개 이상 남으신 분이 없습니다.";
       } else {
+        list.sort(function(a,b){return a.counts[boss.type] - b.counts[boss.type];});
+        var names = list.map(u => u.name + "(" + (MAX_COUNTS - u.counts[boss.type]) + ")")
         return boss.type + " 잔여 횟수가 " + n + "회 이상 남으신 분들입니다.\n" + names.join(", ");
       }
     } else {
       return "명령어 오입력\n- /소환(ㅅㅎ) 잔여티켓수(0~9)\n- /소환 보스명 잔여횟수(0~8)";
+    }
+  }
+
+  printTicketsAndCounts(commands: Array<string>): string {
+    if(commands.length == 1) {
+      if(Users.userList.length < 1) {
+        return "유저가 없습니다.";
+      }
+      var list = Users.userList;
+      list.sort(function(a,b){return b.tickets - a.tickets;});
+      var str = list.map(u => u.name + ": 티켓 " + u.tickets + ", " + bossTypeMap(x => x + " " + u.counts[x]).join(", ")).join("\n");
+      return "잔여 티켓 및 보스 참여 횟수 현황\n" + str;
+    } else if (commands.length == 2 && !isNumber(commands[1])) {
+      if(Users.userList.length < 1) {
+        return "유저가 없습니다.";
+      }
+      if (!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      var list = Users.userList;
+      list.sort(function(a,b){return a.counts[boss.type] - b.counts[boss.type]});
+      var str = list.map(u => u.name + ": " + u.counts[boss.type]).join("\n");
+      return boss.type + " 참여 횟수 현황\n" + str;
+    } else {
+      return "명령어 오입력\n- /현황(ㅎㅎ)\n- /현황 보스명"
     }
   }
 
@@ -1525,6 +1558,8 @@ function processCommand(msg: string): string {
     case '/ㅋ':
     case '/컷': return Commands.moveBossLevel(commands); break;
     case '/컷취소': return Commands.revertMoveBossLevel(commands); break;
+    case '/현황':
+    case '/ㅎㅎ': return Commands.printTicketsAndCounts(commands); break;
     case '/ㅇㅁ':
     case '/유물': return Commands.addRelics(commands); break;
     case '/ㅇㅁㅎㅎ':
