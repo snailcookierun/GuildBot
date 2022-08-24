@@ -818,7 +818,11 @@ class _Commands {
         return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 참여 중이지 않습니다.";
       }
       if (user.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) < 1) {
-        return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 대한 참여 기록이 없습니다.";
+        if(!boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
+          // Check if the user is relay user
+        } else {
+          return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 대한 참여 기록이 없습니다.";
+        }
       } else if (user.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) > 1) {
         return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 대한 2개 이상의 참여 기록이 있습니다. 버그이므로 관리자에게 문의하세요.";
       }
@@ -829,7 +833,7 @@ class _Commands {
       var logType = LOG_TYPE.NORMAL;
       // only one relay user can log damage
       // relay log is newly inserted in this function
-      if (boss.relayUsers[boss.curLevel].includes(user)) {
+      if (!boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
         logType = LOG_TYPE.RELAY;
         boss.isRelayLogged = true;
         boss.relayUsers[boss.curLevel] = moveItemToFront(boss.relayUsers[boss.curLevel], user);
@@ -1172,8 +1176,56 @@ class _Commands {
       }
       var str = Object.keys(userLogsDict).map(name => userLogsDict[name].map(l => name + "," + l.boss + "," + l.level + "," + l.damage + "," + l.type).join("\n")).join("\n");
       return "유저,보스,단계,딜량,타입\n" + str;
+    } else if(commands.length == 2 && !isNumber(commands[1])) {
+      if (Users.userList.length < 1) {
+        return "유저가 없습니다.";
+      }
+      if (!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      var userLogsDict: {[id:string]: Array<Log>} = {};
+      Users.userList.map(function(user){
+        var filtered = user.log.filter(l => l.boss == boss.type);
+        if(filtered.length > 0){
+          userLogsDict[user.name]=filtered}
+      });
+      if (Object.keys(userLogsDict).length < 1) {
+        return "출력할 딜로그가 없습니다.";
+      }
+      var str = Object.keys(userLogsDict).map(name => userLogsDict[name].map(l => name + "," + l.boss + "," + l.level + "," + l.damage + "," + l.type).join("\n")).join("\n");
+      return "유저,보스,단계,딜량,타입\n" + str;
+    } else if(commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
+      if (Users.userList.length < 1) {
+        return "유저가 없습니다.";
+      }
+      if (!Bosses.isNameExist(commands[1])) {
+        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      var level = Number(commands[2]);
+      if (!boss.isLevelExist(level)) {
+        return boss.type + " " + level + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
+      }
+      var userLogsDict: {[id:string]: Array<Log>} = {};
+      Users.userList.map(function(user){
+        var filtered = user.log.filter(l => l.boss == boss.type && l.level == level);
+        if(filtered.length > 0){
+          userLogsDict[user.name]=filtered}
+      });
+      if (Object.keys(userLogsDict).length < 1) {
+        return "출력할 딜로그가 없습니다.";
+      }
+      var str = Object.keys(userLogsDict).map(name => userLogsDict[name].map(l => name + "," + l.boss + "," + l.level + "," + l.damage + "," + l.type).join("\n")).join("\n");
+      return "유저,보스,단계,딜량,타입\n" + str;
     } else {
-      return "명령어 오입력\n- /딜로그";
+      return "명령어 오입력\n- /딜로그\n- /딜로그 보스명\n- /딜로그 보스명 단계";
     }
   }
 
@@ -1200,8 +1252,10 @@ class _Commands {
                 return Math.max.apply(null,damages) + "";
               } else if (matchedLog.some(l => l.type == LOG_TYPE.LAST)) {
                 return LOG_TYPE.LAST;
-              } else {
+              } else if (matchedLog.some(l => l.type == LOG_TYPE.RELAY)) {
                 return LOG_TYPE.RELAY;
+              } else {
+                return LOG_TYPE.NONE;
               }
             } else {
               return "미참";
