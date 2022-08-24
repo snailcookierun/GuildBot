@@ -541,6 +541,17 @@ class _Commands {
     }
   }
 
+  printUserList(commands: Array<string>): string {
+    if (commands.length == 1) {
+      if (Users.userList.length < 1) {
+        return "유저가 없습니다\n- /유저추가 이름"
+      }
+      return Users.printUserList();
+    } else {
+      return "명령어 오입력\n- /유저리스트"
+    }
+  }
+
   printLogs(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
       if (Bosses.isNameExist(commands[1])) {
@@ -1416,6 +1427,7 @@ function processCommand(msg: string): string {
     case '/이름수정':
     case '/이름변경': return Commands.changeUserName(commands); break;
     case '/유저삭제': return Commands.removeUser(commands); break;
+    case '/유저리스트': return Commands.printUserList(commands); break;
     case '/티켓충전': return Commands.addTickets(commands); break;
     case '/시즌시작': return Commands.resetSeason(commands); break;
     case '/ㅎㅇ':
