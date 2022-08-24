@@ -571,6 +571,9 @@ class _Commands {
 
   addTickets(commands: Array<string>): string {
     if (commands.length == 1) {
+      if (Users.userList.length < 1) {
+        return "유저가 없습니다\n- /유저추가 이름"
+      }
       var addedTickets = TICKETS_PER_DAY;
       var maxedTicketUsers = Users.userList.filter(x => (x.tickets + addedTickets) > MAX_TICKETS);
       Users.userList.forEach(x => x.tickets = (x.tickets + addedTickets) > MAX_TICKETS ? MAX_TICKETS : (x.tickets + addedTickets));  //Limit the number of tickets up to MAX_TICKETS
