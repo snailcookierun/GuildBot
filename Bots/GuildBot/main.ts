@@ -796,7 +796,7 @@ class _Commands {
       var logType = LOG_TYPE.NORMAL;
       // only one relay user can log damage
       // relay log is newly inserted in this function
-      if (!boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
+      if (numFoundedLogs < 1 && !boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
         logType = LOG_TYPE.RELAY;
         boss.isRelayLogged = true;
         boss.relayUsers[boss.curLevel] = moveItemToFront(boss.relayUsers[boss.curLevel], user);
@@ -846,7 +846,8 @@ class _Commands {
       var logType = LOG_TYPE.NORMAL;
       // only one relay user can log damage
       // relay log is newly inserted in this function
-      if (!boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
+      var numFoundedLogs = user.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE);
+      if (numFoundedLogs < 1 && !boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
         logType = LOG_TYPE.RELAY;
         boss.isRelayLogged = true;
         boss.relayUsers[boss.curLevel] = moveItemToFront(boss.relayUsers[boss.curLevel], user);
