@@ -761,7 +761,7 @@ class _Commands {
       } else if (numFoundedLogs < 1) {
         //Check if the user is relay user
         if (Object.keys(Bosses.bossList).some(x => (!(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user)))) {
-          var bosses = Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user));
+          var bosses = Object.keys(Bosses.bossList).filter(x => !(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user));
           if (bosses.length > 1) {
             return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량";
           } else {
