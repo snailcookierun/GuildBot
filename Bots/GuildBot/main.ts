@@ -695,7 +695,12 @@ class _Commands {
       if (numFoundedLogs < 1) {
         return commands[1] + " 님은 현재 참여 중인 보스 기록이 없습니다.";
       }
-      var userLogs: Log[] = bossTypeMap(x => user.findLogsIfUnique(x, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE));
+      var userLogs: Log[] = Object.keys(Bosses.bossList).filter(
+        x => user.numFoundLogs(Bosses.bossList[x].type,Bosses.bossList[x].curLevel,0,LOG_TYPE.NONE) == 1).map(
+          x => user.findLogsIfUnique(Bosses.bossList[x].type, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE));
+      if (userLogs.length < 1) {
+        return commands[1] + " 님은 현재 참여 중인 보스 기록이 없습니다.";
+      }
       var boss = Bosses.bossList[userLogs[0].boss];
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
@@ -763,10 +768,15 @@ class _Commands {
             var boss = Bosses.bossList[bosses[0]];
           }
         } else {
-          return commands[1] + " 님은 현재 참여 중인 보스 기록이 없습니다.\n- /참여 이름 보스명";
+          return commands[1] + " 님은 현재 참여 중인 보스 기록이 없습니다.";
         }
       } else { //numFoundedLogs == 1
-        var userLogs: Log[] = bossTypeMap(x => user.findLogsIfUnique(x, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE));
+        var userLogs: Log[] = Object.keys(Bosses.bossList).filter(
+          x => user.numFoundLogs(Bosses.bossList[x].type,Bosses.bossList[x].curLevel,0,LOG_TYPE.NONE) == 1).map(
+            x => user.findLogsIfUnique(Bosses.bossList[x].type, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE));
+          if (userLogs.length < 1) {
+            return commands[1] + " 님은 현재 참여 중인 보스 기록이 없습니다.";
+          }
         var boss = Bosses.bossList[userLogs[0].boss];
       }
 
@@ -963,7 +973,7 @@ class _Commands {
         }
       }
 
-      boss.curUsers.map(u => u.findLogsIfUnique(boss.type, boss.curLevel, 0, LOG_TYPE.NONE)).forEach(l => l.type = LOG_TYPE.LAST);
+      boss.curUsers.filter(u => u.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) == 1).map(u => u.findLogsIfUnique(boss.type, boss.curLevel, 0, LOG_TYPE.NONE)).forEach(l => l.type = LOG_TYPE.LAST);
 
       if (boss.curUsers.length < 1 && boss.loggedUsers.length < 1 &&  boss.relayUsers[boss.curLevel].length > 0 && boss.isRelayLogged == false) {
         boss.relayUsers[boss.curLevel].forEach(u => u.log.push(new Log(boss.type, boss.curLevel, 0, LOG_TYPE.RELAY)));
@@ -1001,7 +1011,7 @@ class _Commands {
       var prevLoggedUsers = Users.userList.filter(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel-1)) && (l.damage > 0)).length > 0);
       var prevCurUsers = Users.userList.filter(u => u.numFoundLogs(boss.type, boss.curLevel-1, 0, LOG_TYPE.LAST) == 1);
 
-      prevCurUsers.map(u => u.findLogsIfUnique(boss.type, boss.curLevel-1, 0, LOG_TYPE.LAST)).forEach(l => l.type = LOG_TYPE.NONE); //revert curUsers logs
+      prevCurUsers.filter(u => u.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) == 1).map(u => u.findLogsIfUnique(boss.type, boss.curLevel-1, 0, LOG_TYPE.LAST)).forEach(l => l.type = LOG_TYPE.NONE); //revert curUsers logs
       if(boss.relayUsers[boss.curLevel] == boss.relayUsers[boss.curLevel-1]) { //revert relayUsers logs if same
         boss.relayUsers[boss.curLevel-1].filter(u => u.numFoundLogs(boss.type, boss.curLevel-1, 0, LOG_TYPE.RELAY) == 1).forEach(u => u.log = removeItemOnceIfExist(u.log, u.findLogsIfUnique(boss.type, boss.curLevel-1, 0, LOG_TYPE.RELAY)));
       }
