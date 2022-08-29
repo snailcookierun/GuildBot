@@ -764,9 +764,6 @@ class _Commands {
           var bosses = Object.keys(Bosses.bossList).filter(x => !(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user));
           if (bosses.length > 1) {
             return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량";
-          } else if (unionArray(bosses, Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].curUsers.includes(user))).length > 1) {
-            // If the user participates to another boss
-            return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량";
           } else {
             var boss = Bosses.bossList[bosses[0]];
           }
@@ -774,6 +771,12 @@ class _Commands {
           return commands[1] + " 님은 현재 참여 중인 보스 기록이 없습니다.";
         }
       } else { //numFoundedLogs == 1
+        if (Object.keys(Bosses.bossList).some(x => (!(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user)))) {
+          var b = Object.keys(Bosses.bossList).filter(x => !(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user));
+          if (b.length >= 1) {
+            return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량";
+          }
+        }        
         var userLogs: Log[] = Object.keys(Bosses.bossList).filter(
           x => user.numFoundLogs(Bosses.bossList[x].type,Bosses.bossList[x].curLevel,0,LOG_TYPE.NONE) == 1).map(
             x => user.findLogsIfUnique(Bosses.bossList[x].type, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE));
