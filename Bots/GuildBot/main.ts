@@ -655,8 +655,11 @@ class _Commands {
           if (commands[3] == LOG_TYPE.DUPLICATE) {
             addStr = "\n중복 참여입니다.";
             isDuplicateAllowed = true;
+          } else if (commands[3] == LOG_TYPE.RELAY) {
+            addStr = "\n이어하기 참여입니다.";
+            isDuplicateAllowed = true;
           } else {
-            return "명령어 오입력\n- /참여(ㅊㅇ) 이름 보스명";
+            return "명령어 오입력\n- /참여(ㅊㅇ) 이름 보스명\n- /참여 이름 보스명 [이달/중복]";
           }
         } else if (Number(commands[3]) == boss.curLevel) {
           addStr = "\n이제 단계를 입력하지 않아도 됩니다.";
@@ -665,17 +668,17 @@ class _Commands {
         }
       }
       if (!isDuplicateAllowed && boss.loggedUsers.includes(user) && !(boss.isRelayLogged && (boss.relayUsers[boss.curLevel])[0] == user)) {
-        return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 참여한 기록이 있습니다.";
+        return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 참여한 기록이 있습니다.\n- /참여 이름 보스명 [이달/중복]";
       }
-      if (boss.loggedUsers.includes(user) && boss.isRelayLogged && (boss.relayUsers[boss.curLevel])[0] == user) {
-        addStr = "\n이어달리기 참여입니다.";
+      if (!isDuplicateAllowed && boss.loggedUsers.includes(user) && boss.isRelayLogged && (boss.relayUsers[boss.curLevel])[0] == user) {
+        return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 이어하기로 참여하셨습니다.\n- /참여 이름 보스명 [이달/중복]";
       }
       user.addParticipate(boss.type, boss.curLevel, logType);
       boss.addParticipate(user);
       Bosses.increaseTotalCounts();
       return user.name + " 님이 " + boss.type + " " + boss.curLevel + "단계에 참여합니다.\n토핑!! 덱!!! 보스!!!! 연모!!!!!" + addStr;
     } else {
-      return "명령어 오입력\n- /참여(ㅊㅇ) 이름 보스명";
+      return "명령어 오입력\n- /참여(ㅊㅇ) 이름 보스명\n- /참여 이름 보스명 [이달/중복]";
     }
   }
 
@@ -750,6 +753,9 @@ class _Commands {
     if (commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
       if(Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      if (Bosses.isNameExist(commands[1])) {
+        return "보스명이 아닌 닉네임을 입력해주세요.\n- /딜 이름 딜량";
       }
       if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
