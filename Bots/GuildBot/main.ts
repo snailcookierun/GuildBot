@@ -1015,7 +1015,7 @@ class _Commands {
       var prevLoggedUsers = Users.userList.filter(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel-1)) && (l.damage > 0)).length > 0);
       var prevCurUsers = Users.userList.filter(u => u.numFoundLogs(boss.type, boss.curLevel-1, 0, LOG_TYPE.LAST) == 1);
 
-      prevCurUsers.filter(u => u.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) == 1).map(u => u.findLogsIfUnique(boss.type, boss.curLevel-1, 0, LOG_TYPE.LAST)).forEach(l => l.type = LOG_TYPE.NONE); //revert curUsers logs
+      prevCurUsers.filter(u => u.numFoundLogs(boss.type, boss.curLevel-1, 0, LOG_TYPE.NONE) == 1).map(u => u.findLogsIfUnique(boss.type, boss.curLevel-1, 0, LOG_TYPE.LAST)).forEach(l => l.type = LOG_TYPE.NONE); //revert curUsers logs
       if(boss.relayUsers[boss.curLevel] == boss.relayUsers[boss.curLevel-1]) { //revert relayUsers logs if same
         boss.relayUsers[boss.curLevel-1].filter(u => u.numFoundLogs(boss.type, boss.curLevel-1, 0, LOG_TYPE.RELAY) == 1).forEach(u => u.log = removeItemOnceIfExist(u.log, u.findLogsIfUnique(boss.type, boss.curLevel-1, 0, LOG_TYPE.RELAY)));
       }
