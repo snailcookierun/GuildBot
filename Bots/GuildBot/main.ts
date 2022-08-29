@@ -913,6 +913,8 @@ class _Commands {
         var logs = user.log.filter(x => (x.type != LOG_TYPE.NONE) && (x.type != LOG_TYPE.LAST));
         if (logs.length < 1) {
           return user.name + " 님은 딜량 기록이 없습니다.";
+        } else if (logs.length > 1) {
+          return user.name + " 님의 딜량 기록이 여러 개 있습니다.\n- /딜취소 이름 보스명"
         }
         var log = logs[logs.length - 1];
         var boss = Bosses.bossList[log.boss];
@@ -1011,7 +1013,7 @@ class _Commands {
       if (boss.curLevel <= 1) {
         return "1단계 이하는 '/컷취소'가 불가능합니다.";
       }
-      if (boss.curUsers.length > 1 || boss.loggedUsers.length > 1) {
+      if (boss.curUsers.length > 0 || boss.loggedUsers.length > 0) {
         return "현재 참여 중이거나 딜량 입력을 한 유저가 있어 '/컷취소'가 불가능합니다.";
       }
 
