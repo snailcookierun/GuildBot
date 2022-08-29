@@ -764,6 +764,9 @@ class _Commands {
           var bosses = Object.keys(Bosses.bossList).filter(x => !(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user));
           if (bosses.length > 1) {
             return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량";
+          } else if (unionArray(bosses, Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].curUsers.includes(user))).length > 1) {
+            // If the user participates to another boss
+            return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량";
           } else {
             var boss = Bosses.bossList[bosses[0]];
           }
