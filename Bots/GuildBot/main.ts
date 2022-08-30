@@ -157,7 +157,7 @@ class User {
   }
 
   revertParticipate(bossType: BOSS_TYPE, curLevel: number) {
-    if (this.numFoundLogs(bossType, curLevel, 0, LOG_TYPE.NONE) == 1) {
+    if (this.numFoundLogs(bossType, curLevel, 0, LOG_TYPE.NONE) > 0) {
       this.log = removeItemOnceIfExist(this.log, this.findLogsIfUnique(bossType, curLevel, 0, LOG_TYPE.NONE));
     }
     this.tickets += 1;
@@ -165,7 +165,7 @@ class User {
   }
 
   addDamage(bossType: BOSS_TYPE, curLevel: number, newDamage: number, newLogType: LOG_TYPE) {
-    if (this.numFoundLogs(bossType, curLevel, 0, LOG_TYPE.NONE) == 1) {
+    if (this.numFoundLogs(bossType, curLevel, 0, LOG_TYPE.NONE) > 0) {
       var foundLog = this.findLogsIfUnique(bossType, curLevel, 0, LOG_TYPE.NONE);
       foundLog.damage = newDamage;
       foundLog.type = newLogType;
@@ -173,14 +173,14 @@ class User {
   }
 
   changeDamage(bossType: BOSS_TYPE, curLevel: number, damage: number, logType: LOG_TYPE, newDamage: number) {
-    if (this.numFoundLogs(bossType, curLevel, damage, logType) == 1) {
+    if (this.numFoundLogs(bossType, curLevel, damage, logType) > 0) {
       var foundLog = this.findLogsIfUnique(bossType, curLevel, damage, logType);
       foundLog.damage = newDamage;
     }
   }
 
   revertDamage(bossType: BOSS_TYPE, curLevel: number, damage: number, logType: LOG_TYPE) {
-    if (this.numFoundLogs(bossType, curLevel, damage, logType) == 1) {
+    if (this.numFoundLogs(bossType, curLevel, damage, logType) > 0) {
       var foundLog = this.findLogsIfUnique(bossType, curLevel, damage, logType);
       foundLog.damage = 0;
       foundLog.type = LOG_TYPE.NONE;
@@ -710,9 +710,6 @@ class _Commands {
       var boss = Bosses.bossList[userLogs[0].boss];
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
-      }
-      if (boss.loggedUsers.includes(user)) {
-        return "'/딜오타' 입력 후 사용해주세요.";
       }
       if (boss.curUsers.includes(user)) {
         user.revertParticipate(boss.type, boss.curLevel);
