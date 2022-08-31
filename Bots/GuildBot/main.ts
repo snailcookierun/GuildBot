@@ -150,8 +150,8 @@ class User {
     return findLogs[findLogs.length - 1];
   }
 
-  addParticipate(bossType: BOSS_TYPE, curLevel: number, logType: LOG_TYPE) {
-    this.log.push(new Log(bossType, curLevel, 0, logType));
+  addParticipate(bossType: BOSS_TYPE, curLevel: number) {
+    this.log.push(new Log(bossType, curLevel, 0, LOG_TYPE.NONE));
     this.tickets -= 1;
     this.counts[bossType] += 1;
   }
@@ -395,7 +395,7 @@ class _Bosses {
   }
 
   isNameExist(str: string): boolean {
-    return rBossList.hasOwnProperty(str);
+    return this.rBossList.hasOwnProperty(str);
   }
 
   find(str: string): Boss {
@@ -403,7 +403,7 @@ class _Bosses {
   }
 
   printNames(): string {
-    return Object.keys(rBossList).join(" ");
+    return Object.keys(this.bossList).map(x => "- " + this.bossList[x].type + ": " + this.bossList[x].name.join(" ")).join("\n");
   }
 
   increaseTotalCounts() {
@@ -473,7 +473,7 @@ class _Commands {
       }
       var u = Users.find(commands[1]);
       if (!Bosses.isNameExist(commands[2])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[2]);
       var counts = Number(commands[3]);
@@ -618,7 +618,7 @@ class _Commands {
       return "토벌 진행 횟수: " + Bosses.totalCounts + "/" + MAX_TOTAL_COUNTS + "\n" + arr.join(", ");
     } else if (commands.length == 2 && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 0) {
@@ -636,7 +636,7 @@ class _Commands {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       if (!Bosses.isNameExist(commands[2])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var user = Users.find(commands[1]);
       var boss = Bosses.find(commands[2]);
@@ -644,7 +644,6 @@ class _Commands {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";;
       }
       var addStr = "";
-      var logType = LOG_TYPE.NONE;
       if (!user.isPossibleToParticipate(boss.type)) {
         return user.name + " 님은 티켓이 부족하거나 참여 횟수를 모두 사용하셨습니다.\n" + user.printTicketsAndCounts();
       }
@@ -675,7 +674,7 @@ class _Commands {
       if (!isDuplicateAllowed && boss.loggedUsers.includes(user) && boss.isRelayLogged && (boss.relayUsers[boss.curLevel])[0] == user) {
         return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 이어하기로 참여하셨습니다.\n- /참여 이름 보스명 [이달/중복]";
       }
-      user.addParticipate(boss.type, boss.curLevel, logType);
+      user.addParticipate(boss.type, boss.curLevel);
       boss.addParticipate(user);
       Bosses.increaseTotalCounts();
       return user.name + " 님이 " + boss.type + " " + boss.curLevel + "단계에 참여합니다.\n토핑!! 덱!!! 보스!!!! 연모!!!!!" + addStr;
@@ -707,7 +706,7 @@ class _Commands {
       } else if (commands.length == 3 && !isNumber(commands[2])) {
         // If boss name is specified
         if (!Bosses.isNameExist(commands[2])) {
-          return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+          return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
         }
         var boss = Bosses.find(commands[2]);
       } else {
@@ -822,7 +821,7 @@ class _Commands {
       }
       var user = Users.find(commands[1]);
       if (!Bosses.isNameExist(commands[2])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[2]);
       if (boss.curLevel <= 0) {
@@ -886,7 +885,7 @@ class _Commands {
       }
       if (commands.length == 3) {
         if (!Bosses.isNameExist(commands[2])) {
-          return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+          return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
         }
         var boss = Bosses.find(commands[2]);
         if (boss.curLevel <= 0) {
@@ -965,7 +964,7 @@ class _Commands {
   moveBossLevel(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 0) {
@@ -1005,7 +1004,7 @@ class _Commands {
   revertMoveBossLevel(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 1) {
@@ -1048,7 +1047,7 @@ class _Commands {
   setBossLevel(commands: Array<string>): string {
     if (commands.length == 3 && !isNumber(commands[1]) && isNumber(commands[2])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 0) {
@@ -1078,7 +1077,7 @@ class _Commands {
       return arr.join("\n");
     } else if (commands.length == 2 && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 0) {
@@ -1093,7 +1092,7 @@ class _Commands {
   calculateRemained(commands: Array<string>): string {
     if ((commands.length == 2 || commands.length == 3) && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.minDamage <= 0 || boss.maxDamage <= 0 || boss.minDamage >= boss.maxDamage) {
@@ -1129,7 +1128,7 @@ class _Commands {
   printCurAndLoggedUsers(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 0) {
@@ -1165,7 +1164,7 @@ class _Commands {
       }
     } else if (commands.length == 3 && !isNumber(commands[1]) && isUnsigned(commands[2])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 0) {
@@ -1202,7 +1201,7 @@ class _Commands {
         return "유저가 없습니다.";
       }
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 0) {
@@ -1234,7 +1233,7 @@ class _Commands {
         return "유저가 없습니다.";
       }
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 0) {
@@ -1257,7 +1256,7 @@ class _Commands {
         return "유저가 없습니다.";
       }
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 0) {
@@ -1287,7 +1286,7 @@ class _Commands {
   printDamageSheet(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 0) {
@@ -1352,7 +1351,7 @@ class _Commands {
         return user.name + " 님의 딜량 기록이 없습니다.";
       }
       if (!Bosses.isNameExist(commands[2])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[2]);
       var str = user.log.filter(l => (l.boss == boss.type)).map(l => l.level + "/" + l.damage + "/" + l.type).join(", ");
@@ -1389,7 +1388,7 @@ class _Commands {
         return user.name + " 님의 딜량 기록이 없습니다.";
       }
       if (!Bosses.isNameExist(commands[2])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[2]);
       if (user.log.filter(l => (l.boss == boss.type) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).length < 1) {
@@ -1405,13 +1404,13 @@ class _Commands {
   printBossHp(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       return boss.printHps();
     } else if (commands.length == 3 && !isNumber(commands[1]) && isNumber(commands[2])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       var level = Number(commands[2]);
@@ -1427,7 +1426,7 @@ class _Commands {
   addBossHp(commands: Array<string>): string {
     if (commands.length >= 3 && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var newHps = commands.slice(2);
       if (!newHps.every(isNumber)) {
@@ -1448,7 +1447,7 @@ class _Commands {
   replaceBossHp(commands: Array<string>): string {
     if (commands.length == 4 && !isNumber(commands[1]) && isNatural(commands[2]) && isNatural(commands[3])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       var level = Number(commands[2]);
@@ -1466,7 +1465,7 @@ class _Commands {
   replaceMaxDamage(commands: Array<string>): string {
     if (commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       var newMaxDamage = Number(commands[2]);
@@ -1483,7 +1482,7 @@ class _Commands {
   replaceMinDamage(commands: Array<string>): string {
     if (commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return "없는 보스명입니다.\n - 보스명: " + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       var newMinDamage = Number(commands[2]);
