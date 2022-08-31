@@ -778,9 +778,11 @@ class _Commands {
         }
       } else { //numFoundedLogs == 1
         if (Object.keys(Bosses.bossList).some(x => (!(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user)))) {
-          var b = Object.keys(Bosses.bossList).filter(x => !(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user));
-          if (b.length >= 1) {
-            return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량";
+          var relayBoss = Object.keys(Bosses.bossList).filter(x => !(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user));
+          var participateBoss = Object.keys(Bosses.bossList).filter(x => user.numFoundLogs(Bosses.bossList[x].type, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE) >= 1);
+          var b = unionArray(relayBoss, participateBoss);
+          if (b.length > 1) {
+            return commands[1] + " 님은 마무리 기록이 있어 보스를 특정해야 합니다.\n- /딜 이름 보스명 딜량";
           }
         }        
         var userLogs: Log[] = Object.keys(Bosses.bossList).filter(
@@ -1026,7 +1028,7 @@ class _Commands {
       var prevLoggedUsers = Users.userList.filter(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel-1)) && (l.damage > 0)).length > 0);
       var prevCurUsers = Users.userList.filter(u => u.numFoundLogs(boss.type, boss.curLevel-1, 0, LOG_TYPE.LAST) == 1);
 
-      prevCurUsers.filter(u => u.numFoundLogs(boss.type, boss.curLevel-1, 0, LOG_TYPE.NONE) == 1).map(u => u.findLogsIfUnique(boss.type, boss.curLevel-1, 0, LOG_TYPE.LAST)).forEach(l => l.type = LOG_TYPE.NONE); //revert curUsers logs
+      prevCurUsers.map(u => u.findLogsIfUnique(boss.type, boss.curLevel-1, 0, LOG_TYPE.LAST)).forEach(l => l.type = LOG_TYPE.NONE); //revert curUsers logs
       if(boss.relayUsers[boss.curLevel] == boss.relayUsers[boss.curLevel-1]) { //revert relayUsers logs if same
         boss.relayUsers[boss.curLevel-1].filter(u => u.numFoundLogs(boss.type, boss.curLevel-1, 0, LOG_TYPE.RELAY) == 1).forEach(u => u.log = removeItemOnceIfExist(u.log, u.findLogsIfUnique(boss.type, boss.curLevel-1, 0, LOG_TYPE.RELAY)));
       }
