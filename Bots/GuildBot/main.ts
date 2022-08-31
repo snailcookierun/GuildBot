@@ -600,10 +600,9 @@ class _Commands {
       Users.userList.forEach(x => x.tickets = TICKETS_PER_DAY);
       Users.userList.forEach(x => x.relics = 0);
       Users.userList.forEach(x => x.resetCountsAndLogs());
+      Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].relayUsers = {});
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].setLevel(1));
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].counts = 0);
-      Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].relayUsers = {});
-      Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].relayUsers[1] = []);
       return "새로운 시즌을 시작합니다.\n토벌 횟수: " + Bosses.totalCounts + "/" + MAX_TOTAL_COUNTS;
     } else {
       return "명령어 오입력\n- /시즌시작"
@@ -769,7 +768,7 @@ class _Commands {
         if (Object.keys(Bosses.bossList).some(x => (!(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user)))) {
           var bosses = Object.keys(Bosses.bossList).filter(x => !(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user));
           if (bosses.length > 1) {
-            return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량";
+            return commands[1] + " 님은 현재 여러 보스에 컷 기록이 있습니다. (컷: " + bosses.join(" ") + ")\n- /딜 이름 보스명 딜량";
           } else {
             var boss = Bosses.bossList[bosses[0]];
           }
@@ -782,7 +781,7 @@ class _Commands {
           var participateBoss = Object.keys(Bosses.bossList).filter(x => user.numFoundLogs(Bosses.bossList[x].type, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE) >= 1);
           var b = unionArray(relayBoss, participateBoss);
           if (b.length > 1) {
-            return commands[1] + " 님은 마무리 기록이 있어 보스를 특정해야 합니다.\n- /딜 이름 보스명 딜량";
+            return commands[1] + " 님은 컷 기록이 있어 보스를 특정해야 합니다. (컷: " + relayBoss.join(" ") + ", 참여: " + participateBoss.join(" ") + ")\n- /딜 이름 보스명 딜량";
           }
         }        
         var userLogs: Log[] = Object.keys(Bosses.bossList).filter(
