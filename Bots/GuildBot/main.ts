@@ -208,7 +208,7 @@ class _Users {
   }
 
   printUserList(): string {
-    return "유저 리스트\n" + this.userList.map(x => x.name).join(", ");
+    return "유저 리스트\n" + this.userList.map(x => x.name).join(" ");
   }
 
   /* isNameValid: check name is valid */
