@@ -713,7 +713,7 @@ class _Commands {
         return "명령어 오입력\n- /오타(ㅇㅌ) 이름";
       }
 
-      // Check whether the boss is validate
+      // Check whether the boss is valid
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
@@ -739,7 +739,7 @@ class _Commands {
   }
 
   addDamage(commands: Array<string>): string {
-    if (commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
+    if ((commands.length == 3 || commands.length == 4 ) && !isNumber(commands[1])) {
       if (Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
@@ -750,56 +750,59 @@ class _Commands {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
-      var numFoundedLogs: number = bossTypeMap(x => user.numFoundLogs(x, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE)).reduce((a, b) => a + b, 0);
-      if (numFoundedLogs > 1) {
-        return commands[1] + " 님은 현재 여러 보스에 참여 중입니다.\n- /딜 이름 보스명 딜량";
-      } else if (numFoundedLogs < 1) {
-        //Check if the user is relay user
-        if (Object.keys(Bosses.bossList).some(x => (!(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user)))) {
-          var bosses = Object.keys(Bosses.bossList).filter(x => !(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user));
-          if (bosses.length > 1) {
-            return commands[1] + " 님은 현재 여러 보스에 컷 기록이 있습니다. (컷: " + bosses.join(" ") + ")\n- /딜 이름 보스명 딜량";
+
+      // Find boss
+      if (commands.length == 3 && isNatural(commands[2])) {
+        // Find bosses which the user participated with boss.curUser
+        var participatedBosses: Boss[] = Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].curUsers.includes(user)).map(x => Bosses.bossList[x]);
+        // Find bosses which the user is in relay mode with boss.relayLogged && boss.relayUser
+        var relayBosses: Boss[] = Object.keys(Bosses.bossList).filter(x => !Bosses.bossList[x].isRelayLogged 
+              && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user)).map(x => Bosses.bossList[x]);
+        var bossesUnion = unionArray(participatedBosses, relayBosses);
+
+        if (bossesUnion.length > 1) {
+          if (relayBosses.length < 1) {
+            return commands[1] + " 님은 현재 여러 보스에 참여 중입니다. (참여: " + participatedBosses.map(x => x.type).join(" ") + ")\n- /딜 이름 보스명 딜량";
+          } else if (participatedBosses.length < 1) {
+            return commands[1] + " 님은 현재 여러 보스에 컷 기록이 있습니다. (컷: " + relayBosses.map(x => x.type).join(" ") + ")\n- /딜 이름 보스명 딜량";
           } else {
-            var boss = Bosses.bossList[bosses[0]];
+            return commands[1] + " 님은 현재 여러 보스에 참여와 컷 기록이 있습니다. (참여: " + participatedBosses.map(x => x.type).join(" ")
+                               + ", 컷: " + relayBosses.map(x => x.type).join(" ") + ")\n- /딜 이름 보스명 딜량";
           }
-        } else {
-          return commands[1] + " 님은 현재 참여 중인 보스 기록이 없습니다.";
+        } else if (bossesUnion.length < 1) {
+          return commands[1] + " 님은 현재 참여 중인 보스가 없습니다.";
         }
-      } else { //numFoundedLogs == 1
-        if (Object.keys(Bosses.bossList).some(x => (!(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user)))) {
-          var relayBoss = Object.keys(Bosses.bossList).filter(x => !(Bosses.bossList[x].isRelayLogged) && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user));
-          var participateBoss = Object.keys(Bosses.bossList).filter(x => user.numFoundLogs(Bosses.bossList[x].type, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE) >= 1);
-          var b = unionArray(relayBoss, participateBoss);
-          if (b.length > 1) {
-            return commands[1] + " 님은 컷 기록이 있어 보스를 특정해야 합니다. (컷: " + relayBoss.join(" ") + ", 참여: " + participateBoss.join(" ") + ")\n- /딜 이름 보스명 딜량";
-          }
+        var boss = bossesUnion[0];
+        var damage = Number(commands[2]);
+      } else if (commands.length == 4 && !isNumber(commands[2]) && isNatural(commands[3])) {
+        // If boss name is specified
+        if (!Bosses.isNameExist(commands[2])) {
+          return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
         }
-        var userLogs: Log[] = Object.keys(Bosses.bossList).filter(
-          x => user.numFoundLogs(Bosses.bossList[x].type, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE) == 1).map(
-            x => user.findLogsIfUnique(Bosses.bossList[x].type, Bosses.bossList[x].curLevel, 0, LOG_TYPE.NONE));
-        if (userLogs.length < 1) {
-          return commands[1] + " 님은 현재 참여 중인 보스 기록이 없습니다.";
-        }
-        var boss = Bosses.bossList[userLogs[0].boss];
+        var boss = Bosses.find(commands[2]);
+        var damage = Number(commands[3]);
+      } else {
+        return "명령어 오입력\n- /딜량(딜, ㄷㄹ, ㄷ) 이름 딜량\n- /딜 이름 보스명 딜량";
       }
 
+      // Check whether the boss is valid
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
       if (!boss.isLevelExist(boss.curLevel)) {
         return boss.type + " " + boss.curLevel + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
       }
-      if (!(boss.curUsers.includes(user) || boss.relayUsers[boss.curLevel].includes(user))) {
-        return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 참여 중이지 않습니다.";
+      if (!boss.curUsers.includes(user) && !(!boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user))) {
+        return commands[1] + " 님은 " + boss.type + " " + boss.curLevel + "단계에 참여 중이지 않거나 컷 기록이 없습니다.";
       }
       if (boss.getRemained() + 2 <= Number(commands[2])) {
         return "입력한 딜량(" + commands[2] + "만)이 현재 잔여 체력(" + boss.getRemained() + "만)보다 큽니다."
       }
 
       var logType = LOG_TYPE.NORMAL;
-      // only one relay user can log damage
-      // relay log is newly inserted in this function
-      if (numFoundedLogs < 1 && !boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
+      if (!boss.curUsers.includes(user) && !boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
+        // only one relay user can log damage
+        // relay log is newly inserted in this function
         logType = LOG_TYPE.RELAY;
         boss.isRelayLogged = true;
         boss.relayUsers[boss.curLevel] = moveItemToFront(boss.relayUsers[boss.curLevel], user);
@@ -808,58 +811,13 @@ class _Commands {
         logType = LOG_TYPE.DUPLICATE;
       }
 
-      var damage = Number(commands[2]);
-      user.addDamage(boss.type, boss.curLevel, damage, logType);
-      boss.addDamage(user, damage);
-
-      var remained = boss.getRemained();
-      return boss.type + " " + boss.curLevel + "단계 잔여: " + remained + "만";
-
-    } else if (commands.length == 4 && !isNumber(commands[1]) && !isNumber(commands[2]) && isNatural(commands[3])) {
-      if (!Users.isNameExist(commands[1])) {
-        return commands[1] + " 님은 없는 닉네임입니다.";
-      }
-      var user = Users.find(commands[1]);
-      if (!Bosses.isNameExist(commands[2])) {
-        return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
-      }
-      var boss = Bosses.find(commands[2]);
-      if (boss.curLevel <= 0) {
-        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
-      }
-      if (!boss.isLevelExist(boss.curLevel)) {
-        return boss.type + " " + boss.curLevel + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
-      }
-      if (!(boss.curUsers.includes(user) || (!boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)))) {
-        return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 참여 중이지 않습니다.";
-      }
+      // Double-check with user log
       if (user.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) < 1) {
-        if (!boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
-          // Check if the user is relay user
-        } else {
-          return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 대한 참여 기록이 없습니다.";
-        }
+        return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 대한 참여 기록이 없습니다.";
       } else if (user.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) > 1) {
         return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 대한 2개 이상의 참여 기록이 있습니다. 버그이므로 관리자에게 문의하세요.";
       }
-      if (boss.getRemained() + 2 <= Number(commands[3])) {
-        return "입력한 딜량(" + commands[3] + "만)이 현재 잔여 체력(" + boss.getRemained() + "만)보다 큽니다."
-      }
 
-      var logType = LOG_TYPE.NORMAL;
-      // only one relay user can log damage
-      // relay log is newly inserted in this function
-      var numFoundedLogs = user.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE);
-      if (numFoundedLogs < 1 && !boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
-        logType = LOG_TYPE.RELAY;
-        boss.isRelayLogged = true;
-        boss.relayUsers[boss.curLevel] = moveItemToFront(boss.relayUsers[boss.curLevel], user);
-        user.log.push(new Log(boss.type, boss.curLevel, 0, LOG_TYPE.NONE));
-      } else if (boss.loggedUsers.includes(user)) {
-        logType = LOG_TYPE.DUPLICATE;
-      }
-
-      var damage = Number(commands[3]);
       user.addDamage(boss.type, boss.curLevel, damage, logType);
       boss.addDamage(user, damage);
 
@@ -867,7 +825,7 @@ class _Commands {
       return boss.type + " " + boss.curLevel + "단계 잔여: " + remained + "만";
 
     } else {
-      return "명령어 오입력\n- /딜량(딜, ㄷㄹ, ㄷ) 이름 딜량";
+      return "명령어 오입력\n- /딜량(딜, ㄷㄹ, ㄷ) 이름 딜량\n- /딜 이름 보스명 딜량";
     }
   }
 
