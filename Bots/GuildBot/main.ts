@@ -102,6 +102,7 @@ class User {
   name: string;
   tickets: number;
   relics: number;
+  prevRelics: number;
   counts: { [key in BOSS_TYPE]: number };
   log: Array<Log>;
 
@@ -109,6 +110,7 @@ class User {
     this.name = name;
     this.tickets = tickets;
     this.relics = 0;
+    this.prevRelics = 0;
     this.counts = Object.assign({}, ...bossTypeMap((x) => ({ [x]: 0 })));
     this.log = [];
   }
@@ -598,7 +600,7 @@ class _Commands {
     if (commands.length == 1) {
       Bosses.totalCounts = 0;
       Users.userList.forEach(x => x.tickets = TICKETS_PER_DAY);
-      Users.userList.forEach(x => x.relics = 0);
+      Users.userList.forEach(x => x.prevRelics = x.relics);
       Users.userList.forEach(x => x.resetCountsAndLogs());
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].relayUsers = {});
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].setLevel(1));
@@ -1497,7 +1499,11 @@ class _Commands {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
-      user.relics = Number(commands[2]);
+      var newRelics = Number(commands[2]);
+      if (newRelics < user.prevRelics) {
+        return "입력하신 유물 개수(" + newRelics + ")가 이전 시즌의 유물 개수(" + user.prevRelics + ") 보다 작습니다.";
+      }
+      user.relics = newRelics;
       return user.name + " 님의 유물 수가 " + user.relics + "개로 업데이트 되었습니다.";
     } else {
       return "명령어 오입력\n- /유물(ㅇㅁ) 이름 개수"
@@ -1509,7 +1515,7 @@ class _Commands {
       if (Users.userList.length < 1) {
         return "유저가 없습니다.";
       }
-      return "유물 현황\n" + Users.userList.map(u => u.name + ": " + u.relics).join("\n");
+      return "유물 현황\n" + Users.userList.map(u => u.name + ": " + u.relics + " (+" + (u.relics - u.prevRelics) + ")").join("\n");
     } else {
       return "명령어 오입력\n- /유물현황(ㅇㅁㅎㅎ)"
     }
