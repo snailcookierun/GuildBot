@@ -957,7 +957,7 @@ class _Commands {
   }
 
   moveBossLevel(commands: Array<string>): string {
-    if (commands.length == 2 && !isNumber(commands[1])) {
+    if ((commands.length == 2 || commands.length == 3) && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
         return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
@@ -965,6 +965,17 @@ class _Commands {
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
+
+      var isMultiCutAllowed = false;
+      if(commands.length == 3) {
+        if (!isNumber(commands[2]) && commands[2] == "동타") {
+          isMultiCutAllowed = true;
+        } else {
+          return "명령어 오입력\n- /컷(ㅋ) 보스명\n - /컷 보스명 동타";
+        }
+      }
+
+      var addStr = "";
       if (boss.curUsers.length < 1) {
         if (boss.relayUsers[boss.curLevel].length < 1) {
           return "현재 단계에 참여한 인원이 없습니다.";
@@ -973,7 +984,11 @@ class _Commands {
           return "현재 단계에 참여한 인원이 없습니다.";
         }
       } else if (boss.curUsers.length > 1) {
-        return "현재 단계에 참여한 인원이 여러 명 있습니다.\n참여자: " + boss.curUsers.map(x => x.name).join(", ");
+        if (isMultiCutAllowed) {
+          addStr = "컷 참여자: " + boss.curUsers.map(x => x.name).join(", ") + "\n";
+        } else {        
+          return "현재 단계에 딜량을 입력하지 않은 인원이 여러 명 있습니다. (" + boss.curUsers.map(x => x.name).join(", ") +")\n - /컷 보스명 동타";
+        }
       }
 
       boss.curUsers.filter(u => u.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) == 1).map(u => u.findLogsIfUnique(boss.type, boss.curLevel, 0, LOG_TYPE.NONE)).forEach(l => l.type = LOG_TYPE.LAST);
@@ -992,9 +1007,9 @@ class _Commands {
       boss.isRelayLogged = false;
 
       var text = boss.isLevelExist(boss.curLevel) ? "잔여: " + boss.getRemained() + "만" : "'/체력추가'를 통해 체력을 설정해주세요.";
-      return boss.type + " " + boss.curLevel + "단계로 넘어갑니다.\n" + text;
+      return boss.type + " " + boss.curLevel + "단계로 넘어갑니다.\n" + addStr + text;
     } else {
-      return "명령어 오입력\n- /컷(ㅋ) 보스명";
+      return "명령어 오입력\n- /컷(ㅋ) 보스명\n - /컷 보스명 동타";
     }
   }
 
