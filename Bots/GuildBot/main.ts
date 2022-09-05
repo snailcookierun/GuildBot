@@ -971,7 +971,7 @@ class _Commands {
           return "현재 단계에 참여한 인원이 없습니다.";
         }
       } else if (boss.curUsers.length > 1) {
-        return "현재 단계에 참여한 인원이 여러 명 있습니다.\n 참여자: " + boss.curUsers.map(x => x.name).join(" ");
+        return "현재 단계에 참여한 인원이 여러 명 있습니다.\n참여자: " + boss.curUsers.map(x => x.name).join(", ");
       }
 
       boss.curUsers.filter(u => u.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) == 1).map(u => u.findLogsIfUnique(boss.type, boss.curLevel, 0, LOG_TYPE.NONE)).forEach(l => l.type = LOG_TYPE.LAST);
@@ -1171,7 +1171,7 @@ class _Commands {
       }
       var list = Users.userList.filter(u => (MAX_COUNTS - u.counts[boss.type]) >= n);
       if (list.length < 1) {
-        return boss.type + " 잔여 횟수가 " + n + "개 이상 남으신 분이 없습니다.";
+        return boss.type + " 잔여 횟수가 " + n + "회 이상 남으신 분이 없습니다.";
       } else {
         list.sort(function (a, b) { return a.counts[boss.type] - b.counts[boss.type]; });
         var names = list.map(u => u.name + "(" + (MAX_COUNTS - u.counts[boss.type]) + ")")
