@@ -55,11 +55,11 @@ const bossTypeMap = (fn: Function) => (Object.keys(BOSS_TYPE) as (keyof typeof B
   (key, index) => { return fn(BOSS_TYPE[key]); }
 )
 
-const MAX_COUNTS = 8; //max count for each boss
+const MAX_COUNTS = 9; //max count for each boss
 const TICKETS_PER_DAY = 3; //charged tickets per day
 const MAX_TICKETS = 9; //max tickets for each user
 const MAX_TOTAL_COUNTS = 540; // max count for one season
-const MAX_BOSS_COUNTS = 240; // max boss count for one season
+const MAX_BOSS_COUNTS = MAX_COUNTS * 30; // max boss count for one season
 
 /**
  * enum LOG_TYPE - 미입력, 기본, 막타, 이달, 중복
@@ -630,6 +630,27 @@ class _Commands {
     }
   }
 
+  changeTotalCounts(commands: Array<string>): string {
+    if (commands.length == 3 && !isNumber(commands[1]) && isUnsigned(commands[2])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";;
+      }
+      var newCounts = Number(commands[2]);
+      var prevCountsDiff = newCounts - boss.counts;
+      boss.counts = newCounts;
+      Bosses.totalCounts = Bosses.totalCounts + prevCountsDiff;
+
+      var arr = Object.keys(Bosses.bossList).map(x => x + ": " + Bosses.bossList[x].counts + "/" + MAX_BOSS_COUNTS);
+      return "토벌 진행 횟수: " + Bosses.totalCounts + "/" + MAX_TOTAL_COUNTS + "\n" + arr.join(", ");
+    } else {
+      return "명령어 오입력\n- /횟수수정 보스명 보스횟수"
+    }
+  }
+
   addParticipate(commands: Array<string>): string {
     if ((commands.length == 3 || commands.length == 4) && !isNumber(commands[1]) && !isNumber(commands[2])) {
       if (!Users.isNameExist(commands[1])) {
@@ -935,6 +956,8 @@ class _Commands {
         } else {
           return "현재 단계에 참여한 인원이 없습니다.";
         }
+      } else if (boss.curUsers.length > 1) {
+        return "현재 단계에 참여한 인원이 여러 명 있습니다.\n 참여자: " + boss.curUsers.map(x => x.name).join(" ");
       }
 
       boss.curUsers.filter(u => u.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) == 1).map(u => u.findLogsIfUnique(boss.type, boss.curLevel, 0, LOG_TYPE.NONE)).forEach(l => l.type = LOG_TYPE.LAST);
@@ -1502,6 +1525,7 @@ function processCommand(msg: string): string {
     case '/디버그': return Commands.printLogs(commands); break;
     case '/ㅎㅅ':
     case '/횟수': return Commands.printTotalCounts(commands); break;
+    case '/횟수수정': return Commands.changeTotalCounts(commands); break;
     case '/ㅊㅇ':
     case '/참여': return Commands.addParticipate(commands); break;
     case '/ㅇㅌ':
