@@ -652,15 +652,29 @@ class _Commands {
   }
 
   addParticipate(commands: Array<string>): string {
-    if ((commands.length == 3 || commands.length == 4) && !isNumber(commands[1]) && !isNumber(commands[2])) {
+    if ((commands.length == 3 || commands.length == 4) && !isNumber(commands[1])) {
       if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
-      if (!Bosses.isNameExist(commands[2])) {
-        return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
-      }
       var user = Users.find(commands[1]);
-      var boss = Bosses.find(commands[2]);
+
+      if (!isNumber(commands[2])) { // If the input is string
+        if (!Bosses.isNameExist(commands[2])) {
+          return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+        }
+        var boss = Bosses.find(commands[2]);
+      } else if (isNatural(commands[2])) { // If the input is number 
+        var level = Number(commands[2]);
+        var possibleBosses = Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].curLevel == level);
+        if (possibleBosses.length < 1) {
+          return "현재 " + commands[2] + "단계인 보스가 없습니다.\n- /참여(ㅊㅇ) 이름 보스명"
+        } else if (possibleBosses.length > 1){
+          return "현재 " + commands[2] + "단계인 보스가 여럿입니다.\n- /참여(ㅊㅇ) 이름 보스명"
+        }
+        var boss = Bosses.bossList[possibleBosses[0]];
+      } else {
+        return "명령어 오입력\n- /참여(ㅊㅇ) 이름 보스명\n- /참여 이름 보스명 [이달/중복]";
+      }
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";;
       }
