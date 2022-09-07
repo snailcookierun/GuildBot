@@ -21,8 +21,10 @@ const scriptName = "GuildBot";
  * (string) packageName
  */
 
+var skipMsgs = ['/훈련장','/우르힁의보물상자','/쿠폰자동입력','/쿠폰입력','/스킬쿨타임표','/초반용','/수용소'];
+
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
-  if(msg.startsWith('/')) {
+  if(room == "달팽" && !skipMsgs.includes(msg) && (msg.startsWith('/') || msg.startsWith(' /'))) {
     replier.reply(room, main.processCommand(msg));
   }
 }
