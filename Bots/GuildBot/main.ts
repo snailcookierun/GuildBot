@@ -134,6 +134,15 @@ class Log {
  * (array<Log>) log: damage log for each boss/level/damage
  * 
 */
+interface IUser {
+  name: string;
+  tickets: number;
+  relics: number;
+  prevRelics: number;
+  counts: { [key in BOSS_TYPE]: number };
+  log: Array<Log>;  
+}
+
 class User {
   name: string;
   tickets: number;
@@ -142,13 +151,25 @@ class User {
   counts: { [key in BOSS_TYPE]: number };
   log: Array<Log>;
 
-  constructor(name: string, tickets: number) {
-    this.name = name;
-    this.tickets = tickets;
-    this.relics = 0;
-    this.prevRelics = 0;
-    this.counts = Object.assign({}, ...bossTypeMap((x) => ({ [x]: 0 })));
-    this.log = [];
+  constructor(name: string, tickets: number);
+  constructor(obj: IUser); //copy constructor
+
+  constructor(first: string | IUser, tickets?: number) {
+    if(typeof(first) == 'string') {
+      this.name = first;
+      this.tickets = Number(tickets);
+      this.relics = 0;
+      this.prevRelics = 0;
+      this.counts = Object.assign({}, ...bossTypeMap((x) => ({ [x]: 0 })));
+      this.log = [];
+    } else {
+      this.name = first.name;
+      this.tickets = first.tickets;
+      this.relics = first.relics;
+      this.prevRelics = first.prevRelics;
+      this.counts = first.counts;
+      this.log = first.log;
+    }
   }
 
   printTickets(): string {
@@ -453,6 +474,28 @@ class _Bosses {
   }
 }
 const Bosses = new _Bosses(bossList, rBossList);
+
+class _Backup {
+  load(scriptName : string): boolean {
+    var base = "/storage/emulated/0/msgbot/Bots/" + scriptName + "/data/";
+    var [valid, str] = Files.read(base + "userList.json");
+    if(valid) {
+      var userListBackup = JSON.parse(str);
+      Users.userList = userListBackup.map((u:IUser) => new User(u));
+      return true;
+    } else {
+      return false;
+    }
+  }
+  save(scriptName : string): boolean {
+    var base = "/storage/emulated/0/msgbot/Bots/" + scriptName + "/data/";
+    var userListBackup = JSON.stringify(Users.userList);
+    var valid = Files.write(base + "userList.json", userListBackup);
+    return valid;
+  }
+}
+const Backup = new _Backup();
+
 
 class _Commands {
 
@@ -1572,20 +1615,19 @@ class _Commands {
     }
   }
 
-  backupUtils(commands: Array<string>, scriptName: string): string {
-    var base = "/storage/emulated/0/msgbot/Bots/" + scriptName + "/data";
+  doBackup(commands: Array<string>, scriptName: string): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
       if(commands[1] == "저장") {
-        var valid = Files.write(base + "bcd.json","hi");
+        var valid = Backup.save(scriptName);
         if (valid) {
           return "백업 저장 완료";
         } else {
           return "백업 저장에 실패하였습니다.";
         }
       } else if (commands[1] == "불러오기" || commands[1] == "로드") {
-        var [valid, str] = Files.read(base + "bcd.json");
+        var valid = Backup.load(scriptName);
         if (valid) {
-          return "백업 로드 완료" + str;
+          return "백업 로드 완료";
         } else {
           return "백업 로드에 실패하였습니다.";
         } 
@@ -1668,7 +1710,7 @@ function processCommand(msg: string, scriptName: string): string {
     case '/체력수정': return Commands.replaceBossHp(commands); break;
     case '/최대딜수정': return Commands.replaceMaxDamage(commands); break;
     case '/최소딜수정': return Commands.replaceMinDamage(commands); break;
-    case '/백업': return Commands.backupUtils(commands, scriptName); break;
+    case '/백업': return Commands.doBackup(commands, scriptName); break;
     case '/명령어': return Commands.printCommands(commands); break;
   }
 }
