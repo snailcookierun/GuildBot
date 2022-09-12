@@ -25,7 +25,7 @@ var skipMsgs = ['/훈련장','/우르힁의보물상자','/쿠폰자동입력','
 
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
   if(room == "달팽" && !skipMsgs.includes(msg) && (msg.startsWith('/') || msg.startsWith(' /'))) {
-    replier.reply(room, main.processCommand(msg));
+    replier.reply(room, main.processCommand(msg, scriptName));
   }
 }
 
@@ -44,3 +44,18 @@ function onResume(activity) {}
 function onPause(activity) {}
 
 function onStop(activity) {}
+
+// To debug & observe notifications
+/*
+function onNotificationPosted(sbn, sm) {
+  var packageName = sbn.getPackageName();
+  if (!packageName.startsWith("com.kakao.tal")) return;
+  var actions = sbn.getNotification().actions;
+  if (actions == null) return;
+  var extras = sbn.getNotification().extras;
+  var title = extras.getString("android.title");
+  var text = extras.getString("android.text");
+  var subText = extras.getString("android.subText");
+  Log.d("title: " + title + "\ntext: " + text + "\nsubText: " + subText);
+}
+*/

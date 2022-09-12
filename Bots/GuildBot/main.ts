@@ -5,10 +5,6 @@
  * 편의를 위해 TypeScript으로 작성하였으며, tsc을 통해 메신저봇R과 호환되는 JavaScript ES5로 컴파일 할 수 있습니다.
 */
 
-import { log } from "console";
-import { userInfo } from "os";
-import { stringify } from "querystring";
-import { NoSubstitutionTemplateLiteral, NumberLiteralType } from "typescript";
 
 /* Global functions */
 function isNumber(n: string): boolean { return !isNaN(Number(n)) };
@@ -41,6 +37,46 @@ function unionArray<T>(x: Array<T>, y: Array<T>) {
 }
 function average(arr: Array<number>) { if (arr.length > 0) { return Math.round(arr.reduce((p, c) => p + c, 0) / arr.length); } else { return 0; } }
 
+
+class _Files {
+  read(path: string): [boolean, string] {
+    // @ts-ignore
+    var res = FileStream.read(path);
+    if (res == null) { 
+      return [false, ""];
+    } else { 
+      return [true, res]; 
+    }
+  }
+  write(path: string, data: string): boolean {
+    // @ts-ignore
+    var res = FileStream.write(path, data);
+    if (res == null) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  append(path: string, data: string): boolean {
+    // @ts-ignore
+    var res = FileStream.append(path, data);
+    if (res == null) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  remove(path: string): boolean {
+    // @ts-ignore
+    var res = FileStream.remove(path);
+    if (res == true) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+const Files = new _Files();
 
 /* Global constants and data structures */
 /* enum BOSS_TYPE */
@@ -1526,13 +1562,38 @@ class _Commands {
   }
 
   printRelics(commands: Array<string>): string {
-    if (commands.length = 1) {
+    if (commands.length == 1) {
       if (Users.userList.length < 1) {
         return "유저가 없습니다.";
       }
       return "유물 현황\n" + Users.userList.map(u => u.name + ": " + u.relics + " (+" + (u.relics - u.prevRelics) + ")").join("\n");
     } else {
       return "명령어 오입력\n- /유물현황(ㅇㅁㅎㅎ)"
+    }
+  }
+
+  backupUtils(commands: Array<string>, scriptName: string): string {
+    var base = "/storage/emulated/0/msgbot/Bots/" + scriptName + "/data";
+    if (commands.length == 2 && !isNumber(commands[1])) {
+      if(commands[1] == "저장") {
+        var valid = Files.write(base + "bcd.json","hi");
+        if (valid) {
+          return "백업 저장 완료";
+        } else {
+          return "백업 저장에 실패하였습니다.";
+        }
+      } else if (commands[1] == "불러오기" || commands[1] == "로드") {
+        var [valid, str] = Files.read(base + "bcd.json");
+        if (valid) {
+          return "백업 로드 완료" + str;
+        } else {
+          return "백업 로드에 실패하였습니다.";
+        } 
+      } else {
+        return "명령어 오입력\n- /백업 [저장/로드(불러오기)]";
+      }
+    } else {
+      return "명령어 오입력\n- /백업 [저장/로드(불러오기)]";
     }
   }
 }
@@ -1542,7 +1603,7 @@ const Commands = new _Commands();
  * processCommand: Process command with parsing msg
  * trim multi-whitespace cases and map to specific commands
  */
-function processCommand(msg: string): string {
+function processCommand(msg: string, scriptName: string): string {
   var commands = msg.trim().split(/\s+/);
   switch (commands[0]) {
     default: return "알 수 없는 명령어입니다.\n- /명령어"; break;
@@ -1607,6 +1668,7 @@ function processCommand(msg: string): string {
     case '/체력수정': return Commands.replaceBossHp(commands); break;
     case '/최대딜수정': return Commands.replaceMaxDamage(commands); break;
     case '/최소딜수정': return Commands.replaceMinDamage(commands); break;
+    case '/백업': return Commands.backupUtils(commands, scriptName); break;
     case '/명령어': return Commands.printCommands(commands); break;
   }
 }
