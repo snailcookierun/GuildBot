@@ -317,6 +317,21 @@ const Users = new _Users;
  * class Boss - type(BOSS_TYPE), name:(Array<string>), hps:(array<number>), curLevel:(number), curHp:(number), curUsers:(array<string>)}
  * level indices are same with hps indices.
  */
+interface IBoss {
+  type: BOSS_TYPE;
+  name: Array<string>;
+  hps: Array<number>;
+  curLevel: number;
+  curDamage: number;
+  curUsers: Array<User>; //users who are currently participating in curLevel
+  loggedUsers: Array<User>; //users who already participated in curLevel
+  relayUsers: { [id: number]: Array<User> }; //users who cutted the previous level and possibly relay in curLevel
+  isRelayLogged: boolean; //returns relay user has logged the damage
+  counts: number;
+  maxDamage: number;
+  minDamage: number;  
+}
+
 class Boss {
   type: BOSS_TYPE;
   name: Array<string>;
@@ -332,20 +347,39 @@ class Boss {
   minDamage: number;
 
   // constructor - type:BOSS_TYPE, name:boss's nickname
-  constructor(type: BOSS_TYPE, name: Array<string>, max: number, min: number) {
-    this.type = type;
-    this.name = name;
-    this.hps = [0];
-    this.curLevel = 0;
-    this.curDamage = 0;
-    this.curUsers = [];
-    this.loggedUsers = [];
-    this.relayUsers = {};
-    this.isRelayLogged = false;
-    this.counts = 0;
-    this.maxDamage = max;
-    this.minDamage = min;
+  constructor(type: BOSS_TYPE, name: Array<string>, max: number, min: number);
+  constructor(obj: IBoss);
+
+  constructor(first: any, name?: any, max?: any, min?: any){
+    if(first in BOSS_TYPE) {
+      this.type = first;
+      this.name = name;
+      this.hps = [0];
+      this.curLevel = 0;
+      this.curDamage = 0;
+      this.curUsers = [];
+      this.loggedUsers = [];
+      this.relayUsers = {};
+      this.isRelayLogged = false;
+      this.counts = 0;
+      this.maxDamage = max;
+      this.minDamage = min;
+    } else {
+      this.type = first.type;
+      this.name = first.name;
+      this.hps = first.hps;
+      this.curLevel = first.curLevel;
+      this.curDamage = first.curDamage;
+      this.curUsers = first.curUsers;
+      this.loggedUsers = first.loggedUsers;
+      this.relayUsers = first.relayUsers;
+      this.isRelayLogged = first.isRelayLogged;
+      this.counts = first.counts;
+      this.maxDamage = first.max;
+      this.minDamage = first.min;
+    }
   }
+
 
   isLevelExist(n: number): boolean {
     return (n > 0) && this.hps.hasOwnProperty(n);
