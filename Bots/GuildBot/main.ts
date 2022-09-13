@@ -351,7 +351,7 @@ class Boss {
   constructor(obj: IBoss);
 
   constructor(first: any, name?: any, max?: any, min?: any){
-    if(first in BOSS_TYPE) {
+    if(bossTypeMap((x:BOSS_TYPE) => x).includes(first)) {
       this.type = first;
       this.name = name;
       this.hps = [0];
@@ -523,9 +523,21 @@ class _Backup {
   }
   save(scriptName : string): boolean {
     var base = "/storage/emulated/0/msgbot/Bots/" + scriptName + "/data/";
+    var bossListCopy = {};
+    Object.keys(Bosses.bossList).forEach(function(x) {
+      var boss = Bosses.bossList[x];
+      boss.curUsers = boss.curUsers.map(u => u.name);
+      boss.loggedUsers = boss.loggedUsers.map(u => u.name);
+      Object.keys(boss.relayUsers).forEach(n => boss.relayUsers[n] = boss.relayUsers[n].map(u => u.name));
+      bossListCopy[x] = boss;
+    });
     var userListBackup = JSON.stringify(Users.userList);
-    var valid = Files.write(base + "userList.json", userListBackup);
-    return valid;
+    var valid1 = Files.write(base + "userList.json", userListBackup);
+    var bossListBackup = JSON.stringify(bossListCopy);
+    var valid2 = Files.write(base + "bossList.json", bossListBackup);
+    var totalCountsBackup = JSON.stringify(Bosses.totalCounts);
+    var valid3 = Files.write(base + "totalCounts.json", totalCountsBackup);
+    return valid1 && valid2 && valid3;
   }
 }
 const Backup = new _Backup();
