@@ -90,6 +90,27 @@ class _Files {
 const Files = new _Files();
 
 
+class _Logs {
+  d(data:string, showToast = false){
+    // @ts-ignore
+    Log.d(data, showToast);
+  }
+  e(data:string, showToast = false){
+    // @ts-ignore
+    Log.e(data, showToast);
+  }
+  i(data:string, showToast = false){
+    // @ts-ignore
+    Log.i(data, showToast);
+  }
+  clear(){
+    // @ts-ignore
+    Log.clear();
+  }
+}
+const Logs = new _Logs();
+
+
 /* Global constants */
 const MAX_COUNTS = 9; //max count for each boss
 const TICKETS_PER_DAY = 3; //charged tickets per day
