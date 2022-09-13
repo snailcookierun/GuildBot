@@ -512,10 +512,27 @@ const Bosses = new _Bosses(bossList, rBossList);
 class _Backup {
   load(scriptName : string): boolean {
     var base = "/storage/emulated/0/msgbot/Bots/" + scriptName + "/data/";
-    var [valid, str] = Files.read(base + "userList.json");
-    if(valid) {
-      var userListBackup = JSON.parse(str);
+    var [valid1, userListStr] = Files.read(base + "userList.json");
+    var [valid2, bossListStr] = Files.read(base + "bossList.json");
+    var [valid3, totalCountsStr] = Files.read(base + "totalCounts.json"); 
+    if(valid1 && valid2 && valid3) {
+      var userListBackup = JSON.parse(userListStr);
       Users.userList = userListBackup.map((u:IUser) => new User(u));
+
+      var bossListBackup = JSON.parse(bossListStr);
+      var bossListCopy = {};
+      Object.keys(bossListBackup).forEach(function(x) {
+        var boss = bossListBackup[x];
+        boss.curUsers = boss.curUsers.map(name => Users.find(name));
+        boss.loggedUsers = boss.loggedUsers.map(name => Users.find(name));
+        Object.keys(boss.relayUsers).forEach(n => boss.relayUsers[n] = boss.relayUsers[n].map(name => Users.find(name)));
+        bossListCopy[x] = boss;
+      });
+      Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x] = new Boss(bossListCopy[x]));
+
+      var totalCountsBackup = JSON.parse(totalCountsStr);
+      Bosses.totalCounts = totalCountsBackup;
+      
       return true;
     } else {
       return false;
