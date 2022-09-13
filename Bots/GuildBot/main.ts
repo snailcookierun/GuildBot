@@ -6,6 +6,14 @@
 */
 
 
+/* enum BOSS_TYPE */
+/* Boss가 수정될 경우 BOSS_TYPE 수정 및 config.json을 고쳐야 함. */
+enum BOSS_TYPE {
+  DRAGON = "용",
+  ANGEL = "천사",
+  LICORICE = "감초"
+}
+
 /* Global functions */
 function isNumber(n: string): boolean { return !isNaN(Number(n)) };
 function isUnsigned(n: string): boolean { return isNumber(n) && Number(n) >= 0 };
@@ -36,6 +44,9 @@ function unionArray<T>(x: Array<T>, y: Array<T>) {
   return result;
 }
 function average(arr: Array<number>) { if (arr.length > 0) { return Math.round(arr.reduce((p, c) => p + c, 0) / arr.length); } else { return 0; } }
+const bossTypeMap = (fn: Function) => (Object.keys(BOSS_TYPE) as (keyof typeof BOSS_TYPE)[]).map(
+  (key, index) => { return fn(BOSS_TYPE[key]); }
+)
 
 
 class _Files {
@@ -78,24 +89,15 @@ class _Files {
 }
 const Files = new _Files();
 
-/* Global constants and data structures */
-/* enum BOSS_TYPE */
-/* Boss가 추가될 경우 BOSS_TYPE과 bossList에 추가해야 함. 보스 체력도 입력해주시면 감사. */
-enum BOSS_TYPE {
-  DRAGON = "용",
-  ANGEL = "천사",
-  LICORICE = "감초"
-}
 
-const bossTypeMap = (fn: Function) => (Object.keys(BOSS_TYPE) as (keyof typeof BOSS_TYPE)[]).map(
-  (key, index) => { return fn(BOSS_TYPE[key]); }
-)
-
+/* Global constants */
 const MAX_COUNTS = 9; //max count for each boss
 const TICKETS_PER_DAY = 3; //charged tickets per day
 const MAX_TICKETS = 9; //max tickets for each user
-const MAX_TOTAL_COUNTS = 540; // max count for one season
+const MAX_TOTAL_COUNTS = TICKETS_PER_DAY * 6 * 30; // max count for one season
 const MAX_BOSS_COUNTS = MAX_COUNTS * 30; // max boss count for one season
+
+
 
 /**
  * enum LOG_TYPE - 미입력, 기본, 막타, 이달, 중복
@@ -110,9 +112,9 @@ enum LOG_TYPE {
 }
 
 /**
- * class Log - boss:(BOSS_TYPE), level:(number), damage:(number)
+ * class DLog - boss:(BOSS_TYPE), level:(number), damage:(number)
  */
-class Log {
+class DLog {
   boss: BOSS_TYPE;
   level: number;
   damage: number;
@@ -127,11 +129,11 @@ class Log {
 }
 
 /**
- * class User - name:(string), tickets:(number), counts:({BOSS_TYPE:number}) log:(array<Log>)
+ * class User - name:(string), tickets:(number), counts:({BOSS_TYPE:number}) log:(array<DLog>)
  * (string) name: user's name
  * (number) tickets: current remained tickets
  * ({BOSS_TYPE:number}) counts: counts battles with each boss
- * (array<Log>) log: damage log for each boss/level/damage
+ * (array<DLog>) log: damage log for each boss/level/damage
  * 
 */
 interface IUser {
@@ -140,7 +142,7 @@ interface IUser {
   relics: number;
   prevRelics: number;
   counts: { [key in BOSS_TYPE]: number };
-  log: Array<Log>;  
+  log: Array<DLog>;  
 }
 
 class User {
@@ -149,7 +151,7 @@ class User {
   relics: number;
   prevRelics: number;
   counts: { [key in BOSS_TYPE]: number };
-  log: Array<Log>;
+  log: Array<DLog>;
 
   constructor(name: string, tickets: number);
   constructor(obj: IUser); //copy constructor
@@ -210,7 +212,7 @@ class User {
   }
 
   addParticipate(bossType: BOSS_TYPE, curLevel: number) {
-    this.log.push(new Log(bossType, curLevel, 0, LOG_TYPE.NONE));
+    this.log.push(new DLog(bossType, curLevel, 0, LOG_TYPE.NONE));
     this.tickets -= 1;
     this.counts[bossType] += 1;
   }
@@ -722,7 +724,7 @@ class _Commands {
     }
   }
 
-  addTickets(commands: Array<string>): string {
+  addTickets(commands: Array<string>, scriptName: string): string {
     if (commands.length == 1) {
       if (Users.userList.length < 1) {
         return "유저가 없습니다\n- /유저추가 이름"
@@ -738,6 +740,8 @@ class _Commands {
       if (names.length >= 1) {
         str += "\n잔여 티켓이 " + (MAX_TICKETS - TICKETS_PER_DAY + 1) + "개 이상 남으신 분들입니다.\n" + names.join(", ");
       }
+      // Save backup
+      Backup.save(scriptName);
       return str;
     } else {
       return "명령어 오입력\n- /티켓충전"
@@ -991,7 +995,7 @@ class _Commands {
         logType = LOG_TYPE.RELAY;
         boss.isRelayLogged = true;
         boss.relayUsers[boss.curLevel] = moveItemToFront(boss.relayUsers[boss.curLevel], user);
-        user.log.push(new Log(boss.type, boss.curLevel, 0, LOG_TYPE.NONE));
+        user.log.push(new DLog(boss.type, boss.curLevel, 0, LOG_TYPE.NONE));
       } else if (boss.loggedUsers.includes(user)) {
         logType = LOG_TYPE.DUPLICATE;
       }
@@ -1142,7 +1146,7 @@ class _Commands {
       boss.curUsers.filter(u => u.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) == 1).map(u => u.findLogsIfUnique(boss.type, boss.curLevel, 0, LOG_TYPE.NONE)).forEach(l => l.type = LOG_TYPE.LAST);
 
       if (boss.curUsers.length < 1 && boss.loggedUsers.length < 1 && boss.relayUsers[boss.curLevel].length > 0 && boss.isRelayLogged == false) {
-        boss.relayUsers[boss.curLevel].forEach(u => u.log.push(new Log(boss.type, boss.curLevel, 0, LOG_TYPE.RELAY)));
+        boss.relayUsers[boss.curLevel].forEach(u => u.log.push(new DLog(boss.type, boss.curLevel, 0, LOG_TYPE.RELAY)));
         boss.relayUsers[boss.curLevel + 1] = boss.relayUsers[boss.curLevel];
       } else {
         boss.relayUsers[boss.curLevel + 1] = boss.curUsers;
@@ -1381,7 +1385,7 @@ class _Commands {
       if (Users.userList.length < 1) {
         return "유저가 없습니다.";
       }
-      var userLogsDict: { [id: string]: Array<Log> } = {};
+      var userLogsDict: { [id: string]: Array<DLog> } = {};
       Users.userList.map(function (user) { if (user.log.length > 0) { userLogsDict[user.name] = user.log } });
       if (Object.keys(userLogsDict).length < 1) {
         return "출력할 딜로그가 없습니다.";
@@ -1399,7 +1403,7 @@ class _Commands {
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
-      var userLogsDict: { [id: string]: Array<Log> } = {};
+      var userLogsDict: { [id: string]: Array<DLog> } = {};
       Users.userList.map(function (user) {
         var filtered = user.log.filter(l => l.boss == boss.type);
         if (filtered.length > 0) {
@@ -1426,7 +1430,7 @@ class _Commands {
       if (!boss.isLevelExist(level)) {
         return boss.type + " " + level + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
       }
-      var userLogsDict: { [id: string]: Array<Log> } = {};
+      var userLogsDict: { [id: string]: Array<DLog> } = {};
       Users.userList.map(function (user) {
         var filtered = user.log.filter(l => l.boss == boss.type && l.level == level);
         if (filtered.length > 0) {
@@ -1724,7 +1728,7 @@ function processCommand(msg: string, scriptName: string): string {
     case '/이름변경': return Commands.changeUserName(commands); break;
     case '/유저삭제': return Commands.removeUser(commands); break;
     case '/유저리스트': return Commands.printUserList(commands); break;
-    case '/티켓충전': return Commands.addTickets(commands); break;
+    case '/티켓충전': return Commands.addTickets(commands, scriptName); break;
     case '/시즌시작': return Commands.resetSeason(commands); break;
     case '/ㅎㅇ':
     case '/확인':
