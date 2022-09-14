@@ -15,9 +15,11 @@ Written by @snailcookierun
 
 ## How to run
 - Move to Bots/GuildBot directory. `cd Bots/GuildBot`
+- Change `config-example.json` file and save as `config.json`.
 - Compile scripts. `tsc`
 - Copy `GuildBot.js` to `GuildBot` phone directory and overwrite the existing file.
 - Copy `modules/main.js` to `GuildBot/modules` phone directory.
+- Copy `config.json` to `GuildBot` phone directory.
 - Press compile button (it looks like refresh button) in your 메신저봇R.
 - Run GuildBot.
 
