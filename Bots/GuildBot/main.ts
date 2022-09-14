@@ -1130,14 +1130,14 @@ class _Commands {
       if (commands[1] == "시작") {
         if (!Routine.isRunning) {
           Routine.start();
-          return "루틴 시작";
+          return "루틴을 시작합니다.";
         } else {
           return "이미 루틴이 실행되고 있습니다.";
         }
       } else if (commands[1] == "종료") {
         if (Routine.isRunning) {
           Routine.stop();
-          return "루틴 종료";
+          return "루틴을 종료합니다.";
         } else {
           return "루틴이 시작되지 않았습니다.";
         }
@@ -1238,10 +1238,11 @@ function processCommand(msg: string): string {
   }
 }
 
-/* initConfig: load and initialize config */
-function initConfig() {
+/* init: load and initialize config & start routine */
+function init() {
   Config.init();
   Bosses.updateConfig();
+  Routine.start();
 }
 
 /* checkSkipMsgs: check if message is to be skipped */
@@ -1256,6 +1257,6 @@ function checkRoomName(room: string) : boolean {
 
 
 exports.processCommand = processCommand;
-exports.initConfig = initConfig;
+exports.init = init;
 exports.checkSkipMsgs = checkSkipMsgs;
 exports.checkRoomName = checkRoomName;

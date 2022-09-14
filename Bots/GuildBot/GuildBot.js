@@ -10,7 +10,7 @@
 const main = require("modules/main");
 
 const scriptName = main.scriptName;
-main.initConfig();
+main.init();
 /**
  * (string) room
  * (string) sender
