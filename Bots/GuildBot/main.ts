@@ -161,17 +161,18 @@ class _Commands {
     }
   }
 
-  addTickets(commands: Array<string>): string {
+  checkTickets(commands: Array<string>): string {
     if (commands.length == 1) {
       if (Users.userList.length < 1) {
         return "유저가 없습니다\n- /유저추가 이름"
       }
-      var addedTickets = TICKETS_PER_DAY;
-      var maxedTicketUsers = Users.userList.filter(x => (x.tickets + addedTickets) > MAX_TICKETS);
-      Users.userList.forEach(x => x.tickets = (x.tickets + addedTickets) > MAX_TICKETS ? MAX_TICKETS : (x.tickets + addedTickets));  //Limit the number of tickets up to MAX_TICKETS
-      var str = "티켓 수가 +" + addedTickets + "만큼 충전되었습니다.";
+      var str = "티켓 충전 루틴이 ";
+      if (Routine.isRunning) { str += "켜져 있습니다."; }
+      else { str += "꺼져 있습니다."; }
+      var maxedTicketUsers = Users.userList.filter(x => x.tickets > MAX_TICKETS);
       if (maxedTicketUsers.length > 0) {
         str += "\n티켓 초과 유저: " + maxedTicketUsers.map(x => x.name).join(", ");
+        maxedTicketUsers.forEach(x => x.tickets = MAX_TICKETS);
       }
       var names = Users.userList.filter(u => u.tickets >= (MAX_TICKETS - TICKETS_PER_DAY + 1)).map(u => u.name + "(" + u.tickets + ")");
       if (names.length >= 1) {
@@ -640,31 +641,6 @@ class _Commands {
       return "명령어 오입력\n- /컷취소 보스명";
     }
   }
-
-  setBossLevelDeprecated(commands: Array<string>): string {
-    return "'/보스셋팅' 명령어는 삭제되었습니다.\n'/컷'이나 '/컷취소'를 이용해주세요.";
-  }
-
-  setBossLevel(commands: Array<string>): string {
-    if (commands.length == 3 && !isNumber(commands[1]) && isNumber(commands[2])) {
-      if (!Bosses.isNameExist(commands[1])) {
-        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
-      }
-      var boss = Bosses.find(commands[1]);
-      if (boss.curLevel <= 0) {
-        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
-      }
-      var level = Number(commands[2]);
-      if (!boss.isLevelExist(level)) {
-        return boss.type + " " + level + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
-      }
-      boss.setLevel(level);
-      return boss.type + " " + level + "단계로 셋팅되었습니다.\n잔여: " + boss.getRemained() + "만";
-    } else {
-      return "명령어 오입력\n- /보스셋팅 보스명 단계(1~n)";
-    }
-  }
-
 
   printRemained(commands: Array<string>): string {
     if (commands.length == 1) {
@@ -1149,6 +1125,30 @@ class _Commands {
     }
   }
 
+  setRoutine(commands: Array<string>) : string {
+    if (commands.length == 2 && !isNumber(commands[1])) {
+      if (commands[1] == "시작") {
+        if (!Routine.isRunning) {
+          Routine.start();
+          return "루틴 시작";
+        } else {
+          return "이미 루틴이 실행되고 있습니다.";
+        }
+      } else if (commands[1] == "종료") {
+        if (Routine.isRunning) {
+          Routine.stop();
+          return "루틴 종료";
+        } else {
+          return "루틴이 시작되지 않았습니다.";
+        }
+      } else {
+        return "명령어 오입력\n- /루틴 [시작/종료]";
+      }
+    } else {
+      return "명령어 오입력\n- /루틴 [시작/종료]";
+    }
+  }
+
   loadConfig(commands: Array<string>): string {
     if(commands.length == 1){
       var [valid, str] = Config.load();
@@ -1179,7 +1179,7 @@ function processCommand(msg: string): string {
     case '/이름변경': return Commands.changeUserName(commands); break;
     case '/유저삭제': return Commands.removeUser(commands); break;
     case '/유저리스트': return Commands.printUserList(commands); break;
-    case '/티켓충전': return Commands.addTickets(commands); break;
+    case '/티켓충전': return Commands.checkTickets(commands); break;
     case '/시즌시작': return Commands.resetSeason(commands); break;
     case '/ㅎㅇ':
     case '/확인':
@@ -1226,15 +1226,13 @@ function processCommand(msg: string): string {
     case '/유물': return Commands.addRelics(commands); break;
     case '/ㅇㅁㅎㅎ':
     case '/유물현황': return Commands.printRelics(commands); break;
-    case '/보스세팅':
-    case '/보스셋팅': return Commands.setBossLevelDeprecated(commands); break;
-    case '/sudo보스셋팅': return Commands.setBossLevel(commands); break;
     case '/보스체력': return Commands.printBossHp(commands); break;
     case '/체력추가': return Commands.addBossHp(commands); break;
     case '/체력수정': return Commands.replaceBossHp(commands); break;
     case '/최대딜수정': return Commands.replaceMaxDamage(commands); break;
     case '/최소딜수정': return Commands.replaceMinDamage(commands); break;
     case '/백업': return Commands.doBackup(commands); break;
+    case '/루틴': return Commands.setRoutine(commands); break;
     case '/환경설정': return Commands.loadConfig(commands); break;
     case '/명령어': return Commands.printCommands(commands); break;
   }

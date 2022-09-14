@@ -10,6 +10,7 @@
     "user.ts",
     "boss.ts",
     "backup.ts",
+    "routine.ts",
     "main.ts"
   ]
 }
