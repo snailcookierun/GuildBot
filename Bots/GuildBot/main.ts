@@ -161,7 +161,7 @@ class _Commands {
     }
   }
 
-  addTickets(commands: Array<string>, scriptName: string): string {
+  addTickets(commands: Array<string>): string {
     if (commands.length == 1) {
       if (Users.userList.length < 1) {
         return "유저가 없습니다\n- /유저추가 이름"
@@ -178,7 +178,7 @@ class _Commands {
         str += "\n잔여 티켓이 " + (MAX_TICKETS - TICKETS_PER_DAY + 1) + "개 이상 남으신 분들입니다.\n" + names.join(", ");
       }
       // Save backup
-      Backup.save(scriptName);
+      Backup.save();
       return str;
     } else {
       return "명령어 오입력\n- /티켓충전"
@@ -259,7 +259,7 @@ class _Commands {
         var possibleBosses = Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].curLevel == level);
         if (possibleBosses.length < 1) {
           return "현재 " + commands[2] + "단계인 보스가 없습니다.\n- /참여(ㅊㅇ) 이름 보스명"
-        } else if (possibleBosses.length > 1){
+        } else if (possibleBosses.length > 1) {
           return "현재 " + commands[2] + "단계인 보스가 여럿입니다.\n- /참여(ㅊㅇ) 이름 보스명"
         }
         var boss = Bosses.bossList[possibleBosses[0]];
@@ -365,7 +365,7 @@ class _Commands {
   }
 
   addDamage(commands: Array<string>): string {
-    if ((commands.length == 3 || commands.length == 4 ) && !isNumber(commands[1])) {
+    if ((commands.length == 3 || commands.length == 4) && !isNumber(commands[1])) {
       if (Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
@@ -382,8 +382,8 @@ class _Commands {
         // Find bosses which the user participated with boss.curUser
         var participatedBosses: Boss[] = Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].curUsers.includes(user)).map(x => Bosses.bossList[x]);
         // Find bosses which the user is in relay mode with boss.relayLogged && boss.relayUser
-        var relayBosses: Boss[] = Object.keys(Bosses.bossList).filter(x => !Bosses.bossList[x].isRelayLogged 
-              && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user)).map(x => Bosses.bossList[x]);
+        var relayBosses: Boss[] = Object.keys(Bosses.bossList).filter(x => !Bosses.bossList[x].isRelayLogged
+          && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user)).map(x => Bosses.bossList[x]);
         var bossesUnion = unionArray(participatedBosses, relayBosses);
 
         if (bossesUnion.length > 1) {
@@ -393,7 +393,7 @@ class _Commands {
             return commands[1] + " 님은 현재 여러 보스에 컷 기록이 있습니다. (컷: " + relayBosses.map(x => x.type).join(" ") + ")\n- /딜 이름 보스명 딜량";
           } else {
             return commands[1] + " 님은 현재 여러 보스에 참여와 컷 기록이 있습니다. (참여: " + participatedBosses.map(x => x.type).join(" ")
-                               + ", 컷: " + relayBosses.map(x => x.type).join(" ") + ")\n- /딜 이름 보스명 딜량";
+              + ", 컷: " + relayBosses.map(x => x.type).join(" ") + ")\n- /딜 이름 보스명 딜량";
           }
         } else if (bossesUnion.length < 1) {
           return commands[1] + " 님은 현재 참여 중인 보스가 없습니다.";
@@ -556,7 +556,7 @@ class _Commands {
       }
 
       var isMultiCutAllowed = false;
-      if(commands.length == 3) {
+      if (commands.length == 3) {
         if (!isNumber(commands[2]) && commands[2] == "동타") {
           isMultiCutAllowed = true;
         } else {
@@ -575,8 +575,8 @@ class _Commands {
       } else if (boss.curUsers.length > 1) {
         if (isMultiCutAllowed) {
           addStr = "컷 참여자: " + boss.curUsers.map(x => x.name).join(", ") + "\n";
-        } else {        
-          return "현재 단계에 딜량을 입력하지 않은 인원이 여러 명 있습니다. (" + boss.curUsers.map(x => x.name).join(", ") +")\n - /컷 보스명 동타";
+        } else {
+          return "현재 단계에 딜량을 입력하지 않은 인원이 여러 명 있습니다. (" + boss.curUsers.map(x => x.name).join(", ") + ")\n - /컷 보스명 동타";
         }
       }
 
@@ -1125,22 +1125,22 @@ class _Commands {
     }
   }
 
-  doBackup(commands: Array<string>, scriptName: string): string {
+  doBackup(commands: Array<string>) : string {
     if (commands.length == 2 && !isNumber(commands[1])) {
-      if(commands[1] == "저장") {
-        var valid = Backup.save(scriptName);
+      if (commands[1] == "저장") {
+        var valid = Backup.save();
         if (valid) {
           return "백업 저장 완료";
         } else {
           return "백업 저장에 실패하였습니다.";
         }
       } else if (commands[1] == "불러오기" || commands[1] == "로드") {
-        var valid = Backup.load(scriptName);
+        var valid = Backup.load();
         if (valid) {
           return "백업 로드 완료";
         } else {
           return "백업 로드에 실패하였습니다.";
-        } 
+        }
       } else {
         return "명령어 오입력\n- /백업 [저장/로드(불러오기)]";
       }
@@ -1155,7 +1155,7 @@ const Commands = new _Commands();
  * processCommand: Process command with parsing msg
  * trim multi-whitespace cases and map to specific commands
  */
-function processCommand(msg: string, scriptName: string): string {
+function processCommand(msg: string): string {
   var commands = msg.trim().split(/\s+/);
   switch (commands[0]) {
     default: return "알 수 없는 명령어입니다.\n- /명령어"; break;
@@ -1165,7 +1165,7 @@ function processCommand(msg: string, scriptName: string): string {
     case '/이름변경': return Commands.changeUserName(commands); break;
     case '/유저삭제': return Commands.removeUser(commands); break;
     case '/유저리스트': return Commands.printUserList(commands); break;
-    case '/티켓충전': return Commands.addTickets(commands, scriptName); break;
+    case '/티켓충전': return Commands.addTickets(commands); break;
     case '/시즌시작': return Commands.resetSeason(commands); break;
     case '/ㅎㅇ':
     case '/확인':
@@ -1220,7 +1220,7 @@ function processCommand(msg: string, scriptName: string): string {
     case '/체력수정': return Commands.replaceBossHp(commands); break;
     case '/최대딜수정': return Commands.replaceMaxDamage(commands); break;
     case '/최소딜수정': return Commands.replaceMinDamage(commands); break;
-    case '/백업': return Commands.doBackup(commands, scriptName); break;
+    case '/백업': return Commands.doBackup(commands); break;
     case '/명령어': return Commands.printCommands(commands); break;
   }
 }

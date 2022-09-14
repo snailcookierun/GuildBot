@@ -1,3 +1,12 @@
+/* Global constants */
+const SCRIPT_NAME = "GuildBot";
+
+const MAX_COUNTS = 9; //max count for each boss
+const TICKETS_PER_DAY = 3; //charged tickets per day
+const MAX_TICKETS = 9; //max tickets for each user
+const MAX_TOTAL_COUNTS = TICKETS_PER_DAY * 6 * 30; // max count for one season
+const MAX_BOSS_COUNTS = MAX_COUNTS * 30; // max boss count for one season
+
 /* Global functions */
 function isNumber(n: string): boolean { return !isNaN(Number(n)) };
 function isUnsigned(n: string): boolean { return isNumber(n) && Number(n) >= 0 };
@@ -32,10 +41,4 @@ const bossTypeMap = (fn: Function) => (Object.keys(BOSS_TYPE) as (keyof typeof B
   (key, index) => { return fn(BOSS_TYPE[key]); }
 )
 
-
-/* Global constants */
-const MAX_COUNTS = 9; //max count for each boss
-const TICKETS_PER_DAY = 3; //charged tickets per day
-const MAX_TICKETS = 9; //max tickets for each user
-const MAX_TOTAL_COUNTS = TICKETS_PER_DAY * 6 * 30; // max count for one season
-const MAX_BOSS_COUNTS = MAX_COUNTS * 30; // max boss count for one season
+exports.scriptName = SCRIPT_NAME;
