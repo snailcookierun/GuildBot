@@ -1240,10 +1240,24 @@ function processCommand(msg: string): string {
   }
 }
 
+/* initConfig: load and initialize config */
 function initConfig() {
   Config.init();
   Bosses.updateConfig();
 }
 
+/* checkSkipMsgs: check if message is to be skipped */
+function checkSkipMsgs(msg: string) : boolean {
+  return Config.skipMsgs.some(x => msg.startsWith(x));
+}
+
+/* checkRoomName: check roomName */
+function checkRoomName(room: string) : boolean {
+  return Config.roomName.some(x => room.startsWith(x));
+}
+
+
 exports.processCommand = processCommand;
 exports.initConfig = initConfig;
+exports.checkSkipMsgs = checkSkipMsgs;
+exports.checkRoomName = checkRoomName;

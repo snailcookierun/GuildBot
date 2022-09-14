@@ -22,10 +22,8 @@ main.initConfig();
  * (string) packageName
  */
 
-var skipMsgs = ['/훈련장','/우르힁의보물상자','/쿠폰자동입력','/쿠폰입력','/스킬쿨타임표','/초반용','/수용소'];
-
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
-  if(room == "달팽 테스트" && !skipMsgs.includes(msg) && (msg.startsWith('/') || msg.startsWith(' /'))) {
+  if(main.checkRoomName(room) && (msg.startsWith('/') || msg.startsWith(' /')) && !main.checkSkipMsgs(msg)) {
     replier.reply(room, main.processCommand(msg));
   }
 }
