@@ -1,6 +1,4 @@
 /* Global constants */
-const SCRIPT_NAME = "GuildBot";
-
 const MAX_COUNTS = 9; //max count for each boss
 const TICKETS_PER_DAY = 3; //charged tickets per day
 const MAX_TICKETS = 9; //max tickets for each user
@@ -40,5 +38,3 @@ function average(arr: Array<number>) { if (arr.length > 0) { return Math.round(a
 const bossTypeMap = (fn: Function) => (Object.keys(BOSS_TYPE) as (keyof typeof BOSS_TYPE)[]).map(
   (key, index) => { return fn(BOSS_TYPE[key]); }
 )
-
-exports.scriptName = SCRIPT_NAME;
