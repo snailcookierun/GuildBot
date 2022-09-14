@@ -1225,4 +1225,10 @@ function processCommand(msg: string): string {
   }
 }
 
+function initConfig() {
+  Config.init();
+  Bosses.updateConfig();
+}
+
 exports.processCommand = processCommand;
+exports.initConfig = initConfig;

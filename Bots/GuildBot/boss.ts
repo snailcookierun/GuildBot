@@ -180,6 +180,17 @@ class _Bosses {
     this.totalCounts = 0;
   }
 
+  updateConfig() {
+    Object.keys(this.bossList).forEach(function(x){
+      var [valid, config] = Config.find(this.bossList[x].type);
+      if (valid) {
+        this.bossList[x].hps = config.hps;
+        this.bossList[x].maxDamage = config.maxDamage;
+        this.bossList[x].minDamage = config.minDamage;
+      }
+    })
+  }
+
   isNameExist(str: string): boolean {
     return this.rBossList.hasOwnProperty(str);
   }
