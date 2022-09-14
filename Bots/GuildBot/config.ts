@@ -5,7 +5,6 @@ interface BossConfig {
     maxDamage: number;
     minDamage: number;
 }
-
 class _Config {
     MAX_COUNTS: number;
     TICKETS_PER_DAY: number;
