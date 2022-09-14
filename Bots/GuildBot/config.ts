@@ -31,6 +31,15 @@ class _Config {
   roomName: Array<string>;
   bosses: Array<BossConfig>;
 
+  constructor() {
+    this.MAX_COUNTS = MAX_COUNTS;
+    this.TICKETS_PER_DAY = TICKETS_PER_DAY;
+    this.MAX_TICKETS = MAX_TICKETS;
+    this.skipMsgs = [];
+    this.roomName = [];
+    this.bosses = [];
+  }
+
   load() : [boolean, string] {
     var path = "/storage/emulated/0/msgbot/Bots/" + SCRIPT_NAME + "/config.json";
     var [valid, str] = Files.read(path);
