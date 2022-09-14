@@ -15,7 +15,7 @@ Written by @snailcookierun
 
 ## How to run
 - Move to Bots/GuildBot directory. `cd Bots/GuildBot`
-- Compile `main.ts`. `tsc main.ts --outDir modules`
+- Compile scripts. `tsc`
 - Copy `GuildBot.js` to `GuildBot` phone directory and overwrite the existing file.
 - Copy `modules/main.js` to `GuildBot/modules` phone directory.
 - Press compile button (it looks like refresh button) in your 메신저봇R.

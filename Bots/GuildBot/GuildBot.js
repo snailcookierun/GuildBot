@@ -49,7 +49,7 @@ function onStop(activity) {}
 /*
 function onNotificationPosted(sbn, sm) {
   var packageName = sbn.getPackageName();
-  if (!packageName.startsWith("com.kakao.tal")) return;
+  if (!packageName.startsWith("com.kakao.talk")) return;
   var actions = sbn.getNotification().actions;
   if (actions == null) return;
   var extras = sbn.getNotification().extras;

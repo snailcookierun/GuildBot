@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "outFile": "modules/main.js"
+    },
+    "files": [
+        "api.ts",
+        "global.ts",
+        "user.ts",
+        "boss.ts",
+        "backup.ts",
+        "main.ts"
+    ]
+}
