@@ -9,7 +9,6 @@
 // Load main module
 const main = require("modules/main");
 
-/* 메신저봇R 셋팅 */
 const scriptName = main.scriptName;
 main.initConfig();
 /**

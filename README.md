@@ -24,4 +24,5 @@ Written by @snailcookierun
 - Run GuildBot.
 
 ## FAQ
+- If you want to change your bot name, you must change `scriptName` in `config.ts`.
 - `tsc` authorization error in Windows: type `Set-ExecutionPolicy RemoteSigned`
