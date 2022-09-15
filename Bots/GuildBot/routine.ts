@@ -1,8 +1,8 @@
 class _Routine {
   isRunning: boolean;
-  timer: any;
-  backupTask: any;
-  ticketSeasonTask: any;
+  backupHandler: any;
+  tsHandler: any;
+  tsLastDay: number;
 
   backup() {
     if (Backup.save()) {
@@ -36,39 +36,65 @@ class _Routine {
     } else if ((day >= 0 && day <= 2) || (day >= 5 && day <= 6)) {
       this.addTickets();
     }
+    this.tsLastDay = day;
   }
 
-  constructor() { this.isRunning = false; }
+  constructor() { 
+    this.isRunning = false; 
+    this.tsLastDay = -1;
+  }
 
   start() {
-    if (!this.isRunning) {
+    if(!this.isRunning){
       // @ts-ignore
-      const Timer = java.util.Timer;
+      const Handler = android.os.Handler;
       // @ts-ignore
-      const TimerTask = java.util.TimerTask;
+      const Runnable = java.lang.Runnable;
+      // @ts-ignore
+      const Looper = android.os.Looper;
 
-      this.timer = new Timer();
-      this.backupTask = new TimerTask({ run() { Routine.backup(); } });
-      this.ticketSeasonTask = new TimerTask({ run() { Routine.ticketsAndSeason(); } });
+      var curDate = new Date();
 
-      var tsDate = new Date();
-      tsDate.setDate(tsDate.getDate() + 1);
-      tsDate.setHours(0, 0, 0, 0); // run on every midnight
-      var tsPeriod = 1 * 24 * 60 * 60 * 1000; // period: 1 day
-      this.timer.scheduleAtFixedRate(this.ticketSeasonTask, tsDate, tsPeriod);
-
-      var backupDate = new Date();
+      this.backupHandler = new Handler(Looper.getMainLooper());
+      var backupRunnable = new Runnable({
+        run(){
+          Routine.backup();
+          Logs.d("Routine.backupHandler(Routine.backup()) executed");
+          Routine.backupHandler.postDelayed(this, 60*60*1000); // 1 hour period
+        }
+      });
+      var backupDate = new Date(curDate);
       backupDate.setHours(backupDate.getHours() + 1);
       backupDate.setMinutes(30, 0, 0); // run on every 30 min
-      var backupPeriod = 60 * 60 * 1000; // period: 1 hour
-      this.timer.scheduleAtFixedRate(this.backupTask, backupDate, backupPeriod);
+      Routine.backupHandler.postDelayed(backupRunnable, backupDate.getTime() - curDate.getTime());
+
+      this.tsHandler = new Handler(Looper.getMainLooper());
+      var tsRunnable = new Runnable({
+        run(){
+          var date = new Date();
+          var day = date.getDay();
+          if (day != Routine.tsLastDay) {
+            Routine.ticketsAndSeason();
+            Logs.d("Routine.tsHandler(Routine.ticketsAndSeason()) executed");
+            Routine.tsHandler.postDelayed(this, 24*60*60*1000); // 1 day period
+          } else {
+            Logs.d("Routine.tsHandler: 1 minute delayed");
+            Routine.tsHandler.postDelayed(this, 60*1000); // retry after 1 minute
+          }
+        }
+      });
+      var tsDate = new Date(curDate);
+      tsDate.setDate(tsDate.getDate() + 1);
+      tsDate.setHours(0, 0, 10, 0); // run on every midnight + 10 s
+      Routine.tsHandler.postDelayed(tsRunnable, tsDate.getTime() - curDate.getTime());
 
       this.isRunning = true;
     }
   }
   stop() {
     if (this.isRunning) {
-      this.timer.cancel();
+      this.backupHandler.removeCallbacksAndMessages(null);
+      this.tsHandler.removeCallbacksAndMessages(null);
       this.isRunning = false;
     }
   }
