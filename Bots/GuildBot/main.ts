@@ -289,7 +289,7 @@ class _Commands {
             addStr = "\n중복 참여입니다.";
             isDuplicateAllowed = true;
           } else if (commands[3] == LOG_TYPE.RELAY) {
-            addStr = "\n이어하기 참여입니다.";
+            addStr = "\n이어하기를 하지 않을 경우 중복 처리됩니다.";
             isDuplicateAllowed = true;
           } else {
             return "명령어 오입력\n- /참여(ㅊㅇ) 이름 보스명\n- /참여 이름 보스명 [이달/중복]";
@@ -431,6 +431,7 @@ class _Commands {
         return "입력한 딜량(" + commands[2] + "만)이 현재 잔여 체력(" + boss.getRemained() + "만)보다 큽니다."
       }
 
+      var str = "";
       var logType = LOG_TYPE.NORMAL;
       if (!boss.curUsers.includes(user) && !boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
         // only one relay user can log damage
@@ -441,6 +442,7 @@ class _Commands {
         user.log.push(new DLog(boss.type, boss.curLevel, 0, LOG_TYPE.NONE));
       } else if (boss.loggedUsers.includes(user)) {
         logType = LOG_TYPE.DUPLICATE;
+        str = "\n중복으로 기록되었습니다. 참여 [이달/중복]은 특수한 경우에만 사용하세요.";
       }
 
       // Double-check with user log
@@ -454,7 +456,7 @@ class _Commands {
       boss.addDamage(user, damage);
 
       var remained = boss.getRemained();
-      return boss.type + " " + boss.curLevel + "단계 잔여: " + remained + "만";
+      return boss.type + " " + boss.curLevel + "단계 잔여: " + remained + "만" + str;
 
     } else {
       return "명령어 오입력\n- /딜량(딜, ㄷㄹ, ㄷ) 이름 딜량\n- /딜 이름 보스명 딜량";
