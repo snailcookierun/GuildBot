@@ -166,9 +166,14 @@ class _Commands {
       if (Users.userList.length < 1) {
         return "유저가 없습니다\n- /유저추가 이름"
       }
+      /*
       var str = "티켓 충전 루틴이 ";
       if (Routine.isRunning) { str += "켜져 있습니다."; }
       else { str += "꺼져 있습니다."; }
+      */
+      Users.userList.forEach(x => x.tickets = x.tickets + TICKETS_PER_DAY);
+      var str = "티켓이 +" + TICKETS_PER_DAY + "만큼 충전되었습니다.";
+
       var maxedTicketUsers = Users.userList.filter(x => x.tickets > MAX_TICKETS);
       if (maxedTicketUsers.length > 0) {
         str += "\n티켓 초과 유저: " + maxedTicketUsers.map(x => x.name).join(", ");
@@ -1242,7 +1247,7 @@ function processCommand(msg: string): string {
 function init() {
   Config.init();
   Bosses.updateConfig();
-  Routine.start();
+  //Routine.start();
 }
 
 /* checkSkipMsgs: check if message is to be skipped */

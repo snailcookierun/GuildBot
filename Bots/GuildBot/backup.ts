@@ -39,7 +39,9 @@ class _Backup {
       var bossCopy: any = new Boss(Bosses.bossList[x]);
       bossCopy.curUsers = bossCopy.curUsers.map(u => u.name);
       bossCopy.loggedUsers = bossCopy.loggedUsers.map(u => u.name);
-      Object.keys(bossCopy.relayUsers).forEach(n => bossCopy.relayUsers[n] = bossCopy.relayUsers[n].map(u => u.name));
+      var relayUsersCopy = {};
+      Object.keys(bossCopy.relayUsers).forEach(n => relayUsersCopy[n] = bossCopy.relayUsers[n].map(u => u.name));
+      bossCopy.relayUsers = relayUsersCopy;
       bossListCopy[x] = bossCopy;
     });
     var userListBackup = JSON.stringify(Users.userList);
