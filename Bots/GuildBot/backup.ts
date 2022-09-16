@@ -4,9 +4,8 @@ class _Backup {
     var base = "/storage/emulated/0/msgbot/Bots/" + SCRIPT_NAME + "/data/";
     var [valid1, userListStr] = Files.read(base + "userList.json");
     var [valid2, bossListStr] = Files.read(base + "bossList.json");
-    var [valid3, rBossListStr] = Files.read(base + "rBossList.json");
-    var [valid4, totalCountsStr] = Files.read(base + "totalCounts.json");
-    if (valid1 && valid2 && valid3 && valid4) {
+    var [valid3, totalCountsStr] = Files.read(base + "totalCounts.json");
+    if (valid1 && valid2 && valid3) {
       var userListBackup = JSON.parse(userListStr);
       Users.userList = userListBackup.map((u: IUser) => new User(u));
 
@@ -21,8 +20,6 @@ class _Backup {
       });
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x] = new Boss(bossListCopy[x]));
 
-      var rBossListBackup = JSON.parse(rBossListStr);
-      Bosses.rBossList = rBossListBackup;
 
       var totalCountsBackup = JSON.parse(totalCountsStr);
       Bosses.totalCounts = totalCountsBackup;
@@ -48,11 +45,9 @@ class _Backup {
     var valid1 = Files.write(base + "userList.json", userListBackup);
     var bossListBackup = JSON.stringify(bossListCopy);
     var valid2 = Files.write(base + "bossList.json", bossListBackup);
-    var rBossListBackup = JSON.stringify(Bosses.rBossList);
-    var valid3 = Files.write(base + "rBossList.json", rBossListBackup);
     var totalCountsBackup = JSON.stringify(Bosses.totalCounts);
-    var valid4 = Files.write(base + "totalCounts.json", totalCountsBackup);
-    return valid1 && valid2 && valid3 && valid4;
+    var valid3 = Files.write(base + "totalCounts.json", totalCountsBackup);
+    return valid1 && valid2 && valid3;
   }
 }
 const Backup = new _Backup();
