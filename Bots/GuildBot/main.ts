@@ -163,17 +163,8 @@ class _Commands {
 
   checkTickets(commands: Array<string>): string {
     if (commands.length == 1) {
-      if (Users.userList.length < 1) {
-        return "유저가 없습니다\n- /유저추가 이름"
-      }
-      
-      var str = "티켓 충전 루틴이 ";
-      if (Routine.isRunning) { str += "켜져 있습니다."; }
-      else { str += "꺼져 있습니다."; }
-      /*
       Users.userList.forEach(x => x.tickets = x.tickets + TICKETS_PER_DAY);
       var str = "티켓이 +" + TICKETS_PER_DAY + "만큼 충전되었습니다.";
-      */
       var maxedTicketUsers = Users.userList.filter(x => x.tickets > MAX_TICKETS);
       if (maxedTicketUsers.length > 0) {
         str += "\n티켓 초과 유저: " + maxedTicketUsers.map(x => x.name).join(", ");
@@ -1132,30 +1123,6 @@ class _Commands {
     }
   }
 
-  setRoutine(commands: Array<string>) : string {
-    if (commands.length == 2 && !isNumber(commands[1])) {
-      if (commands[1] == "시작") {
-        if (!Routine.isRunning) {
-          Routine.start();
-          return "루틴을 시작합니다.";
-        } else {
-          return "이미 루틴이 실행되고 있습니다.";
-        }
-      } else if (commands[1] == "종료") {
-        if (Routine.isRunning) {
-          Routine.stop();
-          return "루틴을 종료합니다.";
-        } else {
-          return "루틴이 시작되지 않았습니다.";
-        }
-      } else {
-        return "명령어 오입력\n- /루틴 [시작/종료]";
-      }
-    } else {
-      return "명령어 오입력\n- /루틴 [시작/종료]";
-    }
-  }
-
   loadConfig(commands: Array<string>): string {
     if(commands.length == 1){
       var [valid, str] = Config.load();
@@ -1239,13 +1206,12 @@ function processCommand(msg: string): string {
     case '/최대딜수정': return Commands.replaceMaxDamage(commands); break;
     case '/최소딜수정': return Commands.replaceMinDamage(commands); break;
     case '/백업': return Commands.doBackup(commands); break;
-    case '/루틴': return Commands.setRoutine(commands); break;
     case '/환경설정': return Commands.loadConfig(commands); break;
     case '/명령어': return Commands.printCommands(commands); break;
   }
 }
 
-/* init: load and initialize config & start routine */
+/* init: load and initialize config */
 function init() {
   Config.init();
   Bosses.updateConfig();
@@ -1261,14 +1227,8 @@ function checkRoomName(room: string) : boolean {
   return Config.roomName.some(x => room.startsWith(x));
 }
 
-/* stopRoutine: stop routine */
-function stopRoutine() {
-  Routine.stop();
-}
-
 
 exports.processCommand = processCommand;
 exports.init = init;
 exports.checkSkipMsgs = checkSkipMsgs;
 exports.checkRoomName = checkRoomName;
-exports.stopRoutine = stopRoutine;

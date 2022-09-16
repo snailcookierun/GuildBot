@@ -43,9 +43,7 @@ function onPause(activity) {}
 
 function onStop(activity) {}
 
-function onStartCompile() {
-  main.stopRoutine();
-}
+function onStartCompile() {}
 
 // To debug & observe notifications
 /*
