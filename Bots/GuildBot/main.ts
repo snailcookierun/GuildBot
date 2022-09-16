@@ -163,20 +163,10 @@ class _Commands {
 
   checkTickets(commands: Array<string>): string {
     if (commands.length == 1) {
-      Users.userList.forEach(x => x.tickets = x.tickets + TICKETS_PER_DAY);
-      var str = "티켓이 +" + TICKETS_PER_DAY + "만큼 충전되었습니다.";
-      var maxedTicketUsers = Users.userList.filter(x => x.tickets > MAX_TICKETS);
-      if (maxedTicketUsers.length > 0) {
-        str += "\n티켓 초과 유저: " + maxedTicketUsers.map(x => x.name).join(", ");
-        maxedTicketUsers.forEach(x => x.tickets = MAX_TICKETS);
-      }
-      var names = Users.userList.filter(u => u.tickets >= (MAX_TICKETS - TICKETS_PER_DAY + 1)).map(u => u.name + "(" + u.tickets + ")");
-      if (names.length >= 1) {
-        str += "\n잔여 티켓이 " + (MAX_TICKETS - TICKETS_PER_DAY + 1) + "개 이상 남으신 분들입니다.\n" + names.join(", ");
-      }
-      // Save backup
-      Backup.save();
-      return str;
+      // Add tickets or reset season
+      return Routine.ticketsAndSeason();
+    } else if (commands.length == 2 && commands[1] == "강제") {
+      return Routine.addTickets();
     } else {
       return "명령어 오입력\n- /티켓충전"
     }
@@ -184,14 +174,9 @@ class _Commands {
 
   resetSeason(commands: Array<string>): string {
     if (commands.length == 1) {
-      Bosses.totalCounts = 0;
-      Users.userList.forEach(x => x.tickets = TICKETS_PER_DAY);
-      Users.userList.forEach(x => x.prevRelics = x.relics);
-      Users.userList.forEach(x => x.resetCountsAndLogs());
-      Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].relayUsers = {});
-      Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].setLevel(1));
-      Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].counts = 0);
-      return "새로운 시즌을 시작합니다.\n토벌 횟수: " + Bosses.totalCounts + "/" + MAX_TOTAL_COUNTS;
+      return Routine.ticketsAndSeason(true);
+    } else if (commands.length == 2 && commands[1] == "강제") {
+      return Routine.resetSeason();
     } else {
       return "명령어 오입력\n- /시즌시작"
     }
@@ -1104,22 +1089,32 @@ class _Commands {
       if (commands[1] == "저장") {
         var valid = Backup.save();
         if (valid) {
-          return "백업 저장 완료";
+          return "백업을 저장하였습니다.";
         } else {
           return "백업 저장에 실패하였습니다.";
         }
       } else if (commands[1] == "불러오기" || commands[1] == "로드") {
         var valid = Backup.load();
         if (valid) {
-          return "백업 로드 완료";
+          return "백업을 로드하였습니다.";
         } else {
           return "백업 로드에 실패하였습니다.";
         }
       } else {
-        return "명령어 오입력\n- /백업 [저장/로드(불러오기)]";
+        return "명령어 오입력\n- /백업 [저장/로드(불러오기)]\n- /백업 자동저장 [켜기/끄기]";
+      }
+    } else if (commands.length == 3 && commands[1] == "자동저장" && !isNumber(commands[2])) {
+      if (commands[2] == "켜기") {
+        Routine.isAsOn = true;
+        return "자동 저장을 켰습니다."
+      } else if (commands[2] == "끄기") {
+        Routine.isAsOn = false;
+        return "자동 저장을 껐습니다."
+      } else {
+        return "명령어 오입력\n- /백업 [저장/로드(불러오기)]\n- /백업 자동저장 [켜기/끄기]";
       }
     } else {
-      return "명령어 오입력\n- /백업 [저장/로드(불러오기)]";
+      return "명령어 오입력\n- /백업 [저장/로드(불러오기)]\n- /백업 자동저장 [켜기/끄기]";
     }
   }
 
