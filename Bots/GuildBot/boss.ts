@@ -68,8 +68,8 @@ class Boss {
       this.relayUsers = first.relayUsers;
       this.isRelayLogged = first.isRelayLogged;
       this.counts = first.counts;
-      this.maxDamage = first.max;
-      this.minDamage = first.min;
+      this.maxDamage = first.maxDamage;
+      this.minDamage = first.minDamage;
     }
   }
 
