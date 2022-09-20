@@ -181,7 +181,7 @@ class _Bosses {
 
   updateConfig() {
     Object.keys(this.bossList).forEach(function(x){
-      var [valid, config] = Config.find(this.bossList[x].type);
+      var [valid, config] = Config.findBoss(this.bossList[x].type);
       if (valid) {
         this.bossList[x].hps = config.hps;
         this.bossList[x].maxDamage = config.maxDamage;

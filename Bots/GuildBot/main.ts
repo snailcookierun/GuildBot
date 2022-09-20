@@ -1180,6 +1180,7 @@ class _Commands {
       var [valid, str] = Config.load();
       if(valid){
         Bosses.updateConfig();
+        Routine.updateConfig();
         return "환경설정 완료";
       } else {
         return "환경설정에 실패하였습니다.\nError on config.json: " + str;
@@ -1267,6 +1268,7 @@ function processCommand(msg: string): string {
 function init() {
   Config.init();
   Bosses.updateConfig();
+  Routine.updateConfig();
 }
 
 /* checkSkipMsgs: check if message is to be skipped */
@@ -1279,8 +1281,13 @@ function checkRoomName(room: string) : boolean {
   return Config.roomName.some(x => room.startsWith(x));
 }
 
+function checkNotification(sbn) {
+  Routine.checkNotification(sbn);
+}
+
 
 exports.processCommand = processCommand;
 exports.init = init;
 exports.checkSkipMsgs = checkSkipMsgs;
 exports.checkRoomName = checkRoomName;
+exports.checkNotification = checkNotification;

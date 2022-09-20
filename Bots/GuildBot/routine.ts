@@ -1,10 +1,11 @@
 class _Routine {
   lastTsDay: number;
   isAsOn: boolean;
+  backupRoutine: RoutineConfig;
 
-  constructor() { 
-    this.lastTsDay = -1; 
-    this.isAsOn = true;
+  constructor() {
+    this.lastTsDay = -1;
+    this.isAsOn = false;
   }
 
   autoSave(): string {
@@ -75,7 +76,23 @@ class _Routine {
     Logs.d(str);
     return str;
   }
+
+  updateConfig() {
+    if (Config.routines.length == 0) { return; }
+    var [valid, routine] = Config.findRoutine("백업");
+    if (valid) { this.backupRoutine = routine; }
+  }
+
+  checkNotification(sbn) {
+    if (this.isAsOn) {
+      if (sbn.getPackageName() == this.backupRoutine.appName) {
+        var extras = sbn.getNotification().extras;
+        var title = extras.getString("android.title");
+        if (title == this.backupRoutine.title) {
+          Routine.autoSave();
+        }
+      }
+    }
+  }
 }
 const Routine = new _Routine();
-exports.autoSave = Routine.autoSave;
-exports.ticketsAndSeason = Routine.ticketsAndSeason;

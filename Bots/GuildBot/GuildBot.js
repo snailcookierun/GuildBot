@@ -46,16 +46,16 @@ function onStop(activity) {}
 function onStartCompile() {}
 
 // To debug & observe notifications
-/*
 function onNotificationPosted(sbn, sm) {
+  main.checkNotification(sbn);
+  
+  /*
   var packageName = sbn.getPackageName();
-  if (!packageName.startsWith("com.kakao.talk")) return;
-  var actions = sbn.getNotification().actions;
-  if (actions == null) return;
   var extras = sbn.getNotification().extras;
   var title = extras.getString("android.title");
   var text = extras.getString("android.text");
   var subText = extras.getString("android.subText");
-  Log.d("title: " + title + "\ntext: " + text + "\nsubText: " + subText);
+  Log.d("packageName: " + packageName + "\ntitle: " + title + "\ntext: " + text + "\nsubText: " + subText);
+  */
+  
 }
-*/

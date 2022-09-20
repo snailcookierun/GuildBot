@@ -23,6 +23,18 @@ class BossConfig {
   }
 }
 
+class RoutineConfig {
+  type: string;
+  appName: string;
+  title: string;
+
+  constructor(type: string, appName: string, title: string) {
+    this.type = type;
+    this.appName = appName;
+    this.title = title;
+  }
+}
+
 class _Config {
   MAX_COUNTS: number;
   TICKETS_PER_DAY: number;
@@ -30,6 +42,7 @@ class _Config {
   skipMsgs: Array<string>;
   roomName: Array<string>;
   bosses: Array<BossConfig>;
+  routines: Array<RoutineConfig>;
 
   constructor() {
     this.MAX_COUNTS = MAX_COUNTS;
@@ -38,6 +51,7 @@ class _Config {
     this.skipMsgs = [];
     this.roomName = [];
     this.bosses = [];
+    this.routines = [];
   }
 
   load() : [boolean, string] {
@@ -79,6 +93,17 @@ class _Config {
       return true;
     })) { return [false, "bosses"]; }
 
+    var _routines = obj["routines"];
+    if(_routines == undefined || !Array.isArray(_routines) || !_routines.every(function(routine){
+      var t = routine["type"];
+      if(t == undefined || !(typeof t == "string")) { return false; }
+      var an = routine["appName"];
+      if(an == undefined || !(typeof an == "string"))  { return false; }
+      var ti = routine["title"];
+      if(ti == undefined || !(typeof ti == "string")) { return false; }
+      return true;
+    })) { return [false, "bosses"]; }
+
     this.MAX_COUNTS = _MAX_COUNTS;
     this.TICKETS_PER_DAY = _TICKETS_PER_DAY;
     this.MAX_TICKETS = _MAX_TICKETS;
@@ -94,6 +119,13 @@ class _Config {
       return new BossConfig(t,h,max,min);
     })
 
+    this.routines = _routines.map(function(routine){
+      var t = routine["type"];
+      var an = routine["appName"];
+      var ti = routine["title"];
+      return new RoutineConfig(t,an,ti);
+    })
+
     this.update();
     return [true, ""];
   }
@@ -106,9 +138,16 @@ class _Config {
     MAX_BOSS_COUNTS = MAX_COUNTS * 30; // max boss count for one season
   }
 
-  find(b:BOSS_TYPE): [boolean, BossConfig] {
+  findBoss(b:BOSS_TYPE): [boolean, BossConfig] {
     for(const x of this.bosses){
       if(x.type == b) { return [true, x];}
+    }
+    return [false, undefined];
+  }
+
+  findRoutine(r:string): [boolean, RoutineConfig] {
+    for(const x of this.routines){
+      if(x.type == r) { return [true, x];}
     }
     return [false, undefined];
   }
