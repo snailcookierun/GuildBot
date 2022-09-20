@@ -658,19 +658,34 @@ class _Commands {
       if (boss.minDamage <= 0 || boss.maxDamage <= 0 || boss.minDamage >= boss.maxDamage) {
         return boss.type + "의 최소 또는 최대 딜이 입력되어 있지 않습니다."
       }
-      if (boss.curLevel <= 0) {
-        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
-      }
-      var remained = boss.getRemained();
-      var str = boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만\n";
+
+      var str = "";
+      var remained = 1;
+
       if (commands.length == 3) {
         if (isNatural(commands[2])) {
           remained = Number(commands[2]);
-          str = boss.type + " " + remained + "만\n";
+          if (remained < boss.minDamage) { // Assume remained as boss level
+            if(!boss.isLevelExist(remained)) {
+              return boss.type + " " + remained + "단계는 현재 체력이 입력되지 않은 단계입니다.";
+            }
+            var level = remained;
+            remained = boss.hps[level];
+            str = boss.type + " " + level + "단계: " + remained + "만\n";
+          } else {
+            str = boss.type + " " + remained + "만\n";
+          }
         } else {
-          return "명령어 오입력\n- /계산 보스명 잔여체력(1~n)";
+          return "명령어 오입력\n- /계산 보스명 [잔여체력/단계]";
         }
+      } else {
+        if (boss.curLevel <= 0) {
+          return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+        }
+        remained = boss.getRemained();
+        str = boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만\n";
       }
+      
       var start = Math.ceil(remained / boss.maxDamage);
       var end = Math.floor(remained / boss.minDamage);
       if (start <= 1 || end <= 1 || end < start) {
@@ -680,8 +695,34 @@ class _Commands {
       var numArr = Array.from(Array(len).keys()).map(x => x + start);
       str += numArr.map(n => n + "명, " + Math.round(remained / n) + "만").join("\n");
       return str;
+
+    } else if (commands.length == 4 && !isNumber(commands[1]) && isNatural(commands[2]) && isNatural(commands[3])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.minDamage <= 0 || boss.maxDamage <= 0 || boss.minDamage >= boss.maxDamage) {
+        return boss.type + "의 최소 또는 최대 딜이 입력되어 있지 않습니다."
+      }
+
+      var start = Number(commands[2]);
+      var end = Number(commands[3]);
+      if (start > end) {
+        return "시작 단계(" + start + ")가 끝 단계(" + end + ")보다 작습니다.";
+      }
+      if (!boss.isLevelExist(end)) {
+        return boss.type + " " + end + "단계는 현재 체력이 입력되지 않은 단계입니다.";
+      }
+
+      var hps = boss.hps.slice(start,end+1);
+      if(start == boss.curLevel) {hps[0] = boss.getRemained()};
+
+      var requiredCounts = hps.map(x => ((Math.floor(x / boss.minDamage) < 1) ? 1 : Math.floor(x / boss.minDamage)));
+
+      return requiredCounts.map((n,i) => (start+i) + "단계: " + n + "명, " + Math.round(hps[i]/n) + "만").join("\n");
+
     } else {
-      return "명령어 오입력\n- /계산(ㄱㅅ) 보스명\n- /계산 보스명 잔여체력(1~n)";
+      return "명령어 오입력\n- /계산(ㄱㅅ) 보스명\n- /계산 보스명 [잔여체력/단계]\n- /계산 보스명 시작단계 끝단계";
     }
   }
 
@@ -993,7 +1034,7 @@ class _Commands {
       }
       return boss.printHps(start,end);
     } else {
-      return "명령어 오입력\n- /보스체력 보스명\n- /보스체력 보스명 단계";
+      return "명령어 오입력\n- /보스체력 보스명\n- /보스체력 보스명 단계\n- /보스체력 보스명 시작단계 끝단계";
     }
   }
 
