@@ -78,15 +78,14 @@ class Boss {
     return (n > 0) && this.hps.hasOwnProperty(n);
   }
 
-  printHps(): string {
-    var text = this.type + " 단계 별 체력\n";
-    var i = 1;
-    var last = this.hps.length - 1;
-    for (i = 1; i < last; i++) {
-      text += (i) + "단계: " + this.hps[i] + "\n";
+  printHps(): string;
+  printHps(start: number, end: number): string;
+  printHps(start?: number, end?: number): string {
+    if (start != undefined && end != undefined) {
+      return this.hps.slice(start,end+1).map((x, i) => (start+i) + "단계: " + x + "만").join("\n");
+    } else {
+      return this.hps.slice(1).map((x, i) => (1+i) + "단계: " + x + "만").join("\n");
     }
-    text += (i) + "단계: " + this.hps[i];
-    return text;
   }
 
   getRemained(): number {

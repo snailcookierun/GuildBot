@@ -256,7 +256,7 @@ class _Commands {
         return user.name + " 님은 티켓이 부족하거나 참여 횟수를 모두 사용하셨습니다.\n" + user.printTicketsAndCounts();
       }
       if (boss.curUsers.includes(user)) {
-        return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 참여하셨습니다.";
+        return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 '/참여' 명령어를 입력하셨습니다.";
       }
       var isDuplicateAllowed = false;
       if (commands.length == 4) {
@@ -978,6 +978,20 @@ class _Commands {
         return boss.type + " " + level + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
       }
       return boss.type + " " + level + "단계 체력: " + boss.hps[level];
+    } else if (commands.length == 4 && !isNumber(commands[1]) && isNumber(commands[2]) && isNumber(commands[3])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      var start = Number(commands[2]);
+      var end = Number(commands[3]);
+      if (start > end) {
+        return "시작 단계(" + start + ")가 끝 단계(" + end + ")보다 작습니다.";
+      }
+      if (!boss.isLevelExist(end)) {
+        return boss.type + " " + end + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
+      }
+      return boss.printHps(start,end);
     } else {
       return "명령어 오입력\n- /보스체력 보스명\n- /보스체력 보스명 단계";
     }
@@ -994,11 +1008,13 @@ class _Commands {
       }
       var boss = Bosses.find(commands[1]);
       var newHpsNumber = newHps.map(x => Number(x));
-      if (boss.hps[boss.hps.length - 1] >= newHpsNumber[0]) {
+      var lastIndex = boss.hps.length - 1;
+      var lastHp = boss.hps[lastIndex];
+      if (newHpsNumber.some(x => lastHp >= x)) {
         return "새로 입력한 체력이 마지막 단계의 체력보다 작습니다.";
       }
       boss.hps = boss.hps.concat(newHpsNumber);
-      return boss.printHps();
+      return boss.printHps(lastIndex + 1, boss.hps.length - 1);
     } else {
       return "명령어 오입력\n- /체력추가 보스명 체력1 체력2";
     }
@@ -1067,7 +1083,7 @@ class _Commands {
         return "입력하신 유물 개수(" + newRelics + ")가 이전 시즌의 유물 개수(" + user.prevRelics + ") 보다 작습니다.";
       }
       user.relics = newRelics;
-      return user.name + " 님의 유물 수가 " + user.relics + "개로 업데이트 되었습니다.";
+      return user.name + " 님의 유물 수가 " + user.relics + "개로 업데이트 되었습니다. (+" + (user.relics - user.prevRelics) + "개)";
     } else {
       return "명령어 오입력\n- /유물(ㅇㅁ) 이름 개수"
     }
