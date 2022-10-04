@@ -255,6 +255,10 @@ class _Commands {
       if (!user.isPossibleToParticipate(boss.type)) {
         return user.name + " 님은 티켓이 부족하거나 참여 횟수를 모두 사용하셨습니다.\n" + user.printTicketsAndCounts();
       }
+      if (!Bosses.isPossibleToParticipate(boss.type)) {
+        var arr = Object.keys(Bosses.bossList).map(x => x + ": " + Bosses.bossList[x].counts + "/" + MAX_BOSS_COUNTS);
+        return "보스 별 또는 시즌 총 전투 가능 횟수를 모두 사용하였습니다.\n" + "토벌 진행 횟수: " + Bosses.totalCounts + "/" + MAX_TOTAL_COUNTS + "\n" + arr.join(", ");
+      }
       if (boss.curUsers.includes(user)) {
         return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 '/참여' 명령어를 입력하셨습니다.";
       }

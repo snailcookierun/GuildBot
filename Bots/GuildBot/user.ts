@@ -16,12 +16,14 @@ class DLog {
   level: number;
   damage: number;
   type: LOG_TYPE;
+  date: Date;
 
   constructor(boss: BOSS_TYPE, level: number, damage: number, type: LOG_TYPE) {
     this.boss = boss;
     this.level = level;
     this.damage = damage;
     this.type = type;
+    this.date = new Date();
   }
 }
 

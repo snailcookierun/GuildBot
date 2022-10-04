@@ -188,6 +188,7 @@ class _Bosses {
         this.bossList[x].minDamage = config.minDamage;
       }
     })
+
   }
 
   isNameExist(str: string): boolean {
@@ -200,6 +201,10 @@ class _Bosses {
 
   printNames(): string {
     return Object.keys(this.bossList).map(x => "- " + this.bossList[x].type + ": " + this.bossList[x].name.join(" ")).join("\n");
+  }
+
+  isPossibleToParticipate(boss: BOSS_TYPE): boolean {
+    return (this.totalCounts < MAX_COUNTS) && (this.bossList[boss].counts < MAX_BOSS_COUNTS);
   }
 
   increaseTotalCounts() {
