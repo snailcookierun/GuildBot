@@ -815,66 +815,48 @@ class _Commands {
   }
 
   printDamageLogs(commands: Array<string>): string {
-    if (commands.length == 1) {
+    if (commands.length == 1 || commands.length == 2 || commands.length == 3) {
       if (Users.userList.length < 1) {
         return "유저가 없습니다.";
       }
-      var userLogsDict: { [id: string]: Array<DLog> } = {};
-      Users.userList.map(function (user) { if (user.log.length > 0) { userLogsDict[user.name] = user.log } });
-      if (Object.keys(userLogsDict).length < 1) {
-        return "출력할 딜로그가 없습니다.";
-      }
-      var str = Object.keys(userLogsDict).map(name => userLogsDict[name].map(l => name + "," + l.boss + "," + l.level + "," + l.damage + "," + l.type).join("\n")).join("\n");
-      return "유저,보스,단계,딜량,타입\n" + str;
-    } else if (commands.length == 2 && !isNumber(commands[1])) {
-      if (Users.userList.length < 1) {
-        return "유저가 없습니다.";
-      }
-      if (!Bosses.isNameExist(commands[1])) {
-        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
-      }
-      var boss = Bosses.find(commands[1]);
-      if (boss.curLevel <= 0) {
-        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
-      }
-      var userLogsDict: { [id: string]: Array<DLog> } = {};
-      Users.userList.map(function (user) {
-        var filtered = user.log.filter(l => l.boss == boss.type);
-        if (filtered.length > 0) {
-          userLogsDict[user.name] = filtered
+      var userLogsArray: Array<DLog> = [];
+
+      if (commands.length == 1) {
+        Users.userList.forEach(function (user) { if (user.log.length > 0) { userLogsArray = userLogsArray.concat(user.log); } });
+      } else if ((commands.length == 2 || commands.length == 3) && !isNumber(commands[1])) {
+        if (!Bosses.isNameExist(commands[1])) {
+          return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
         }
-      });
-      if (Object.keys(userLogsDict).length < 1) {
-        return "출력할 딜로그가 없습니다.";
-      }
-      var str = Object.keys(userLogsDict).map(name => userLogsDict[name].map(l => name + "," + l.boss + "," + l.level + "," + l.damage + "," + l.type).join("\n")).join("\n");
-      return "유저,보스,단계,딜량,타입\n" + str;
-    } else if (commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
-      if (Users.userList.length < 1) {
-        return "유저가 없습니다.";
-      }
-      if (!Bosses.isNameExist(commands[1])) {
-        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
-      }
-      var boss = Bosses.find(commands[1]);
-      if (boss.curLevel <= 0) {
-        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
-      }
-      var level = Number(commands[2]);
-      if (!boss.isLevelExist(level)) {
-        return boss.type + " " + level + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
-      }
-      var userLogsDict: { [id: string]: Array<DLog> } = {};
-      Users.userList.map(function (user) {
-        var filtered = user.log.filter(l => l.boss == boss.type && l.level == level);
-        if (filtered.length > 0) {
-          userLogsDict[user.name] = filtered
+        var boss = Bosses.find(commands[1]);
+        if (boss.curLevel <= 0) {
+          return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
         }
-      });
-      if (Object.keys(userLogsDict).length < 1) {
+        if (commands.length == 2) {
+          Users.userList.forEach(function (user) {
+            var filtered = user.log.filter(l => l.boss == boss.type);
+            if (filtered.length > 0) { userLogsArray = userLogsArray.concat(filtered); }
+          });
+        } else if (commands.length == 3 && isNatural(commands[2])) {
+          var level = Number(commands[2]);
+          if (!boss.isLevelExist(level)) {
+            return boss.type + " " + level + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
+          }
+          Users.userList.forEach(function (user) {
+            var filtered = user.log.filter(l => l.boss == boss.type && l.level == level);
+            if (filtered.length > 0) { userLogsArray = userLogsArray.concat(filtered); }
+          });
+        } else {
+          return "명령어 오입력\n- /딜로그\n- /딜로그 보스명\n- /딜로그 보스명 단계";
+        }
+      } else {
+        return "명령어 오입력\n- /딜로그\n- /딜로그 보스명\n- /딜로그 보스명 단계";
+      }
+
+      if (userLogsArray.length < 1) {
         return "출력할 딜로그가 없습니다.";
       }
-      var str = Object.keys(userLogsDict).map(name => userLogsDict[name].map(l => name + "," + l.boss + "," + l.level + "," + l.damage + "," + l.type).join("\n")).join("\n");
+      userLogsArray.sort((a,b) => (a.date.getTime() - b.date.getTime()));
+      var str = userLogsArray.map(l => l.user + "," + l.boss + "," + l.level + "," + l.damage + "," + l.type).join("\n");
       return "유저,보스,단계,딜량,타입\n" + str;
     } else {
       return "명령어 오입력\n- /딜로그\n- /딜로그 보스명\n- /딜로그 보스명 단계";
