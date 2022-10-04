@@ -1093,19 +1093,31 @@ class _Commands {
   }
 
   addRelics(commands: Array<string>): string {
-    if (commands.length == 3 && !isNumber(commands[1]) && isUnsigned(commands[2])) {
+    if (commands.length == 3 && !isNumber(commands[1])) {
       if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
-      var newRelics = Number(commands[2]);
-      if (newRelics < user.prevRelics) {
-        return "입력하신 유물 개수(" + newRelics + ")가 이전 시즌의 유물 개수(" + user.prevRelics + ") 보다 작습니다.";
+
+      if (commands[2].startsWith('+')) {
+        var newString = commands[2].substring(1);
+        if (isUnsigned(newString)) {
+          var newRelics = Number(newString) + user.prevRelics;
+        } else {
+          return "명령어 오입력\n- /유물(ㅇㅁ) 이름 개수";
+        }
+      } else if (isUnsigned(commands[2])) {
+        var newRelics = Number(commands[2]);
+        if (newRelics < user.prevRelics) {
+          return "입력하신 유물 개수(" + newRelics + ")가 이전 시즌의 유물 개수(" + user.prevRelics + ") 보다 작습니다.";
+        }
+      } else {
+        return "명령어 오입력\n- /유물(ㅇㅁ) 이름 개수";
       }
       user.relics = newRelics;
       return user.name + " 님의 유물 수가 " + user.relics + "개로 업데이트 되었습니다. (+" + (user.relics - user.prevRelics) + "개)";
     } else {
-      return "명령어 오입력\n- /유물(ㅇㅁ) 이름 개수"
+      return "명령어 오입력\n- /유물(ㅇㅁ) 이름 개수";
     }
   }
 
