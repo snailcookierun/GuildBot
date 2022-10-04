@@ -419,7 +419,7 @@ class _Commands {
         logType = LOG_TYPE.RELAY;
         boss.isRelayLogged = true;
         boss.relayUsers[boss.curLevel] = moveItemToFront(boss.relayUsers[boss.curLevel], user);
-        user.log.push(new DLog(boss.type, boss.curLevel, 0, LOG_TYPE.NONE));
+        user.log.push(new DLog(boss.type, boss.curLevel, 0, LOG_TYPE.NONE, user.name));
       } else if (boss.loggedUsers.includes(user)) {
         logType = LOG_TYPE.DUPLICATE;
         str = "\n중복으로 기록되었습니다. 참여 [이달/중복]은 특수한 경우에만 사용하세요.";
@@ -552,10 +552,18 @@ class _Commands {
         }
       }
 
-      boss.curUsers.filter(u => u.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) == 1).map(u => u.findLogsIfUnique(boss.type, boss.curLevel, 0, LOG_TYPE.NONE)).forEach(l => l.type = LOG_TYPE.LAST);
+      if (boss.curUsers.length > 0) {
+        var damage = Math.round(boss.getRemained()/boss.curUsers.length);
+        boss.curUsers.map(u => u.findLogsIfUnique(boss.type, boss.curLevel, 0, LOG_TYPE.NONE)).forEach(function(l){l.type = LOG_TYPE.LAST; l.damage = damage;});
+      }
 
+      // If the relay user clears the current level by oneself
       if (boss.curUsers.length < 1 && boss.loggedUsers.length < 1 && boss.relayUsers[boss.curLevel].length > 0 && boss.isRelayLogged == false) {
-        boss.relayUsers[boss.curLevel].forEach(u => u.log.push(new DLog(boss.type, boss.curLevel, 0, LOG_TYPE.RELAY)));
+        if (boss.relayUsers[boss.curLevel].length > 1) {
+          return "이어하기~마무리를 2명 이상이 할 수 없습니다. 이어하기 주자: " + boss.relayUsers[boss.curLevel].map(u => u.name).join(", ");
+        }
+        var damage = Math.round(boss.getRemained()/boss.relayUsers[boss.curLevel].length);
+        boss.relayUsers[boss.curLevel].forEach(u => u.log.push(new DLog(boss.type, boss.curLevel, damage, LOG_TYPE.SOLO, u.name)));
         boss.relayUsers[boss.curLevel + 1] = boss.relayUsers[boss.curLevel];
       } else {
         boss.relayUsers[boss.curLevel + 1] = boss.curUsers;
@@ -587,17 +595,18 @@ class _Commands {
         return "현재 참여 중이거나 딜량 입력을 한 유저가 있어 '/컷취소'가 불가능합니다.";
       }
 
-      var prevLoggedUsers = Users.userList.filter(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel - 1)) && (l.damage > 0)).length > 0);
-      var prevCurUsers = Users.userList.filter(u => u.numFoundLogs(boss.type, boss.curLevel - 1, 0, LOG_TYPE.LAST) == 1);
+      var prevLoggedUsers = Users.userList.filter(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel - 1)) && (l.type != LOG_TYPE.LAST) && (l.type != LOG_TYPE.SOLO)).length > 0);
+      var prevCurUsers = Users.userList.filter(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel - 1)) && (l.type == LOG_TYPE.LAST)).length > 0);
+      var prevSoloUsers = Users.userList.filter(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel - 1)) && (l.type == LOG_TYPE.SOLO)).length > 0);
 
-      prevCurUsers.map(u => u.findLogsIfUnique(boss.type, boss.curLevel - 1, 0, LOG_TYPE.LAST)).forEach(l => l.type = LOG_TYPE.NONE); //revert curUsers logs
-      if (boss.relayUsers[boss.curLevel] == boss.relayUsers[boss.curLevel - 1]) { //revert relayUsers logs if same
-        boss.relayUsers[boss.curLevel - 1].filter(u => u.numFoundLogs(boss.type, boss.curLevel - 1, 0, LOG_TYPE.RELAY) == 1).forEach(u => u.log = removeItemOnceIfExist(u.log, u.findLogsIfUnique(boss.type, boss.curLevel - 1, 0, LOG_TYPE.RELAY)));
-      }
+      prevCurUsers.forEach(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel - 1)) && (l.type == LOG_TYPE.LAST)).forEach(function(l){l.type = LOG_TYPE.NONE; l.damage = 0;})); //revert curUsers logs
+
+      prevSoloUsers.forEach(u => u.log = removeItemOnceIfExist(u.log, u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel - 1)) && (l.type == LOG_TYPE.SOLO))[0])); //revert soloUsers logs
+
       //re-calculate damages
-      var prevDamageLogs = prevLoggedUsers.map(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel - 1)) && (l.damage > 0)).map(l => l.damage));
+      var prevDamageLogs = prevLoggedUsers.map(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel - 1)) && (l.type != LOG_TYPE.LAST) && (l.type != LOG_TYPE.SOLO) && (l.type != LOG_TYPE.NONE)).map(l => l.damage));
       var prevDamage = (prevDamageLogs.length > 0) ? prevDamageLogs.map(x => (x.length > 0) ? x.reduce(function (a, b) { return (a + b); }, 0) : 0).reduce(function (a, b) { return (a + b); }, 0) : 0;
-      var prevIsRelayLogged = prevLoggedUsers.filter(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel - 1)) && (l.damage > 0) && (l.type == LOG_TYPE.RELAY))).length == 1;
+      var prevIsRelayLogged = prevLoggedUsers.filter(u => u.log.filter(l => (l.boss == boss.type) && (l.level == (boss.curLevel - 1)) && (l.type == LOG_TYPE.RELAY))).length == 1;
 
       boss.relayUsers[boss.curLevel] = [];
       boss.curLevel -= 1;

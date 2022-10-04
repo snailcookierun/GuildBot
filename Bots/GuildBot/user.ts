@@ -5,6 +5,7 @@ enum LOG_TYPE {
   NORMAL = "기본",
   LAST = "막타",
   RELAY = "이달",
+  SOLO = "솔플",
   DUPLICATE = "중복"
 }
 
@@ -16,13 +17,15 @@ class DLog {
   level: number;
   damage: number;
   type: LOG_TYPE;
+  user: string;
   date: Date;
 
-  constructor(boss: BOSS_TYPE, level: number, damage: number, type: LOG_TYPE) {
+  constructor(boss: BOSS_TYPE, level: number, damage: number, type: LOG_TYPE, user: string) {
     this.boss = boss;
     this.level = level;
     this.damage = damage;
     this.type = type;
+    this.user = user;
     this.date = new Date();
   }
 }
@@ -111,7 +114,7 @@ class User {
   }
 
   addParticipate(bossType: BOSS_TYPE, curLevel: number) {
-    this.log.push(new DLog(bossType, curLevel, 0, LOG_TYPE.NONE));
+    this.log.push(new DLog(bossType, curLevel, 0, LOG_TYPE.NONE, this.name));
     this.tickets -= 1;
     this.counts[bossType] += 1;
   }
