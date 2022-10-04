@@ -204,7 +204,7 @@ class _Bosses {
   }
 
   isPossibleToParticipate(boss: BOSS_TYPE): boolean {
-    return (this.totalCounts < MAX_COUNTS) && (this.bossList[boss].counts < MAX_BOSS_COUNTS);
+    return (this.totalCounts < MAX_TOTAL_COUNTS) && (this.bossList[boss].counts < MAX_BOSS_COUNTS);
   }
 
   increaseTotalCounts() {
