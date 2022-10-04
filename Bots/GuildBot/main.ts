@@ -460,46 +460,30 @@ class _Commands {
           return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
         }
         var boss = Bosses.find(commands[2]);
-        if (boss.curLevel <= 0) {
-          return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      } else { // commands.length == 2
+        var possibleBosses : Boss[] = Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].loggedUsers.includes(user)).map(x => Bosses.bossList[x]);
+        if (possibleBosses.length > 1) {
+          return user.name + " 님은 여러 보스(" + possibleBosses.map(b => b.type).join(" ") + ")에 딜량 기록이 있습니다.";
+        } else if (possibleBosses.length < 1) {
+          return user.name + " 님은 현재 보스 단계에 딜량 기록이 없습니다.";
         }
-        var logs = user.log.filter(x => (x.boss == boss.type) && (x.level == boss.curLevel)
-          && (x.type != LOG_TYPE.NONE) && (x.type != LOG_TYPE.LAST));
-        if (logs.length < 1) {
-          return user.name + " 님은 " + boss.type + " " + boss.curLevel + "단계 딜량 기록이 없습니다.";
-        }
-        var log = logs[logs.length - 1];
-        // delete log if it is relay
-        if (log.type == LOG_TYPE.RELAY) {
-          boss.revertDamage(user, log.damage, true);
-          user.log = removeItemOnceIfExist(user.log, log);
-        } else {
-          boss.revertDamage(user, log.damage, false);
-          user.revertDamage(log.boss, log.level, log.damage, log.type);
-        }
-        return user.name + " 님의 " + boss.type + " " + boss.curLevel + "단계 딜량 기록이 삭제되었습니다.";
-      } else {
-        var logs = user.log.filter(x => (x.type != LOG_TYPE.NONE) && (x.type != LOG_TYPE.LAST));
-        if (logs.length < 1) {
-          return user.name + " 님은 딜량 기록이 없습니다.";
-        } else if (logs.length > 1) {
-          return user.name + " 님의 딜량 기록이 여러 개 있습니다.\n- /딜취소 이름 보스명"
-        }
-        var log = logs[logs.length - 1];
-        var boss = Bosses.bossList[log.boss];
-        if (boss.curLevel != log.level) {
-          return user.name + " 님은 " + boss.type + " " + boss.curLevel + "단계 딜량 기록이 없습니다.";
-        }
-        // delete log if it is relay
-        if (log.type == LOG_TYPE.RELAY) {
-          boss.revertDamage(user, log.damage, true);
-          user.log = removeItemOnceIfExist(user.log, log);
-        } else {
-          boss.revertDamage(user, log.damage, false);
-          user.revertDamage(log.boss, log.level, log.damage, log.type);
-        }
-        return user.name + " 님의 " + boss.type + " " + boss.curLevel + "단계 딜량 기록이 삭제되었습니다.";
+        var boss = possibleBosses[0];
       }
+      var logs = user.log.filter(x => (x.boss == boss.type) && (x.level == boss.curLevel)
+        && (x.type != LOG_TYPE.NONE) && (x.type != LOG_TYPE.LAST));
+      if (logs.length < 1) {
+        return user.name + " 님은 " + boss.type + " " + boss.curLevel + "단계 딜량 기록이 없습니다.";
+      }
+      var log = logs[logs.length - 1];
+      // delete log if it is relay
+      if (log.type == LOG_TYPE.RELAY) {
+        boss.revertDamage(user, log.damage, true);
+        user.log = removeItemOnceIfExist(user.log, log);
+      } else {
+        boss.revertDamage(user, log.damage, false);
+        user.revertDamage(log.boss, log.level, log.damage, log.type);
+      }
+      return user.name + " 님의 " + boss.type + " " + boss.curLevel + "단계 딜량 기록이 삭제되었습니다.";
     } else {
       return "명령어 오입력\n- /딜취소 이름\n- /딜취소 이름 보스명";
     }
@@ -670,7 +654,7 @@ class _Commands {
         if (isNatural(commands[2])) {
           remained = Number(commands[2]);
           if (remained < boss.minDamage) { // Assume remained as boss level
-            if(!boss.isLevelExist(remained)) {
+            if (!boss.isLevelExist(remained)) {
               return boss.type + " " + remained + "단계는 현재 체력이 입력되지 않은 단계입니다.";
             }
             var level = remained;
@@ -689,7 +673,7 @@ class _Commands {
         remained = boss.getRemained();
         str = boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만\n";
       }
-      
+
       var start = Math.ceil(remained / boss.maxDamage);
       var end = Math.floor(remained / boss.minDamage);
       if (start <= 1 || end <= 1 || end < start) {
@@ -718,12 +702,12 @@ class _Commands {
         return boss.type + " " + end + "단계는 현재 체력이 입력되지 않은 단계입니다.";
       }
 
-      var hps = boss.hps.slice(start,end+1);
-      if(start == boss.curLevel) {hps[0] = boss.getRemained()};
+      var hps = boss.hps.slice(start, end + 1);
+      if (start == boss.curLevel) { hps[0] = boss.getRemained() };
 
       var requiredCounts = hps.map(x => ((Math.floor(x / boss.minDamage) < 1) ? 1 : Math.floor(x / boss.minDamage)));
 
-      return requiredCounts.map((n,i) => (start+i) + "단계: " + n + "명, " + Math.round(hps[i]/n) + "만").join("\n");
+      return requiredCounts.map((n, i) => (start + i) + "단계: " + n + "명, " + Math.round(hps[i] / n) + "만").join("\n");
 
     } else {
       return "명령어 오입력\n- /계산(ㄱㅅ) 보스명\n- /계산 보스명 [잔여체력/단계]\n- /계산 보스명 시작단계 끝단계";
@@ -1036,7 +1020,7 @@ class _Commands {
       if (!boss.isLevelExist(end)) {
         return boss.type + " " + end + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
       }
-      return boss.printHps(start,end);
+      return boss.printHps(start, end);
     } else {
       return "명령어 오입력\n- /보스체력 보스명\n- /보스체력 보스명 단계\n- /보스체력 보스명 시작단계 끝단계";
     }
@@ -1145,7 +1129,7 @@ class _Commands {
     }
   }
 
-  doBackup(commands: Array<string>) : string {
+  doBackup(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
       if (commands[1] == "저장") {
         var valid = Backup.save();
@@ -1180,9 +1164,9 @@ class _Commands {
   }
 
   loadConfig(commands: Array<string>): string {
-    if(commands.length == 1){
+    if (commands.length == 1) {
       var [valid, str] = Config.load();
-      if(valid){
+      if (valid) {
         Bosses.updateConfig();
         Routine.updateConfig();
         return "환경설정 완료";
@@ -1276,12 +1260,12 @@ function init() {
 }
 
 /* checkSkipMsgs: check if message is to be skipped */
-function checkSkipMsgs(msg: string) : boolean {
+function checkSkipMsgs(msg: string): boolean {
   return Config.skipMsgs.some(x => msg.startsWith(x));
 }
 
 /* checkRoomName: check roomName */
-function checkRoomName(room: string) : boolean {
+function checkRoomName(room: string): boolean {
   return Config.roomName.some(x => room.startsWith(x));
 }
 
