@@ -43,6 +43,7 @@ class _Config {
   roomName: Array<string>;
   bosses: Array<BossConfig>;
   routines: Array<RoutineConfig>;
+  cookieCoolTime: {[key in string] : number};
 
   constructor() {
     this.MAX_COUNTS = MAX_COUNTS;
@@ -57,28 +58,28 @@ class _Config {
   load() : [boolean, string] {
     var path = "/storage/emulated/0/msgbot/Bots/" + SCRIPT_NAME + "/config.json";
     var [valid, str] = Files.read(path);
-    if(!valid) { return [false, "missing " + path]; }
+    if(!valid) { return [false, "Error on config.json: missing " + path]; }
     var obj = JSON.parse(str);
 
     var _MAX_COUNTS = obj["MAX_COUNTS"];
     if(_MAX_COUNTS == undefined || !(typeof _MAX_COUNTS == "number")) { 
-      return [false, "MAX_COUNTS"]; }
+      return [false, "Error on config.json: MAX_COUNTS"]; }
 
     var _TICKETS_PER_DAY = obj["TICKETS_PER_DAY"];
     if(_TICKETS_PER_DAY == undefined || !(typeof _TICKETS_PER_DAY == "number")) { 
-      return [false, "TICKETS_PER_DAY"]; }
+      return [false, "Error on config.json: TICKETS_PER_DAY"]; }
 
     var _MAX_TICKETS = obj["MAX_TICKETS"];
     if(_MAX_TICKETS == undefined || !(typeof _MAX_TICKETS == "number")) { 
-      return [false, "MAX_TICKETS"]; }
+      return [false, "Error on config.json: MAX_TICKETS"]; }
 
     var _skipMsgs = obj["skipMsgs"];
     if(_skipMsgs == undefined || !Array.isArray(_skipMsgs) || !_skipMsgs.every(v => typeof v == "string")) { 
-      return [false, "skipMsgs"]; }
+      return [false, "Error on config.json: skipMsgs"]; }
 
     var _roomName = obj["roomName"];
     if(_roomName == undefined || !Array.isArray(_roomName) || !_roomName.every(v => typeof v == "string")) { 
-      return [false, "roomName"]; }
+      return [false, "Error on config.json: roomName"]; }
 
     var _bosses = obj["bosses"];
     if(_bosses == undefined || !Array.isArray(_bosses) || !_bosses.every(function(boss){
@@ -91,7 +92,7 @@ class _Config {
       var min = boss["minDamage"];
       if(min == undefined || !(typeof min == "number")) { return false; }
       return true;
-    })) { return [false, "bosses"]; }
+    })) { return [false, "Error on config.json: bosses"]; }
 
     var _routines = obj["routines"];
     if(_routines == undefined || !Array.isArray(_routines) || !_routines.every(function(routine){
@@ -102,7 +103,17 @@ class _Config {
       var ti = routine["title"];
       if(ti == undefined || !(typeof ti == "string")) { return false; }
       return true;
-    })) { return [false, "bosses"]; }
+    })) { return [false, "Error on config.json: bosses"]; }
+
+    var path2 = "/storage/emulated/0/msgbot/Bots/" + SCRIPT_NAME + "/config-cooltime.json";
+    var [valid2, str2] = Files.read(path2);
+    if(!valid2) { return [false, "Error on config-cooltime.json: missing " + path2]; }
+    var obj2 = JSON.parse(str2);
+
+    if(!Object.keys(obj2).every(x => typeof x == "string")){ return [false, "Error on config-cooltime.json: some cookie name is not a string"]};
+    if(!Object.keys(obj2).map(k => obj2[k]).every(x => typeof x == "number")){ return [false, "Error on config-cooltime.json: some cookie cooltime is not a number"]};
+
+    this.cookieCoolTime = obj2;
 
     this.MAX_COUNTS = _MAX_COUNTS;
     this.TICKETS_PER_DAY = _TICKETS_PER_DAY;

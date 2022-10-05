@@ -1128,7 +1128,21 @@ class _Commands {
       }
       return "유물 현황\n" + Users.userList.map(u => u.name + ": " + u.relics + " (+" + (u.relics - u.prevRelics) + ")").join("\n");
     } else {
-      return "명령어 오입력\n- /유물현황(ㅇㅁㅎㅎ)"
+      return "명령어 오입력\n- /유물현황(ㅇㅁㅎㅎ)";
+    }
+  }
+
+  calculateCoolTime(commands: Array<string>): string {
+    if (commands.length == 2) {
+      if (isNatural(commands[1])) {
+        return "쿨타임 " + commands[1] + "초\n" + CoolTime.calculate(Number(commands[1]));
+      } else if (isNumber(commands[1])) {
+        return "명령어 오입력\n- /쿨타임(쿨) 쿠키이름\n- /쿨타임 숫자(1~n)";
+      } else {
+        return CoolTime.calculateCookie(commands[1]);
+      }
+    } else {
+      return "명령어 오입력\n- /쿨타임(쿨) 쿠키이름\n- /쿨타임 숫자(1~n)";
     }
   }
 
@@ -1172,9 +1186,10 @@ class _Commands {
       if (valid) {
         Bosses.updateConfig();
         Routine.updateConfig();
+        CoolTime.updateConfig();
         return "환경설정 완료";
       } else {
-        return "환경설정에 실패하였습니다.\nError on config.json: " + str;
+        return "환경설정에 실패하였습니다.\n" + str;
       }
     } else {
       return "명령어 오입력\n- /환경설정";
@@ -1244,6 +1259,8 @@ function processCommand(msg: string): string {
     case '/유물': return Commands.addRelics(commands); break;
     case '/ㅇㅁㅎㅎ':
     case '/유물현황': return Commands.printRelics(commands); break;
+    case '/쿨':
+    case '/쿨타임': return Commands.calculateCoolTime(commands); break;
     case '/보스체력': return Commands.printBossHp(commands); break;
     case '/체력추가': return Commands.addBossHp(commands); break;
     case '/체력수정': return Commands.replaceBossHp(commands); break;
