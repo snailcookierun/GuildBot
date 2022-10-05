@@ -1277,6 +1277,7 @@ function init() {
   Config.init();
   Bosses.updateConfig();
   Routine.updateConfig();
+  CoolTime.updateConfig();
 }
 
 /* checkSkipMsgs: check if message is to be skipped */
