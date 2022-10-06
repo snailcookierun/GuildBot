@@ -4,15 +4,15 @@ class _CoolTime {
   updateConfig(){this.cookieCoolTime = Config.cookieCoolTime}
 
   calculate(n: number) : string {
-    var max = Math.round(n*0.3);
-    var min = Math.round(n*0.7*0.3);
+    var max = Math.ceil(n*0.3-0.5);
+    var min = Math.ceil(n*0.7*0.3-0.5);
     if (min < 1 || max < 1) {
       return "시작 쿨타임을 계산하기에 쿨타임이 너무 짧습니다.";
     }
     var len = max - min + 1;
     var numArr = Array.from(Array(len).keys()).map(x => max - x);
     var str = numArr.map(function(x){
-      var c = (Math.ceil((1-(1/0.3/n)*(x+0.4999))*1000)/10);
+      var c = (Math.ceil((1-(1/0.3/n)*(x+0.5))*1000)/10);
       var d = c > 0 ? c : 0;
       return x + "초: " + d + "%";
     }).join("\n");
