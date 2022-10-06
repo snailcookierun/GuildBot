@@ -18,7 +18,7 @@ class DLog {
   damage: number;
   type: LOG_TYPE;
   user: string;
-  date: Date;
+  date: number;
 
   constructor(boss: BOSS_TYPE, level: number, damage: number, type: LOG_TYPE, user: string) {
     this.boss = boss;
@@ -26,7 +26,7 @@ class DLog {
     this.damage = damage;
     this.type = type;
     this.user = user;
-    this.date = new Date();
+    this.date = (new Date()).getTime();
   }
 }
 

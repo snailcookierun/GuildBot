@@ -855,7 +855,7 @@ class _Commands {
       if (userLogsArray.length < 1) {
         return "출력할 딜로그가 없습니다.";
       }
-      userLogsArray.sort((a,b) => (a.date.getTime() - b.date.getTime()));
+      userLogsArray.sort((a,b) => (a.date - b.date));
       var str = userLogsArray.map(l => l.user + "," + l.boss + "," + l.level + "," + l.damage + "," + l.type).join("\n");
       return "유저,보스,단계,딜량,타입\n" + str;
     } else {
@@ -1195,6 +1195,12 @@ class _Commands {
       return "명령어 오입력\n- /환경설정";
     }
   }
+
+  hotFix(commands: Array<string>): string {
+    //@ts-ignore
+    //Users.userList.forEach(u => u.log.forEach(l => l.date = Date.parse(l.date)))
+    return "핫픽스 완료";
+  }
 }
 const Commands = new _Commands();
 
@@ -1269,6 +1275,7 @@ function processCommand(msg: string): string {
     case '/백업': return Commands.doBackup(commands); break;
     case '/환경설정': return Commands.loadConfig(commands); break;
     case '/명령어': return Commands.printCommands(commands); break;
+    case '/핫픽스': return Commands.hotFix(commands); break;
   }
 }
 
