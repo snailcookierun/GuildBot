@@ -1255,14 +1255,24 @@ class _Commands {
   }
 
   checkNickname(commands: Array<string>): string {
-    if(commands.length == 2 && !isNumber(commands[1])) {
+    if(commands.length == 1) {
+      var rNicknameMap = reverseObject(Users.nicknameMap);
+      return Users.userList.map(function(user){
+        var nicknames = rNicknameMap[user.name];
+        if (nicknames == undefined || nicknames == null || nicknames.length <= 0) {
+          return user.name;
+        } else {
+          return user.name + "(" + nicknames.join(", ") + ")";
+        }
+      }).join(" ");
+    } else if(commands.length == 2 && !isNumber(commands[1])) {
       if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
       var rNicknameMap = reverseObject(Users.nicknameMap);
       var nicknames = rNicknameMap[user.name];
-      if (nicknames == undefined || nicknames == null || nicknames.length < 0) {
+      if (nicknames == undefined || nicknames == null || nicknames.length <= 0) {
         return user.name + " 님에게 등록된 닉네임이 없습니다.";
       } else {
         return user.name + ": " + nicknames.join(", ");
