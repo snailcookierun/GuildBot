@@ -84,7 +84,14 @@ class _Commands {
       var u = Users.find(commands[1]);
       var prevName = u.name;
       u.name = commands[2];
-      return prevName + " 님의 이름이 " + u.name + " 으로 변경되었습니다."
+
+      //change nicknameMap
+      var rNicknameMap = reverseObject(Users.nicknameMap);
+      var nicknames = rNicknameMap[prevName];
+      if (nicknames != null && nicknames != undefined && nicknames.length > 0) {
+        nicknames.forEach(nick => {Users.deleteNickname(nick); Users.addNickname(u.name, nick)});
+      }
+      return prevName + " 님의 이름이 " + u.name + " (으)로 변경되었습니다."
     } else {
       return "명령어 오입력\n- /이름변경 이름 새이름";
     }
@@ -96,10 +103,18 @@ class _Commands {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var u = Users.find(commands[1]);
+      var name = u.name;
       if (u.log.length > 0) {
         return "시즌 초기화 이후에 사용해주세요.";
       }
-      Users.remove(commands[1]);
+      Users.remove(name);
+
+      //remove nicknameMap
+      var rNicknameMap = reverseObject(Users.nicknameMap);
+      var nicknames = rNicknameMap[name];
+      if (nicknames != null && nicknames != undefined && nicknames.length > 0) {
+        nicknames.forEach(nick => Users.deleteNickname(nick));
+      }
       return Users.printUserList();
     } else {
       return "명령어 오입력\n- /유저삭제 이름";
@@ -1221,7 +1236,7 @@ class _Commands {
         return "유효하지 않는 닉네임입니다.";
       }
       Users.changeNickname(commands[1],commands[2]);
-      return commands[1] + " 닉네임이 " + commands[2] + " 로 변경되었습니다.";
+      return commands[1] + " 닉네임이 " + commands[2] + " (으)로 변경되었습니다.";
     } else {
       return "명령어 오입력\n- /닉네임변경 닉네임 새닉네임";
     }
@@ -1281,6 +1296,7 @@ function processCommand(msg: string): string {
     case '/유저삭제': return Commands.removeUser(commands); break;
     case '/유저리스트': return Commands.printUserList(commands); break;
     case '/닉네임추가': return Commands.addNickname(commands); break;
+    case '/닉네임수정':
     case '/닉네임변경': return Commands.changeNickname(commands); break;
     case '/닉네임삭제': return Commands.deleteNickname(commands); break;
     case '/닉네임확인':
