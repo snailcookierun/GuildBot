@@ -153,9 +153,11 @@ class User {
 
 class _Users {
   userList: Array<User>;
+  nicknameMap: {[key: string]: string};
 
   constructor() {
     this.userList = [];
+    this.nicknameMap = {};
   }
 
   /* printTickets: print remained tickets of users */
@@ -188,15 +190,30 @@ class _Users {
     if (Object.keys(rBossList).includes(name)) {
       return false;
     }
+    // check with nickname map
+    if (Object.keys(this.nicknameMap).includes(name)) {
+      return false;
+    }
     return true;
   }
 
-  isNameExist(name: string): boolean {
+  isNicknameExist(nick: string): boolean {
+    var arr = this.userList.map(x => x.name);
+    return arr.includes(nick) || Object.keys(this.nicknameMap).includes(nick);
+  }
+
+  isUserExist(name: string): boolean {
     var arr = this.userList.map(x => x.name);
     return arr.includes(name);
   }
 
-  find(name: string): User {
+  find(nick: string): User {
+    var findName = this.nicknameMap[nick];
+    if (findName == undefined || findName == null) {
+      var name = nick;
+    } else {
+      var name = findName;
+    }
     for (var u of this.userList) {
       if (u.name == name) return u;
     }
@@ -213,6 +230,10 @@ class _Users {
     var u = this.find(name);
     var index = this.userList.indexOf(u);
     this.userList.splice(index, 1);
+  }
+
+  addNickname(name: string, nick: string) {
+    this.nicknameMap[nick] = name;
   }
 }
 const Users = new _Users;
