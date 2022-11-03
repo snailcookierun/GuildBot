@@ -1196,6 +1196,68 @@ class _Commands {
     }
   }
 
+  addNickname(commands: Array<string>): string {
+    if(commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      if (!Users.isNewNameValid(commands[2])) {
+        return "유효하지 않는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
+      Users.addNickname(user.name,commands[2]);
+      return user.name + " 님의 닉네임에 " + commands[2] + " 이(가) 추가되었습니다.";
+    } else {
+      return "명령어 오입력\n- /닉네임추가 유저이름 닉네임";
+    }
+  }
+
+  changeNickname(commands: Array<string>): string {
+    if(commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {
+      if (!Users.isNicknameExist(commands[1])) {
+        return commands[1] + " 은(는) 없는 닉네임입니다.";
+      }
+      if (!Users.isNewNameValid(commands[2]) || commands[1] == commands[2]) {
+        return "유효하지 않는 닉네임입니다.";
+      }
+      Users.changeNickname(commands[1],commands[2]);
+      return commands[1] + " 닉네임이 " + commands[2] + " 로 변경되었습니다.";
+    } else {
+      return "명령어 오입력\n- /닉네임변경 닉네임 새닉네임";
+    }
+  }
+
+  deleteNickname(commands: Array<string>): string {
+    if(commands.length == 2 && !isNumber(commands[1])) {
+      if (!Users.isNicknameExist(commands[1])) {
+        return commands[1] + " 은(는) 없는 닉네임입니다.";
+      }
+      Users.deleteNickname(commands[1]);
+      return commands[1] + " 닉네임이 삭제되었습니다.";
+    } else {
+      return "명령어 오입력\n- /닉네임삭제 닉네임";
+    }
+  }
+
+  checkNickname(commands: Array<string>): string {
+    if(commands.length == 2 && !isNumber(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
+      var rNicknameMap = reverseObject(Users.nicknameMap);
+      var nicknames = rNicknameMap[user.name];
+      if (nicknames == undefined || nicknames == null || nicknames.length < 0) {
+        return user.name + " 님에게 등록된 닉네임이 없습니다.";
+      } else {
+        return user.name + ": " + nicknames.join(", ");
+      }
+    } else {
+      return "명령어 오입력\n- /닉네임(닉네임확인) 닉네임";
+    }
+  }
+
+
   hotFix(commands: Array<string>): string {
     //@ts-ignore
     //Users.userList.forEach(u => u.log.forEach(l => l.date = Date.parse(l.date)))
@@ -1218,6 +1280,11 @@ function processCommand(msg: string): string {
     case '/이름변경': return Commands.changeUserName(commands); break;
     case '/유저삭제': return Commands.removeUser(commands); break;
     case '/유저리스트': return Commands.printUserList(commands); break;
+    case '/닉네임추가': return Commands.addNickname(commands); break;
+    case '/닉네임변경': return Commands.changeNickname(commands); break;
+    case '/닉네임삭제': return Commands.deleteNickname(commands); break;
+    case '/닉네임확인':
+    case '/닉네임': return Commands.checkNickname(commands); break;
     case '/티켓충전': return Commands.checkTickets(commands); break;
     case '/시즌시작': return Commands.resetSeason(commands); break;
     case '/ㅎㅇ':

@@ -238,5 +238,16 @@ class _Users {
   addNickname(name: string, nick: string) {
     this.nicknameMap[nick] = name;
   }
+
+  changeNickname(nick: string, newNick: string) {
+    if (nick != newNick) {
+      this.nicknameMap[newNick] = this.nicknameMap[nick];
+      delete this.nicknameMap[nick];
+    }
+  }
+
+  deleteNickname(nick: string) {
+    delete this.nicknameMap[nick];
+  }
 }
 const Users = new _Users;

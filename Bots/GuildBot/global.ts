@@ -31,3 +31,14 @@ function average(arr: Array<number>) { if (arr.length > 0) { return Math.round(a
 const bossTypeMap = (fn: Function) => (Object.keys(BOSS_TYPE) as (keyof typeof BOSS_TYPE)[]).map(
   (key, index) => { return fn(BOSS_TYPE[key]); }
 )
+const reverseObject = (obj) => {
+  const newObj = {};
+  Object.keys(obj).forEach(key => {
+     if(newObj[obj[key]]){
+        newObj[obj[key]].push(key);
+     }else{
+        newObj[obj[key]] = [key];
+     }
+  });
+  return newObj;
+};
