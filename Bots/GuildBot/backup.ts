@@ -13,9 +13,9 @@ class _Backup {
       var bossListCopy = {};
       Object.keys(bossListBackup).forEach(function (x) {
         var boss = bossListBackup[x];
-        boss.curUsers = boss.curUsers.filter(name => Users.isNicknameExist(name)).map(name => Users.find(name));
-        boss.loggedUsers = boss.loggedUsers.filter(name => Users.isNicknameExist(name)).map(name => Users.find(name));
-        Object.keys(boss.relayUsers).forEach(n => boss.relayUsers[n] = boss.relayUsers[n].filter(name => Users.isNicknameExist(name)).map(name => Users.find(name)));
+        boss.curUsers = boss.curUsers.filter(name => Users.isNameExist(name)).map(name => Users.find(name));
+        boss.loggedUsers = boss.loggedUsers.filter(name => Users.isNameExist(name)).map(name => Users.find(name));
+        Object.keys(boss.relayUsers).forEach(n => boss.relayUsers[n] = boss.relayUsers[n].filter(name => Users.isNameExist(name)).map(name => Users.find(name)));
         bossListCopy[x] = boss;
       });
       Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x] = new Boss(bossListCopy[x]));

@@ -46,7 +46,7 @@ class _Commands {
 
   changeUser(commands: Array<string>): string {
     if (commands.length == 3 && !isNumber(commands[1]) && isUnsigned(commands[2])) {  // /유저수정 이름 티켓수
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var u = Users.find(commands[1]);
@@ -57,7 +57,7 @@ class _Commands {
       u.tickets = tickets;
       return u.name + " 님의 잔여 티켓 수가 " + u.tickets + "로 수정되었습니다.";
     } else if (commands.length == 4 && !isNumber(commands[1]) && !isNumber(commands[2]) && isUnsigned(commands[3])) {  // /유저수정 이름 보스명 참여횟수
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var u = Users.find(commands[1]);
@@ -78,7 +78,7 @@ class _Commands {
 
   changeUserName(commands: Array<string>): string {
     if (commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) { // /이름변경 이름 새이름
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var u = Users.find(commands[1]);
@@ -92,7 +92,7 @@ class _Commands {
 
   removeUser(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) { // /유저삭제 이름
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var u = Users.find(commands[1]);
@@ -108,13 +108,13 @@ class _Commands {
 
   printUser(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) { // /유저 이름
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var u = Users.find(commands[1]);
       return u.printInfo();
     } else if (commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {  // /유저 이름 [티켓, 횟수, 보스명]
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var u = Users.find(commands[1]);
@@ -150,7 +150,7 @@ class _Commands {
         var b = Bosses.find(commands[1]);
         return JSON.stringify(b);
 
-      } else if (Users.isNicknameExist(commands[1])) {
+      } else if (Users.isNameExist(commands[1])) {
         var u = Users.find(commands[1]);
         return JSON.stringify(u.log);
       } else {
@@ -226,7 +226,7 @@ class _Commands {
 
   addParticipate(commands: Array<string>): string {
     if ((commands.length == 3 || commands.length == 4) && !isNumber(commands[1])) {
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
@@ -300,7 +300,7 @@ class _Commands {
       if (Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
@@ -358,7 +358,7 @@ class _Commands {
       if (Bosses.isNameExist(commands[1])) {
         return "보스명이 아닌 닉네임을 입력해주세요.\n- /딜 이름 딜량";
       }
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
@@ -448,7 +448,7 @@ class _Commands {
       if (Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
@@ -494,7 +494,7 @@ class _Commands {
       if (Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
@@ -912,7 +912,7 @@ class _Commands {
       if (Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
@@ -923,7 +923,7 @@ class _Commands {
         user.log.filter(l => (l.boss == Bosses.bossList[x].type)).map(l => l.level + "/" + l.damage + "/" + l.type).join(", "))).join("\n");
       return user.name + " 님의 딜량 기록입니다.\n" + str;
     } else if (commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
@@ -946,7 +946,7 @@ class _Commands {
       if (Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
@@ -960,7 +960,7 @@ class _Commands {
         average(user.log.filter(l => (l.boss == Bosses.bossList[x].type) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage)))).join("\n");
       return user.name + " 님의 딜량 평균입니다.\n" + str;
     } else if (commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
@@ -1094,7 +1094,7 @@ class _Commands {
 
   addRelics(commands: Array<string>): string {
     if (commands.length == 3 && !isNumber(commands[1])) {
-      if (!Users.isNicknameExist(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);

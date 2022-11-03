@@ -198,13 +198,16 @@ class _Users {
   }
 
   isNicknameExist(nick: string): boolean {
-    var arr = this.userList.map(x => x.name);
-    return arr.includes(nick) || Object.keys(this.nicknameMap).includes(nick);
+    return Object.keys(this.nicknameMap).includes(nick);
   }
 
   isUserExist(name: string): boolean {
     var arr = this.userList.map(x => x.name);
     return arr.includes(name);
+  }
+
+  isNameExist(name: string): boolean {
+    return this.isNicknameExist(name) || this.isUserExist(name);
   }
 
   find(nick: string): User {
