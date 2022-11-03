@@ -172,11 +172,13 @@ class _Bosses {
   bossList: { [key in BOSS_TYPE]: Boss };
   rBossList: { [key: string]: BOSS_TYPE };
   totalCounts: number;
+  duplicateAllowed: boolean;
 
   constructor(bossList: { [key in BOSS_TYPE]: Boss }, rBossList: { [key: string]: BOSS_TYPE }) {
     this.bossList = bossList;
     this.rBossList = rBossList;
     this.totalCounts = 0;
+    this.duplicateAllowed = false;
   }
 
   updateConfig() {

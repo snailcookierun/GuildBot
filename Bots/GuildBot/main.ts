@@ -295,6 +295,10 @@ class _Commands {
           return "현재 " + boss.type + " 단계(" + boss.curLevel + ")와 입력한 단계(" + commands[3] + ")가 다릅니다."
         }
       }
+      if (Bosses.duplicateAllowed) {
+        addStr = "\n중복 참여 허용 모드입니다.";
+        isDuplicateAllowed = true;
+      }
       if (!isDuplicateAllowed && boss.loggedUsers.includes(user) && !(boss.isRelayLogged && (boss.relayUsers[boss.curLevel])[0] == user)) {
         return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 참여한 기록이 있습니다.\n- /참여 이름 보스명 [이달/중복]";
       }
@@ -1282,6 +1286,22 @@ class _Commands {
     }
   }
 
+  allowDuplicate(commands: Array<string>): string {
+    if(commands.length == 2 && !isNumber(commands[1])) {
+      if (commands[1] == "허용") {
+        Bosses.duplicateAllowed = true;
+        return "앞으로 중복 참여를 허용합니다. 사용한 뒤에는 꼭 꺼주세요."
+      } else if (commands[1] == "거부") {
+        Bosses.duplicateAllowed = false;
+        return "앞으로 중복 참여를 허용하지 않습니다."
+      } else {
+        return "명령어 오입력\n- /중복참여 [허용/거부]";
+      }
+    } else {
+      return "명령어 오입력\n- /중복참여 [허용/거부]";
+    }
+  }
+
 
   hotFix(commands: Array<string>): string {
     //@ts-ignore
@@ -1365,6 +1385,8 @@ function processCommand(msg: string): string {
     case '/체력수정': return Commands.replaceBossHp(commands); break;
     case '/최대딜수정': return Commands.replaceMaxDamage(commands); break;
     case '/최소딜수정': return Commands.replaceMinDamage(commands); break;
+    case '/몰아치기':
+    case '/중복참여': return Commands.allowDuplicate(commands); break;
     case '/백업': return Commands.doBackup(commands); break;
     case '/환경설정': return Commands.loadConfig(commands); break;
     case '/명령어': return Commands.printCommands(commands); break;

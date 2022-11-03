@@ -40,6 +40,7 @@ class _Routine {
 
   resetSeason(): string {
     Bosses.totalCounts = 0;
+    Bosses.duplicateAllowed = false;
     Users.userList.forEach(x => x.tickets = TICKETS_PER_DAY);
     Users.userList.forEach(x => x.prevRelics = x.relics);
     Users.userList.forEach(x => x.resetCountsAndLogs());
