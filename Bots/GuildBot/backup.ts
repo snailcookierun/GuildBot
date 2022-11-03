@@ -5,9 +5,11 @@ class _Backup {
     var [valid1, userListStr] = Files.read(base + "userList.json");
     var [valid2, bossListStr] = Files.read(base + "bossList.json");
     var [valid3, totalCountsStr] = Files.read(base + "totalCounts.json");
-    if (valid1 && valid2 && valid3) {
+    var [valid4, nicknameMapStr] = Files.read(base + "nicknameMap.json");
+    if (valid1 && valid2 && valid3 && valid4) {
       var userListBackup = JSON.parse(userListStr);
       Users.userList = userListBackup.map((u: IUser) => new User(u));
+      Users.nicknameMap = JSON.parse(nicknameMapStr);
 
       var bossListBackup = JSON.parse(bossListStr);
       var bossListCopy = {};
@@ -47,7 +49,9 @@ class _Backup {
     var valid2 = Files.write(base + "bossList.json", bossListBackup);
     var totalCountsBackup = JSON.stringify(Bosses.totalCounts);
     var valid3 = Files.write(base + "totalCounts.json", totalCountsBackup);
-    return valid1 && valid2 && valid3;
+    var nicknameMapBackup = JSON.stringify(Users.nicknameMap);
+    var valid4 = Files.write(base + "nicknameMap.json", nicknameMapBackup);
+    return valid1 && valid2 && valid3 && valid4;
   }
 }
 const Backup = new _Backup();
