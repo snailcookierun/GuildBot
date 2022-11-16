@@ -655,7 +655,7 @@ class _Commands {
       }
       var arr = Object.keys(Bosses.bossList).map(function (k, i) {
         var boss = Bosses.bossList[k];
-        return boss.type + " " + boss.curLevel + "단계\n" + boss.printRemainedAndTactics();
+        return boss.type + " " + boss.curLevel + "단계 " + boss.printRemainedAndTactics();
       });
       return arr.join("\n");
     } else if (commands.length == 2 && !isNumber(commands[1])) {
@@ -1082,7 +1082,15 @@ class _Commands {
   }
 
   replaceBossHp(commands: Array<string>): string {
-    if (commands.length == 4 && !isNumber(commands[1]) && isNatural(commands[2]) && isNatural(commands[3])) {
+    if (commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      var newHp = Number(commands[2]);
+      boss.hps[boss.curLevel] = newHp;
+      return boss.type + " " + boss.curLevel + "단계 체력이 " + boss.hps[boss.curLevel] + "만으로 수정되었습니다.";
+    } else if (commands.length == 4 && !isNumber(commands[1]) && isNatural(commands[2]) && isNatural(commands[3])) {
       if (!Bosses.isNameExist(commands[1])) {
         return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
