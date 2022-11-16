@@ -1006,12 +1006,27 @@ class _Commands {
       }
       var boss = Bosses.find(commands[2]);
       if (user.log.filter(l => (l.boss == boss.type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).length < 1) {
-        return user.name + " 님은 평균을 내기 위한 충분한 " + boss.type + " 딜량 기록을 가지고 있지 않습니다." + AVG_LEVEL + "단계부터 계산됩니다.";
+        return user.name + " 님은 평균을 내기 위한 충분한 " + boss.type + " 딜량 기록을 가지고 있지 않습니다. " + AVG_LEVEL + "단계부터 계산됩니다.";
       }
       var avg = average(user.log.filter(l => (l.boss == boss.type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage));
       return user.name + " 님의 " + boss.type + " 딜량 평균: " + avg;
     } else {
       return "명령어 오입력\n- /딜평균(ㄷㅍㄱ) 유저\n- /딜평균 유저 보스명"
+    }
+  }
+
+  printAvgDamage(commands: Array<string>): string {
+    if (commands.length == 1) {
+      return Users.userList.map(user => user.name + ": " + (Object.keys(Bosses.bossList).map(x => Bosses.bossList[x].type + " " + (
+        average(user.log.filter(l => (l.boss == Bosses.bossList[x].type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage)))).join(", "))).join("\n");
+    } else if (commands.length == 2 && !isNumber(commands[1])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      return Users.userList.map(user => user.name + ": " + average(user.log.filter(l => (l.boss == boss.type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage))).join("\n");
+    } else {
+      return "명령어 오입력\n- /평균(ㅍㄱ)\n- /평균 보스명"
     }
   }
 
@@ -1126,7 +1141,7 @@ class _Commands {
     }
   }
 
-  addRelics(commands: Array<string>): string {
+  checkOrAddRelics(commands: Array<string>): string {
     if (commands.length == 3 && !isNumber(commands[1])) {
       if (!Users.isNameExist(commands[1])) {
         return commands[1] + " 님은 없는 닉네임입니다.";
@@ -1150,6 +1165,8 @@ class _Commands {
       }
       user.relics = newRelics;
       return user.name + " 님의 유물 수가 " + user.relics + "개로 업데이트 되었습니다. (+" + (user.relics - user.prevRelics) + "개)";
+    } else if (commands.length == 2 && !isNumber(commands[1])) {
+      return user.name + " 님의 유물 수: " + user.relics + "개 (+" + (user.relics - user.prevRelics) + "개)";
     } else {
       return "명령어 오입력\n- /유물(ㅇㅁ) 이름 개수";
     }
@@ -1374,6 +1391,8 @@ function processCommand(msg: string): string {
     case '/딜확인': return Commands.printUserDamage(commands); break;
     case '/ㄷㅍㄱ':
     case '/딜평균': return Commands.printUserAvgDamage(commands); break;
+    case '/ㅍㄱ':
+    case '/평균': return Commands.printAvgDamage(commands); break;
     case '/잔여':
     case '/ㅈㅇ': return Commands.printRemained(commands); break;
     case '/ㄳ':
@@ -1390,7 +1409,7 @@ function processCommand(msg: string): string {
     case '/현황':
     case '/ㅎㅎ': return Commands.printTicketsAndCounts(commands); break;
     case '/ㅇㅁ':
-    case '/유물': return Commands.addRelics(commands); break;
+    case '/유물': return Commands.checkOrAddRelics(commands); break;
     case '/ㅇㅁㅎㅎ':
     case '/유물현황': return Commands.printRelics(commands); break;
     case '/쿨':
