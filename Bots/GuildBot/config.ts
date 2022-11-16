@@ -8,6 +8,8 @@ let TICKETS_PER_DAY = 3; //charged tickets per day
 let MAX_TICKETS = 9; //max tickets for each user
 let MAX_TOTAL_COUNTS = TICKETS_PER_DAY * 6 * 30; // max count for one season
 let MAX_BOSS_COUNTS = MAX_COUNTS * 30; // max boss count for one season
+let AVG_LEVEL = 34; // minimum boss level to calculate average
+let HP_RATE = 1.030225; // Bosses' HP rate by level
 
 class BossConfig {
   type: BOSS_TYPE;
@@ -39,6 +41,8 @@ class _Config {
   MAX_COUNTS: number;
   TICKETS_PER_DAY: number;
   MAX_TICKETS: number;
+  AVG_LEVEL: number;
+  HP_RATE: number;
   skipMsgs: Array<string>;
   roomName: Array<string>;
   bosses: Array<BossConfig>;
@@ -49,6 +53,8 @@ class _Config {
     this.MAX_COUNTS = MAX_COUNTS;
     this.TICKETS_PER_DAY = TICKETS_PER_DAY;
     this.MAX_TICKETS = MAX_TICKETS;
+    this.AVG_LEVEL = AVG_LEVEL;
+    this.HP_RATE = HP_RATE;
     this.skipMsgs = [];
     this.roomName = [];
     this.bosses = [];
@@ -72,6 +78,14 @@ class _Config {
     var _MAX_TICKETS = obj["MAX_TICKETS"];
     if(_MAX_TICKETS == undefined || !(typeof _MAX_TICKETS == "number")) { 
       return [false, "Error on config.json: MAX_TICKETS"]; }
+
+    var _AVG_LEVEL = obj["AVG_LEVEL"];
+      if(_AVG_LEVEL == undefined || !(typeof _AVG_LEVEL == "number")) { 
+        return [false, "Error on config.json: AVG_LEVEL"]; }
+
+    var _HP_RATE = obj["HP_RATE"];
+    if(_HP_RATE == undefined || !(typeof _HP_RATE == "number")) { 
+      return [false, "Error on config.json: HP_RATE"]; }
 
     var _skipMsgs = obj["skipMsgs"];
     if(_skipMsgs == undefined || !Array.isArray(_skipMsgs) || !_skipMsgs.every(v => typeof v == "string")) { 
