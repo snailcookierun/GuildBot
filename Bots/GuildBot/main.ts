@@ -702,9 +702,9 @@ class _Commands {
         str = boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만\n";
       }
 
-      var start = Math.ceil(remained / boss.maxDamage);
-      var end = Math.floor(remained / boss.minDamage);
-      if (start <= 1 || end <= 1 || end < start) {
+      var start = Math.round(remained / boss.maxDamage);
+      var end = Math.round(remained / boss.minDamage);
+      if (start < 1 || end < 1 || end < start) {
         return "잔여 체력이 계산하기에 충분하지 않습니다.";
       }
       var len = (end == start) ? 2 : end - start + 1;
@@ -733,7 +733,7 @@ class _Commands {
       var hps = boss.hps.slice(start, end + 1);
       if (start == boss.curLevel) { hps[0] = boss.getRemained() };
 
-      var requiredCounts = hps.map(x => ((Math.floor(x / boss.minDamage) < 1) ? 1 : Math.floor(x / boss.minDamage)));
+      var requiredCounts = hps.map(x => ((Math.round(x / boss.minDamage) < 1) ? 1 : Math.round(x / boss.minDamage)));
 
       return requiredCounts.map((n, i) => (start + i) + "단계: " + n + "명, " + Math.round(hps[i] / n) + "만").join("\n");
 
