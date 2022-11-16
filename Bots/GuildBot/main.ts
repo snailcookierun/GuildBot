@@ -1166,6 +1166,10 @@ class _Commands {
       user.relics = newRelics;
       return user.name + " 님의 유물 수가 " + user.relics + "개로 업데이트 되었습니다. (+" + (user.relics - user.prevRelics) + "개)";
     } else if (commands.length == 2 && !isNumber(commands[1])) {
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
       return user.name + " 님의 유물 수: " + user.relics + "개 (+" + (user.relics - user.prevRelics) + "개)";
     } else {
       return "명령어 오입력\n- /유물(ㅇㅁ) 이름 개수";
