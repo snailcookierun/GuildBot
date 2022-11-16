@@ -454,8 +454,7 @@ class _Commands {
       user.addDamage(boss.type, boss.curLevel, damage, logType);
       boss.addDamage(user, damage);
 
-      var remained = boss.getRemained();
-      return boss.type + " " + boss.curLevel + "단계 잔여: " + remained + "만" + str;
+      return boss.type + " " + boss.curLevel + "단계\n" + boss.printRemainedAndTactics() + str;
 
     } else {
       return "명령어 오입력\n- /딜량(딜, ㄷㄹ, ㄷ) 이름 딜량\n- /딜 이름 보스명 딜량";
@@ -601,14 +600,7 @@ class _Commands {
         boss.hps = boss.hps.concat(Math.round(boss.hps[boss.curLevel-1]*HP_RATE));
         text += "예상 ";
       }
-      text += "잔여: " + boss.getRemained() + "만";
-
-      // calculate average damages
-      if(boss.curLevel >= AVG_LEVEL) {
-        var avgNumber = Math.ceil(boss.getRemained()/boss.maxDamage) < 1 ? 1 : Math.ceil(boss.getRemained()/boss.maxDamage);
-        var avgDamage = Math.round(boss.getRemained()/avgNumber);
-        text += " (" + avgDamage + "만/" + avgNumber + "명)";
-      }
+      text += boss.printRemainedAndTactics();
 
       return boss.type + " " + boss.curLevel + "단계로 넘어갑니다.\n" + addStr + text;
     } else {
@@ -663,7 +655,7 @@ class _Commands {
       }
       var arr = Object.keys(Bosses.bossList).map(function (k, i) {
         var boss = Bosses.bossList[k];
-        return boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만";
+        return boss.type + " " + boss.curLevel + "단계\n" + boss.printRemainedAndTactics();
       });
       return arr.join("\n");
     } else if (commands.length == 2 && !isNumber(commands[1])) {
@@ -674,7 +666,7 @@ class _Commands {
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
-      return boss.type + " " + boss.curLevel + "단계 잔여: " + boss.getRemained() + "만";
+      return boss.type + " " + boss.curLevel + "단계\n" + boss.printRemainedAndTactics();
     } else {
       return "명령어 오입력\n- /잔여(ㅈㅇ)\n- /잔여 보스명";
     }
