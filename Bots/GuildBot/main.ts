@@ -594,7 +594,22 @@ class _Commands {
       boss.loggedUsers = [];
       boss.isRelayLogged = false;
 
-      var text = boss.isLevelExist(boss.curLevel) ? "잔여: " + boss.getRemained() + "만" : "'/체력추가'를 통해 체력을 설정해주세요.";
+      var text = "";
+
+      // add estimated boss hp
+      if(boss.curLevel > 1 && !boss.isLevelExist(boss.curLevel)) {
+        boss.hps = boss.hps.concat(Math.round(boss.hps[boss.curLevel-1]*HP_RATE));
+        text += "예상 ";
+      }
+      text += "잔여: " + boss.getRemained() + "만";
+
+      // calculate average damages
+      if(boss.curLevel >= AVG_LEVEL) {
+        var avgNumber = Math.ceil(boss.getRemained()/boss.maxDamage) < 1 ? 1 : Math.ceil(boss.getRemained()/boss.maxDamage);
+        var avgDamage = Math.round(boss.getRemained()/avgNumber);
+        text += " (" + avgDamage + "만/" + avgNumber + "명)";
+      }
+
       return boss.type + " " + boss.curLevel + "단계로 넘어갑니다.\n" + addStr + text;
     } else {
       return "명령어 오입력\n- /컷(ㅋ) 보스명\n - /컷 보스명 동타";
@@ -733,7 +748,7 @@ class _Commands {
       var hps = boss.hps.slice(start, end + 1);
       if (start == boss.curLevel) { hps[0] = boss.getRemained() };
 
-      var requiredCounts = hps.map(x => ((Math.round(x / boss.minDamage) < 1) ? 1 : Math.round(x / boss.minDamage)));
+      var requiredCounts = hps.map(x => ((Math.ceil(x / boss.maxDamage) < 1) ? 1 : Math.ceil(x / boss.maxDamage)));
 
       return requiredCounts.map((n, i) => (start + i) + "단계: " + n + "명, " + Math.round(hps[i] / n) + "만").join("\n");
 
@@ -972,11 +987,11 @@ class _Commands {
       if (user.log.length < 1) {
         return user.name + " 님의 딜량 기록이 없습니다.";
       }
-      if (Object.keys(Bosses.bossList).every(x => user.log.filter(l => (l.boss == Bosses.bossList[x].type) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).length < 1)) {
-        return user.name + " 님은 평균을 내기 위한 충분한 딜량 기록을 가지고 있지 않습니다.";
+      if (Object.keys(Bosses.bossList).every(x => user.log.filter(l => (l.boss == Bosses.bossList[x].type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).length < 1)) {
+        return user.name + " 님은 평균을 내기 위한 충분한 딜량 기록을 가지고 있지 않습니다. " + AVG_LEVEL + "단계부터 계산됩니다.";
       }
       var str = Object.keys(Bosses.bossList).map(x => Bosses.bossList[x].type + ": " + (
-        average(user.log.filter(l => (l.boss == Bosses.bossList[x].type) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage)))).join("\n");
+        average(user.log.filter(l => (l.boss == Bosses.bossList[x].type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage)))).join("\n");
       return user.name + " 님의 딜량 평균입니다.\n" + str;
     } else if (commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {
       if (!Users.isNameExist(commands[1])) {
@@ -990,13 +1005,13 @@ class _Commands {
         return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[2]);
-      if (user.log.filter(l => (l.boss == boss.type) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).length < 1) {
-        return user.name + " 님은 평균을 내기 위한 충분한 " + boss.type + " 딜량 기록을 가지고 있지 않습니다.";
+      if (user.log.filter(l => (l.boss == boss.type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).length < 1) {
+        return user.name + " 님은 평균을 내기 위한 충분한 " + boss.type + " 딜량 기록을 가지고 있지 않습니다." + AVG_LEVEL + "단계부터 계산됩니다.";
       }
-      var avg = average(user.log.filter(l => (l.boss == boss.type) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage));
+      var avg = average(user.log.filter(l => (l.boss == boss.type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage));
       return user.name + " 님의 " + boss.type + " 딜량 평균: " + avg;
     } else {
-      return "명령어 오입력\n- /딜평균(ㄷㅍㄱ) 유저\n- /딜확인 유저 보스명"
+      return "명령어 오입력\n- /딜평균(ㄷㅍㄱ) 유저\n- /딜평균 유저 보스명"
     }
   }
 
