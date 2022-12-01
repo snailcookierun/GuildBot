@@ -389,9 +389,16 @@ class _Commands {
         // Find bosses which the user is in relay mode with boss.relayLogged && boss.relayUser
         var relayBosses: Boss[] = Object.keys(Bosses.bossList).filter(x => !Bosses.bossList[x].isRelayLogged
           && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user)).map(x => Bosses.bossList[x]);
-        var bossesUnion = unionArray(participatedBosses, relayBosses);
+        // Find bosses which the user is in holding mode
+        var holdingBosses: Boss[] = Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].holdingUsers.includes(user)).map(x => Bosses.bossList[x]);
+        var bossesUnion = unionArray(unionArray(participatedBosses, relayBosses),holdingBosses);
 
         if (bossesUnion.length > 1) {
+          var appendStr = participatedBosses.length > 0 ? ("참여: " + participatedBosses.map(x => x.type).join(" ")) : "";
+          var appendStr = relayBosses.length > 0 ? (appendStr + ", 이달: " + relayBosses.map(x => x.type).join(" ")) : appendStr;
+          var appendStr = holdingBosses.length > 0 ? (appendStr + ", 홀딩: " + holdingBosses.map(x => x.type).join(" ")) : appendStr;
+          return commands[1] + " 님, 보스명을 특정해주세요. (" + appendStr + ")\n- /딜 이름 보스명 딜량";
+          /*
           if (relayBosses.length < 1) {
             return commands[1] + " 님은 현재 여러 보스에 참여 중입니다. (참여: " + participatedBosses.map(x => x.type).join(" ") + ")\n- /딜 이름 보스명 딜량";
           } else if (participatedBosses.length < 1) {
@@ -400,6 +407,7 @@ class _Commands {
             return commands[1] + " 님은 현재 여러 보스에 참여와 컷 기록이 있습니다. (참여: " + participatedBosses.map(x => x.type).join(" ")
               + ", 컷: " + relayBosses.map(x => x.type).join(" ") + ")\n- /딜 이름 보스명 딜량";
           }
+          */
         } else if (bossesUnion.length < 1) {
           return commands[1] + " 님은 현재 참여 중인 보스가 없습니다.";
         }
