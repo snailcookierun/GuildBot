@@ -130,16 +130,19 @@ class Boss {
     this.curDamage += damage;
     this.loggedUsers.push(user);
     this.curUsers = removeItemOnceIfExist(this.curUsers, user);
+    this.holdingUsers = removeItemOnceIfExist(this.holdingUsers, user);
   }
 
   changeDamage(damage: number, newDamage: number) {
     this.curDamage += (newDamage - damage);
   }
 
-  revertDamage(user: User, damage: number, isRelay: boolean) {
+  revertDamage(user: User, damage: number, logType: LOG_TYPE) {
     this.curDamage -= damage;
-    if (isRelay) {
+    if (logType == LOG_TYPE.RELAY) {
       this.isRelayLogged = false;
+    } else if (logType == LOG_TYPE.HOLD) {
+      this.holdingUsers.push(user);
     } else {
       this.curUsers.push(user);
     }

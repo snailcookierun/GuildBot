@@ -6,7 +6,9 @@ enum LOG_TYPE {
   LAST = "막타",
   RELAY = "이달",
   SOLO = "솔플",
-  DUPLICATE = "중복"
+  DUPLICATE = "중복",
+  HOLD = "홀딩",
+  HOLDLAST = "홀딩컷"
 }
 
 /**

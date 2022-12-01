@@ -397,7 +397,7 @@ class _Commands {
           var appendStr = participatedBosses.length > 0 ? ("참여: " + participatedBosses.map(x => x.type).join(" ")) : "";
           var appendStr = relayBosses.length > 0 ? (appendStr + ", 이달: " + relayBosses.map(x => x.type).join(" ")) : appendStr;
           var appendStr = holdingBosses.length > 0 ? (appendStr + ", 홀딩: " + holdingBosses.map(x => x.type).join(" ")) : appendStr;
-          return commands[1] + " 님, 보스명을 특정해주세요. (" + appendStr + ")\n- /딜 이름 보스명 딜량";
+          return "보스명을 특정해주세요. (" + appendStr + ")\n- /딜 이름 보스명 딜량";
           /*
           if (relayBosses.length < 1) {
             return commands[1] + " 님은 현재 여러 보스에 참여 중입니다. (참여: " + participatedBosses.map(x => x.type).join(" ") + ")\n- /딜 이름 보스명 딜량";
@@ -431,7 +431,7 @@ class _Commands {
       if (!boss.isLevelExist(boss.curLevel)) {
         return boss.type + " " + boss.curLevel + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
       }
-      if (!boss.curUsers.includes(user) && !(!boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user))) {
+      if (!boss.holdingUsers.includes(user) && !boss.curUsers.includes(user) && !(!boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user))) {
         return commands[1] + " 님은 " + boss.type + " " + boss.curLevel + "단계에 참여 중이지 않거나 컷 기록이 없습니다.";
       }
       if (boss.getRemained() + 2 <= Number(commands[2])) {
@@ -440,7 +440,10 @@ class _Commands {
 
       var str = "";
       var logType = LOG_TYPE.NORMAL;
-      if (!boss.curUsers.includes(user) && !boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
+      if (boss.holdingUsers.includes(user)) {
+        logType = LOG_TYPE.HOLD;
+        str = "\n홀딩으로 기록되었습니다.";
+      } else if (!boss.curUsers.includes(user) && !boss.isRelayLogged && boss.relayUsers[boss.curLevel].includes(user)) {
         // only one relay user can log damage
         // relay log is newly inserted in this function
         logType = LOG_TYPE.RELAY;
@@ -496,17 +499,16 @@ class _Commands {
         var boss = possibleBosses[0];
       }
       var logs = user.log.filter(x => (x.boss == boss.type) && (x.level == boss.curLevel)
-        && (x.type != LOG_TYPE.NONE) && (x.type != LOG_TYPE.LAST));
+        && (x.type != LOG_TYPE.NONE) && (x.type != LOG_TYPE.LAST) && (x.type != LOG_TYPE.SOLO) && (x.type != LOG_TYPE.HOLDLAST));
       if (logs.length < 1) {
         return user.name + " 님은 " + boss.type + " " + boss.curLevel + "단계 딜량 기록이 없습니다.";
       }
       var log = logs[logs.length - 1];
-      // delete log if it is relay
-      if (log.type == LOG_TYPE.RELAY) {
-        boss.revertDamage(user, log.damage, true);
+      if (log.type == LOG_TYPE.RELAY) { // delete relay log
+        boss.revertDamage(user, log.damage, log.type);
         user.log = removeItemOnceIfExist(user.log, log);
-      } else {
-        boss.revertDamage(user, log.damage, false);
+      } else { // log.type = LOG_TYPE.HOLD or LOG_TYPE.NORMAL or LOG_TYPE.DUPLICATE
+        boss.revertDamage(user, log.damage, log.type);
         user.revertDamage(log.boss, log.level, log.damage, log.type);
       }
       return user.name + " 님의 " + boss.type + " " + boss.curLevel + "단계 딜량 기록이 삭제되었습니다.";
@@ -562,6 +564,7 @@ class _Commands {
       if (boss.curUsers.includes(user)) {
         return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 '/참여' 명령어를 입력하셨습니다.";
       }
+      user.log.push(new DLog(boss.type, boss.curLevel, 0, LOG_TYPE.NONE, user.name));
       boss.holdingUsers.push(user);
       return user.name + " 님을 " + boss.type + " " + boss.curLevel + "단계의 홀딩에 추가하였습니다.";
     } else {
@@ -599,6 +602,10 @@ class _Commands {
       }
 
       removeItemOnceIfExist(boss.holdingUsers,user);
+      if (user.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) > 0) {
+        user.log = removeItemOnceIfExist(user.log, user.findLogsIfUnique(boss.type, boss.curLevel, 0, LOG_TYPE.NONE));
+      }
+      
       return user.name + " 님을 " + boss.type + " " + boss.curLevel + "단계의 홀딩에서 삭제하였습니다.";
     } else {
       return "명령어 오입력\n- /홀딩취소 이름\n- /홀딩취소 이름 보스명";
