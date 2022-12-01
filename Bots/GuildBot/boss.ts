@@ -18,6 +18,7 @@ interface IBoss {
   curDamage: number;
   curUsers: Array<User>; //users who are currently participating in curLevel
   loggedUsers: Array<User>; //users who already participated in curLevel
+  holdingUsers: Array<User>; //users who holds their relays
   relayUsers: { [id: number]: Array<User> }; //users who cutted the previous level and possibly relay in curLevel
   isRelayLogged: boolean; //returns relay user has logged the damage
   counts: number;
@@ -33,6 +34,7 @@ class Boss {
   curDamage: number;
   curUsers: Array<User>; //users who are currently participating in curLevel
   loggedUsers: Array<User>; //users who already participated in curLevel
+  holdingUsers: Array<User>; //users who holds their relays
   relayUsers: { [id: number]: Array<User> }; //users who cutted the previous level and possibly relay in curLevel
   isRelayLogged: boolean; //returns relay user has logged the damage
   counts: number;
@@ -52,6 +54,7 @@ class Boss {
       this.curDamage = 0;
       this.curUsers = [];
       this.loggedUsers = [];
+      this.holdingUsers = [];
       this.relayUsers = {};
       this.isRelayLogged = false;
       this.counts = 0;
@@ -65,6 +68,7 @@ class Boss {
       this.curDamage = first.curDamage;
       this.curUsers = first.curUsers;
       this.loggedUsers = first.loggedUsers;
+      this.holdingUsers = first.holdingUsers;
       this.relayUsers = first.relayUsers;
       this.isRelayLogged = first.isRelayLogged;
       this.counts = first.counts;

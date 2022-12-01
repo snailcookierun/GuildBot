@@ -535,6 +535,68 @@ class _Commands {
     }
   }
 
+  addHoldingUser(commands: Array<string>): string {
+    if(commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
+      if (!Bosses.isNameExist(commands[2])) {
+        return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[2]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";;
+      }
+      if (boss.holdingUsers.includes(user)) {
+        return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계의 '/홀딩' 명령어를 입력하셨습니다.";
+      }
+      if (boss.curUsers.includes(user)) {
+        return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 '/참여' 명령어를 입력하셨습니다.";
+      }
+      boss.holdingUsers.push(user);
+      return user.name + " 님을 " + boss.type + " " + boss.curLevel + "단계의 홀딩에 추가하였습니다.";
+    } else {
+      return "명령어 오입력\n- /홀딩 이름 보스명";
+    }
+  }
+
+  deleteHoldingUser(commands: Array<string>): string {
+    if((commands.length == 2 || commands.length == 3) && !isNumber(commands[1])) {
+      if (Object.keys(Bosses.bossList).some(x => Bosses.bossList[x].curLevel <= 0)) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
+      if (commands.length == 3) {
+        if (!Bosses.isNameExist(commands[2])) {
+          return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+        }
+        var boss = Bosses.find(commands[2]);
+      } else { // If boss name is not specified
+        // Find bosses which the user participated with boss.relayUser
+        var participatedBosses: Boss[] = Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].holdingUsers.includes(user)).map(x => Bosses.bossList[x]);
+        if (participatedBosses.length > 1) {
+          return commands[1] + " 님은 현재 여러 보스의 홀딩입니다. (홀딩: " + participatedBosses.map(x => x.type).join(" ") + ")\n- /홀딩취소 이름 보스명";
+        } else if (participatedBosses.length < 1) {
+          return commands[1] + " 님은 현재 홀딩인 보스가 없습니다.";
+        }
+        var boss = participatedBosses[0];
+      }
+
+      if (!boss.holdingUsers.includes(user)) {
+        return user.name + " 님은 "+ boss.type + " " + boss.curLevel + "단계의 홀딩이 아닙니다.";
+      }
+
+      removeItemOnceIfExist(boss.holdingUsers,user);
+      return user.name + " 님을 " + boss.type + " " + boss.curLevel + "단계의 홀딩에서 삭제하였습니다.";
+    } else {
+      return "명령어 오입력\n- /홀딩취소 이름\n- /홀딩취소 이름 보스명";
+    }
+  }
+
   moveBossLevel(commands: Array<string>): string {
     if ((commands.length == 2 || commands.length == 3) && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
@@ -1410,6 +1472,8 @@ function processCommand(msg: string): string {
     case '/ㅋ':
     case '/컷': return Commands.moveBossLevel(commands); break;
     case '/컷취소': return Commands.revertMoveBossLevel(commands); break;
+    case '/홀딩': return Commands.addHoldingUser(commands); break;
+    case '/홀딩취소': return Commands.deleteHoldingUser(commands); break;
     case '/현황':
     case '/ㅎㅎ': return Commands.printTicketsAndCounts(commands); break;
     case '/ㅇㅁ':
