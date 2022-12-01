@@ -843,11 +843,14 @@ class _Commands {
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
-      if (boss.curUsers.length < 1 && boss.loggedUsers.length < 1) {
+      if (boss.holdingUsers.length < 1 && boss.curUsers.length < 1 && boss.loggedUsers.length < 1) {
         return boss.type + " " + boss.curLevel + "단계 참여자가 없습니다.";
       } else {
-        var names = unionArray(boss.curUsers.map(x => x.name), boss.loggedUsers.map(x => x.name));
-        return boss.type + " " + boss.curLevel + "단계 참여자입니다.\n" + names.join(", ");
+        var res = boss.type + " " + boss.curLevel + "단계 참여자입니다. (택틱: " + Users.getLoggedTactics(boss.type, boss.curLevel) + "명)";
+        var res = boss.loggedUsers.length > 0 ? (res + "\n기록: " + boss.loggedUsers.map(u=>u.name).join(", ")) : res;
+        var res = boss.curUsers.length > 0 ? (res + "\n참여 대기: " + boss.curUsers.map(u=>u.name).join(", ")) : res;
+        var res = boss.holdingUsers.length > 0 ? (res + "\n홀딩 대기: " + boss.holdingUsers.map(u=>u.name).join(", ")) : res;
+        return res;
       }
     } else {
       return "명령어 오입력\n- /단계(참여자,ㄷㄱ) 보스명";
@@ -1104,6 +1107,46 @@ class _Commands {
       return Users.userList.map(user => user.name + ": " + average(user.log.filter(l => (l.boss == boss.type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage))).join("\n");
     } else {
       return "명령어 오입력\n- /평균(ㅍㄱ)\n- /평균 보스명"
+    }
+  }
+
+  
+  printTactics(commands: Array<string>): string {
+    if ((commands.length == 2 || commands.length == 3 || commands.length == 4) && !isNumber(commands[1])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      if (commands.length == 4 && isNumber(commands[2])  && isNumber(commands[3])) {
+        var start = Number(commands[2]);
+        var end = Number(commands[3]);
+        if (start > end) {
+          return "시작 단계(" + start + ")가 끝 단계(" + end + ")보다 작습니다.";
+        }
+        if (end > boss.curLevel) {
+          return boss.type + " 보스의 현재 단계(" + boss.curLevel + ")가 끝 단계(" + end + ")보다 작습니다."; 
+        }
+        var res = "단계, 인원\n";
+        var levels = Array.from(Array(end - start + 1).keys()).map(x => x + start);
+        return res + levels.map(x => (x + ", " + Users.getLoggedTactics(boss.type,x))).join("\n");
+      } else if (commands.length == 3 && isNumber(commands[2])) {
+        var level = Number(commands[2]);
+        if (level > boss.curLevel) {
+          return boss.type + " 보스의 현재 단계(" + boss.curLevel + ")가 입력한 단계(" + level + ")보다 작습니다."; 
+        }
+        return boss.type + " " + level + "단계 인원: " + Users.getLoggedTactics(boss.type,level) + "명";
+      } else if (commands.length == 2) {
+        var res = "단계, 인원\n";
+        var levels = Array.from(Array(boss.curLevel).keys()).map(x => x + 1);
+        return res + levels.map(x => (x + ", " + Users.getLoggedTactics(boss.type,x))).join("\n");
+      } else {
+        return "명령어 오입력\n- /택틱(ㅌㅌ) 보스명\n- /택틱 보스명 단계"
+      }
+    } else {
+      return "명령어 오입력\n- /택틱(ㅌㅌ) 보스명\n- /택틱 보스명 단계"
     }
   }
 
@@ -1424,6 +1467,7 @@ class _Commands {
   }
 
 
+
   hotFix(commands: Array<string>): string {
     Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].holdingUsers = [])
     return "핫픽스 완료";
@@ -1500,6 +1544,8 @@ function processCommand(msg: string): string {
     case '/홀딩취소': return Commands.deleteHoldingUser(commands); break;
     case '/현황':
     case '/ㅎㅎ': return Commands.printTicketsAndCounts(commands); break;
+    case '/ㅌㅌ':
+    case '/택틱': return Commands.printTactics(commands); break;
     case '/ㅇㅁ':
     case '/유물': return Commands.checkOrAddRelics(commands); break;
     case '/ㅇㅁㅎㅎ':

@@ -251,5 +251,11 @@ class _Users {
   deleteNickname(nick: string) {
     delete this.nicknameMap[nick];
   }
+
+  getLoggedTactics(bossType: BOSS_TYPE, bossLevel: number) : number {
+    return this.userList.map(u=>u.log.filter(l => (l.boss == bossType) && (l.level == bossLevel) 
+      && (l.type != LOG_TYPE.NONE) && (l.type != LOG_TYPE.RELAY) && (l.type != LOG_TYPE.HOLD) && (l.type != LOG_TYPE.SOLO)).length).reduce(
+        function(a,b) { return (a + b); }, 0);
+  }
 }
 const Users = new _Users;
