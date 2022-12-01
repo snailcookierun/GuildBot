@@ -1425,8 +1425,7 @@ class _Commands {
 
 
   hotFix(commands: Array<string>): string {
-    //@ts-ignore
-    //Users.userList.forEach(u => u.log.forEach(l => l.date = Date.parse(l.date)))
+    Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].holdingUsers = [])
     return "핫픽스 완료";
   }
 }
@@ -1495,6 +1494,8 @@ function processCommand(msg: string): string {
     case '/ㅋ':
     case '/컷': return Commands.moveBossLevel(commands); break;
     case '/컷취소': return Commands.revertMoveBossLevel(commands); break;
+    case '/ㅎㄷ':
+    case '/홀드':
     case '/홀딩': return Commands.addHoldingUser(commands); break;
     case '/홀딩취소': return Commands.deleteHoldingUser(commands); break;
     case '/현황':
