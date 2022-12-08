@@ -45,6 +45,29 @@ class _CoolTime {
       return str;
     }
   }
+
+  addOrModifyCoolTime(name: string, cool:number) : string {
+    if(this.cookieCoolTime) {
+      if(this.cookieCoolTime[name] != undefined) {
+        this.cookieCoolTime[name] = cool;
+        return name + "의 쿨타임이 " + cool + "초로 수정되었습니다."
+      } else {
+        this.cookieCoolTime[name] = cool;
+        return name + "의 쿨타임으로 " + cool + "초가 추가되었습니다."
+      }
+    } else {
+      return "초기화가 되어있지 않습니다.\n- /환경설정"
+    }
+  }
+
+  deleteCoolTime(name: string) : string {
+    if(this.cookieCoolTime && this.cookieCoolTime[name] != undefined) {
+      delete this.cookieCoolTime[name];
+      return name + "의 쿨타임이 삭제되었습니다."
+    } else {
+      return name + "의 쿨타임을 찾을 수 없습니다."
+    }
+  }
 }
 
 const CoolTime = new _CoolTime();

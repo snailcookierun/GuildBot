@@ -1329,6 +1329,22 @@ class _Commands {
     }
   }
 
+  addOrModifyCoolTime(commands: Array<string>): string {
+    if (commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2])) {
+      return CoolTime.addOrModifyCoolTime(commands[1], Number(commands[2]));
+    } else {
+      return "명령어 오입력\n- /쿨타임추가(쿨타임수정) 쿠키이름 숫자";
+    }
+  }
+
+  deleteCoolTime(commands: Array<string>): string {
+    if (commands.length == 2 && !isNumber(commands[1])) {
+      return CoolTime.deleteCoolTime(commands[1]);
+    } else {
+      return "명령어 오입력\n- /쿨타임삭제 쿠키이름";
+    }
+  }
+
   doBackup(commands: Array<string>): string {
     if (commands.length == 2 && !isNumber(commands[1])) {
       if (commands[1] == "저장") {
@@ -1552,6 +1568,12 @@ function processCommand(msg: string): string {
     case '/유물현황': return Commands.printRelics(commands); break;
     case '/쿨':
     case '/쿨타임': return Commands.calculateCoolTime(commands); break;
+    case '/쿨수정':
+    case '/쿨타임수정':
+    case '/쿨추가':
+    case '/쿨타임추가': return Commands.addOrModifyCoolTime(commands); break;
+    case '/쿨삭제':
+    case '/쿨타임삭제': return Commands.deleteCoolTime(commands); break;
     case '/보스체력': return Commands.printBossHp(commands); break;
     case '/체력추가': return Commands.addBossHp(commands); break;
     case '/체력수정': return Commands.replaceBossHp(commands); break;
