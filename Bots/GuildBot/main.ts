@@ -567,6 +567,9 @@ class _Commands {
       if (boss.curUsers.includes(user)) {
         return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 '/참여' 명령어를 입력하셨습니다.";
       }
+      if (boss.loggedUsers.includes(user)) {
+        return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 딜량 기록이 있습니다.";
+      }
       user.log.push(new DLog(boss.type, boss.curLevel, 0, LOG_TYPE.NONE, user.name));
       boss.holdingUsers.push(user);
       return user.name + " 님을 " + boss.type + " " + boss.curLevel + "단계의 홀딩에 추가하였습니다.";
