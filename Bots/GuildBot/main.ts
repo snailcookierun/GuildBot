@@ -1541,6 +1541,10 @@ class _Commands {
     }
   }
 
+  couponTest(commands: Array<string>): string {
+    return String(Coupon.sendHttpRequest("abc@gmail.com", "MEETSORBETCOOKIE"));
+  }
+
 
 
   hotFix(commands: Array<string>): string {
@@ -1640,6 +1644,7 @@ function processCommand(msg: string): string {
     case '/최소딜수정': return Commands.replaceMinDamage(commands); break;
     case '/몰아치기':
     case '/중복참여': return Commands.allowDuplicate(commands); break;
+    case '/쿠폰테스트': return Commands.couponTest(commands); break;
     case '/백업': return Commands.doBackup(commands); break;
     case '/환경설정': return Commands.loadConfig(commands); break;
     case '/명령어': return Commands.printCommands(commands); break;

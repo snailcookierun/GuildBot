@@ -12,6 +12,7 @@
     "backup.ts",
     "routine.ts",
     "cooltime.ts",
+    "coupon.ts",
     "main.ts"
   ]
 }
