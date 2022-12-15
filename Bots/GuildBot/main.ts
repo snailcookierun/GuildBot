@@ -981,7 +981,7 @@ class _Commands {
   }
 
   printDamageSheet(commands: Array<string>): string {
-    if (commands.length == 2 && !isNumber(commands[1])) {
+    if ((commands.length == 2 || commands.length == 3) && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
         return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
@@ -992,34 +992,90 @@ class _Commands {
       if (Users.userList.length < 1) {
         return "유저가 없습니다.";
       }
-      var levels = Array.from(Array(boss.curLevel).keys()).map(x => x + 1);
-      var resultStr = Users.userList.map(function (user) {
-        if (user.log.length > 0) {
-          var damageLogs = levels.map(function (level) {
-            var matchedLog = user.log.filter(l => ((l.boss == boss.type) && (l.level == level)));
-            if (matchedLog.length > 0) {
-              if (matchedLog.some(l => l.type == LOG_TYPE.DUPLICATE || l.type == LOG_TYPE.NORMAL)) {
-                var damages = matchedLog.filter(l => l.type == LOG_TYPE.DUPLICATE || l.type == LOG_TYPE.NORMAL).map(l => l.damage);
-                return Math.max.apply(null, damages) + "";
-              } else if (matchedLog.some(l => l.type == LOG_TYPE.LAST)) {
-                return LOG_TYPE.LAST;
-              } else if (matchedLog.some(l => l.type == LOG_TYPE.RELAY)) {
-                return LOG_TYPE.RELAY;
-              } else {
-                return LOG_TYPE.NONE;
-              }
+      if (commands.length == 2) {
+        var counts = MAX_COUNTS;
+        var resultStr = Users.userList.map(function (user) {
+          if (user.log.length > 0) {
+            var matchedLogs = user.log.filter(l => (l.boss == boss.type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.DUPLICATE || l.type == LOG_TYPE.NORMAL));
+            if (matchedLogs.length > 0) {
+              counts = matchedLogs.length > counts ? matchedLogs.length : counts;
+              return user.name + "," + matchedLogs.map(l => l.damage).join(",");
             } else {
-              return "미참";
+              return user.name;
             }
-          })
-          return user.name + "," + damageLogs.join(",");
-        } else {
-          return user.name + "," + Array(boss.curLevel).fill("미참").join(",");
-        }
-      }).join("\n");
-      return boss.type + "," + levels.join(",") + "\n" + resultStr;
+          } else {
+            return user.name;
+          }
+        }).join("\n");
+        var countsArray = Array.from(Array(counts).keys()).map(x => x + 1);
+        return boss.type + "," + countsArray.join(",") + "\n" + resultStr;
+      } else if (commands[2] == "자세히") {
+        var counts = MAX_COUNTS;
+        var resultStr = Users.userList.map(function (user) {
+          if (user.log.length > 0) {
+            var matchedLogs = user.log.filter(l => (l.boss == boss.type));
+            if (matchedLogs.length > 0) {
+              counts = matchedLogs.length > counts ? matchedLogs.length : counts;
+              return user.name + "," + matchedLogs.map(function(l){
+                if (l.type == LOG_TYPE.DUPLICATE || l.type == LOG_TYPE.NORMAL) {
+                  return l.damage + "";
+                } else {
+                  return l.damage + "(" + l.type + ")";
+                }
+              }).join(",");
+            } else {
+              return user.name;
+            }
+          } else {
+            return user.name;
+          }
+        }).join("\n");
+        var countsArray = Array.from(Array(counts).keys()).map(x => x + 1);
+        return boss.type + "," + countsArray.join(",") + "\n" + resultStr;
+      } else if (commands[2] == "단계별") {
+        var levels = Array.from(Array(boss.curLevel).keys()).map(x => x + 1);
+        var resultStr = Users.userList.map(function (user) {
+          if (user.log.length > 0) {
+            var damageLogs = levels.map(function (level) {
+              var matchedLog = user.log.filter(l => ((l.boss == boss.type) && (l.level == level)));
+              if (matchedLog.length > 0) {
+                if (matchedLog.some(l => l.type == LOG_TYPE.DUPLICATE || l.type == LOG_TYPE.NORMAL)) {
+                  var damages = matchedLog.filter(l => l.type == LOG_TYPE.DUPLICATE || l.type == LOG_TYPE.NORMAL).map(l => l.damage);
+                  return Math.max.apply(null, damages) + "";
+                } else if (matchedLog.some(l => l.type == LOG_TYPE.LAST)) {
+                  var damages = matchedLog.filter(l => l.type == LOG_TYPE.LAST).map(l => l.damage);
+                  return damages + "(" + LOG_TYPE.LAST + ")";
+                } else if (matchedLog.some(l => l.type == LOG_TYPE.RELAY)) {
+                  var damages = matchedLog.filter(l => l.type == LOG_TYPE.RELAY).map(l => l.damage);
+                  return damages + "(" + LOG_TYPE.RELAY + ")";
+                } else if (matchedLog.some(l => l.type == LOG_TYPE.SOLO)) {
+                  var damages = matchedLog.filter(l => l.type == LOG_TYPE.SOLO).map(l => l.damage);
+                  return damages + "(" + LOG_TYPE.SOLO + ")";
+                } else if (matchedLog.some(l => l.type == LOG_TYPE.HOLD)) {
+                  var damages = matchedLog.filter(l => l.type == LOG_TYPE.HOLD).map(l => l.damage);
+                  return damages + "(" + LOG_TYPE.HOLD + ")";
+                } else if (matchedLog.some(l => l.type == LOG_TYPE.HOLDLAST)) {
+                  var damages = matchedLog.filter(l => l.type == LOG_TYPE.HOLDLAST).map(l => l.damage);
+                  return damages + "(" + LOG_TYPE.HOLDLAST + ")";
+                } else {
+                  return "";
+                }
+              } else {
+                return "";
+              }
+            })
+            return user.name + "," + damageLogs.join(",");
+          } else {
+            return user.name + "," + Array(boss.curLevel).fill("").join(",");
+          }
+        }).join("\n");
+        return boss.type + "," + levels.join(",") + "\n" + resultStr;
+      } else {
+        return "명령어 오입력\n- /딜시트 보스명 [자세히, 단계별]";
+      }
+
     } else {
-      return "명령어 오입력\n- /딜시트 보스명";
+      return "명령어 오입력\n- /딜시트 보스명 [자세히, 단계별]";
     }
   }
 
