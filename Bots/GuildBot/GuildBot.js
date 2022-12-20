@@ -24,6 +24,8 @@ main.init();
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
   if(main.checkRoomName(room) && (msg.startsWith('/') || msg.startsWith(' /')) && !main.checkSkipMsgs(msg)) {
     replier.reply(room, main.processCommand(msg));
+  } else if (main.checkPublicRoomName(room) && (msg.startsWith('/') || msg.startsWith(' /')) && !main.checkSkipMsgs(msg)) {
+    replier.reply(room, main.processPublicCommand(msg));
   }
 }
 

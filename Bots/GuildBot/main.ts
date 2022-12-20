@@ -1686,6 +1686,19 @@ function processCommand(msg: string): string {
   }
 }
 
+function processPublicCommand(msg: string): string {
+  var commands = msg.trim().split(/\s+/);
+  switch (commands[0]) {
+    default: return "알 수 없는 명령어입니다.\n- /명령어"; break;
+    case '/이메일추가':
+    case '/이메일등록': return Commands.addEmail(commands); break;
+    case '/이메일수정':
+    case '/이메일변경': return Commands.replaceEmail(commands); break;
+    case '/이메일삭제': return Commands.deleteEmail(commands); break;
+    case '/명령어': return "가능한 명령어입니다.\n- /이메일추가 닉네임 이메일\n- /이메일수정 닉네임 이메일\n- /이메일삭제 닉네임"; break;
+  }
+}
+
 /* init: load and initialize config */
 function init() {
   Config.init();
@@ -1704,13 +1717,20 @@ function checkRoomName(room: string): boolean {
   return Config.roomName.some(x => room.startsWith(x));
 }
 
+/* checkPublicRoomName: check publicRoomName */
+function checkPublicRoomName(room: string): boolean {
+  return Config.publicRoomName.some(x => room.startsWith(x));
+}
+
 function checkNotification(sbn) {
   Routine.checkNotification(sbn);
 }
 
 
 exports.processCommand = processCommand;
+exports.processPublicCommand = processPublicCommand;
 exports.init = init;
 exports.checkSkipMsgs = checkSkipMsgs;
 exports.checkRoomName = checkRoomName;
+exports.checkPublicRoomName = checkPublicRoomName;
 exports.checkNotification = checkNotification;
