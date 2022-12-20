@@ -40,7 +40,7 @@ class _Commands {
         return "유효하지 않는 닉네임입니다.";
       }
     } else {
-      return "명령어 오입력\n- /유저추가 이름\n- /유저추가 이름 티켓수(0~9)\n- /유저추가 이름1 이름2";
+      return "명령어 오입력\n- /유저추가 이름\n- /유저추가 이름 티켓수\n- /유저추가 이름1 이름2";
     }
   }
 
@@ -72,7 +72,7 @@ class _Commands {
       u.counts[boss.type] = counts;
       return u.name + " 님의 " + boss.type + " 참여 횟수가 " + u.counts[boss.type] + "로 수정되었습니다.";
     } else {
-      return "명령어 오입력\n- /유저수정 이름 티켓수(0~9)\n- /유저수정 이름 보스명 참여횟수(0~8)"
+      return "명령어 오입력\n- /유저수정 이름 티켓수\n- /유저수정 이름 보스명 참여횟수"
     }
   }
 
@@ -867,7 +867,7 @@ class _Commands {
       }
       var n = Number(commands[1]);
       if (n < 0 || n > MAX_TICKETS) {
-        return "명령어 오입력\n- /소환(ㅅㅎ) 잔여티켓수(0~9)";
+        return "명령어 오입력\n- /소환(ㅅㅎ) 잔여티켓수";
       }
       var list = Users.userList.filter(u => u.tickets >= n);
       if (list.length < 1) {
@@ -887,18 +887,22 @@ class _Commands {
       }
       var n = Number(commands[2]);
       if (n < 0 || n > MAX_COUNTS) {
-        return "명령어 오입력\n- /소환 보스명 잔여횟수(0~8)";
+        return "명령어 오입력\n- /소환 보스명 잔여횟수";
       }
-      var list = Users.userList.filter(u => (MAX_COUNTS - u.counts[boss.type]) >= n);
+      var date = new Date();
+      var day = date.getDay();
+      var plusTickets = (day <= 2) ? (TICKETS_PER_DAY*(2-day)) : (TICKETS_PER_DAY*(9-day));
+      const realCounts = (u:User) => Math.min((MAX_COUNTS - u.counts[boss.type]), (u.tickets + plusTickets));
+      var list = Users.userList.filter(u => (realCounts(u) >= n));
       if (list.length < 1) {
         return boss.type + " 잔여 횟수가 " + n + "회 이상 남으신 분이 없습니다.";
       } else {
-        list.sort(function (a, b) { return a.counts[boss.type] - b.counts[boss.type]; });
-        var names = list.map(u => u.name + "(" + (MAX_COUNTS - u.counts[boss.type]) + ")")
+        list.sort(function (a, b) { return realCounts(b) - realCounts(a); });
+        var names = list.map(u => u.name + "(" + realCounts(u) + ")")
         return boss.type + " 잔여 횟수가 " + n + "회 이상 남으신 분들입니다.\n" + names.join(", ");
       }
     } else {
-      return "명령어 오입력\n- /소환(ㅅㅎ) 잔여티켓수(0~9)\n- /소환 보스명 잔여횟수(0~8)";
+      return "명령어 오입력\n- /소환(ㅅㅎ) 잔여티켓수\n- /소환 보스명 잔여횟수";
     }
   }
 
