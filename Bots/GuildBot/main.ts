@@ -1577,6 +1577,14 @@ class _Commands {
     }
   }
 
+  printEmailList(commands: Array<string>): string {
+    if(commands.length == 1) {
+      return Coupon.printEmailList();
+    } else {
+      return "명령어 오입력\n- /이메일리스트"
+    }
+  }
+
   hotFix(commands: Array<string>): string {
     Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].holdingUsers = [])
     return "핫픽스 완료";
@@ -1683,6 +1691,7 @@ function processCommand(msg: string): string {
     case '/이메일수정':
     case '/이메일변경': return Commands.replaceEmail(commands); break;
     case '/이메일삭제': return Commands.deleteEmail(commands); break;
+    case '/이메일리스트': return Commands.printEmailList(commands); break;
     case '/백업': return Commands.doBackup(commands); break;
     case '/환경설정': return Commands.loadConfig(commands); break;
     case '/명령어': return Commands.printCommands(commands); break;
@@ -1699,6 +1708,7 @@ function processPublicCommand(msg: string): string {
     case '/이메일수정':
     case '/이메일변경': return Commands.replaceEmail(commands); break;
     case '/이메일삭제': return Commands.deleteEmail(commands); break;
+    case '/이메일리스트': return Commands.printEmailList(commands); break;
     case '/명령어': return "가능한 명령어입니다.\n- /이메일추가 닉네임 이메일\n- /이메일수정 닉네임 이메일\n- /이메일삭제 닉네임"; break;
   }
 }

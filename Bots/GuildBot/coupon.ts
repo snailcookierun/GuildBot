@@ -54,6 +54,10 @@ class _Coupon {
     }
   }
 
+  printEmailList() : string {
+    return "이메일이 등록된 닉네임입니다.\n" + Object.keys(this.emailInfo).join(", ");
+  }
+
   decode(code:number) : string {
     switch(code) {
       case 20000:
