@@ -1541,11 +1541,37 @@ class _Commands {
     }
   }
 
-  couponTest(commands: Array<string>): string {
-    return String(Coupon.sendHttpRequest("abc@gmail.com", "MEETSORBETCOOKIE"));
+  addCoupon(commands: Array<string>): string {
+    if(commands.length == 2) {
+      return Coupon.addCoupon(commands[1]);
+    } else {
+      return "명령어 오입력\n- /쿠폰 쿠폰번호";
+    }
   }
 
+  addEmail(commands: Array<string>): string {
+    if(commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {
+      return Coupon.addEmail(commands[1], commands[2]);
+    } else {
+      return "명령어 오입력\n- /이메일추가 닉네임 이메일"
+    }
+  }
 
+  replaceEmail(commands: Array<string>): string {
+    if(commands.length == 3 && !isNumber(commands[1]) && !isNumber(commands[2])) {
+      return Coupon.replaceEmail(commands[1], commands[2]);
+    } else {
+      return "명령어 오입력\n- /이메일변경 닉네임 이메일"
+    }
+  }
+  
+  deleteEmail(commands: Array<string>): string {
+    if(commands.length == 2 && !isNumber(commands[1])) {
+      return Coupon.deleteEmail(commands[1]);
+    } else {
+      return "명령어 오입력\n- /이메일삭제 닉네임"
+    }
+  }
 
   hotFix(commands: Array<string>): string {
     Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].holdingUsers = [])
@@ -1644,7 +1670,15 @@ function processCommand(msg: string): string {
     case '/최소딜수정': return Commands.replaceMinDamage(commands); break;
     case '/몰아치기':
     case '/중복참여': return Commands.allowDuplicate(commands); break;
-    case '/쿠폰테스트': return Commands.couponTest(commands); break;
+    case '/쿠폰':
+    case '/쿠폰입력':
+    case '/쿠폰추가':
+    case '/쿠폰등록': return Commands.addCoupon(commands); break;
+    case '/이메일추가':
+    case '/이메일등록': return Commands.addEmail(commands); break;
+    case '/이메일수정':
+    case '/이메일변경': return Commands.replaceEmail(commands); break;
+    case '/이메일삭제': return Commands.deleteEmail(commands); break;
     case '/백업': return Commands.doBackup(commands); break;
     case '/환경설정': return Commands.loadConfig(commands); break;
     case '/명령어': return Commands.printCommands(commands); break;

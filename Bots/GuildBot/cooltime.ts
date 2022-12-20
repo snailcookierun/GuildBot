@@ -1,7 +1,9 @@
 class _CoolTime {
   cookieCoolTime: {[key in string] : number};
 
-  updateConfig(){this.cookieCoolTime = Config.cookieCoolTime}
+  constructor(){ this.cookieCoolTime = {}; };
+
+  updateConfig(){this.cookieCoolTime = Config.cookieCoolTime};
 
   calculate(n: number) : string {
     var max = Math.ceil(n*0.3-0.5);

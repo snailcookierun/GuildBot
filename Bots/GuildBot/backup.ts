@@ -7,11 +7,13 @@ class _Backup {
     var [valid3, totalCountsStr] = Files.read(base + "totalCounts.json");
     var [valid4, nicknameMapStr] = Files.read(base + "nicknameMap.json");
     var [valid5, cookieCoolTimeStr] = Files.read(base + "cookieCoolTime.json");
-    if (valid1 && valid2 && valid3 && valid4 && valid5) {
+    var [valid6, emailInfoStr] = Files.read(base + "emailInfo.json");
+    if (valid1 && valid2 && valid3 && valid4 && valid5 && valid6) {
       var userListBackup = JSON.parse(userListStr);
       Users.userList = userListBackup.map((u: IUser) => new User(u));
       Users.nicknameMap = JSON.parse(nicknameMapStr);
       CoolTime.cookieCoolTime = JSON.parse(cookieCoolTimeStr);
+      Coupon.emailInfo = JSON.parse(emailInfoStr);
 
       var bossListBackup = JSON.parse(bossListStr);
       var bossListCopy = {};
@@ -55,7 +57,9 @@ class _Backup {
     var valid4 = Files.write(base + "nicknameMap.json", nicknameMapBackup);
     var cookieCoolTimeBackup = JSON.stringify(CoolTime.cookieCoolTime);
     var valid5 = Files.write(base + "cookieCoolTime.json",cookieCoolTimeBackup);
-    return valid1 && valid2 && valid3 && valid4 && valid5;
+    var emailInfoBackup = JSON.stringify(Coupon.emailInfo);
+    var valid6 = Files.write(base + "emailInfo.json",emailInfoBackup);
+    return valid1 && valid2 && valid3 && valid4 && valid5 && valid6;
   }
 }
 const Backup = new _Backup();
