@@ -308,10 +308,13 @@ class _Commands {
       if (!isDuplicateAllowed && boss.loggedUsers.includes(user) && boss.isRelayLogged && (boss.relayUsers[boss.curLevel])[0] == user) {
         return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계에 이어하기로 참여하셨습니다.\n- /참여 이름 보스명 [이달/중복]";
       }
+      if((boss.getAvgNumber() > 1)&&(boss.getAvgNumber() <= boss.curUsers.length + 1)) {
+        return "현재 참여 대기인원이 많아 참여가 불가능합니다.";
+      }
       user.addParticipate(boss.type, boss.curLevel);
       boss.addParticipate(user);
       Bosses.increaseTotalCounts();
-      return user.name + " 님이 " + boss.type + " " + boss.curLevel + "단계에 참여합니다.\n토핑!! 덱!!! 보스!!!! 연모!!!!!" + addStr;
+      return user.name + " 님이 " + boss.type + " " + boss.curLevel + "단계에 참여합니다.\n토핑!! 덱!!! 보스!!!! 연모!!!!! (" + boss.curUsers.length + "/" + boss.getAvgNumber() + ")" + addStr;
     } else {
       return "명령어 오입력\n- /참여(ㅊㅇ) 이름 보스명\n- /참여 이름 보스명 [이달/중복]";
     }

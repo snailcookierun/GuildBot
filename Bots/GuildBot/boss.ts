@@ -96,11 +96,15 @@ class Boss {
     return this.hps[this.curLevel] - this.curDamage;
   }
 
+  getAvgNumber(): number {
+    return Math.ceil(this.getRemained()/this.maxDamage) < 1 ? 1 : Math.ceil(this.getRemained()/this.maxDamage);
+  }
+
   printRemainedAndTactics(): string {
     var text = "잔여: " + this.getRemained() + "만";
       // calculate average damages
       if(this.curLevel >= AVG_LEVEL) {
-        var avgNumber = Math.ceil(this.getRemained()/this.maxDamage) < 1 ? 1 : Math.ceil(this.getRemained()/this.maxDamage);
+        var avgNumber = this.getAvgNumber();
         var avgDamage = Math.round(this.getRemained()/avgNumber);
         text += " (" + avgDamage + "만/" + avgNumber + "명)";
       }
