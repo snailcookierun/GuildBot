@@ -1169,7 +1169,7 @@ class _Commands {
         average(user.log.filter(l => (l.boss == Bosses.bossList[x].type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage)))).join(", "))).join("\n");
     } else if (commands.length == 2 && !isNumber(commands[1])) {
       if (!Bosses.isNameExist(commands[1])) {
-        return commands[2] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
       }
       var boss = Bosses.find(commands[1]);
       return Users.userList.map(user => user.name + ": " + average(user.log.filter(l => (l.boss == boss.type) && (l.level >= AVG_LEVEL) && (l.type == LOG_TYPE.NORMAL || l.type == LOG_TYPE.DUPLICATE)).map(l => l.damage))).join("\n");
