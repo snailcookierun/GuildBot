@@ -41,6 +41,10 @@ class _CoolTime {
       var str = name + ": 쿨타임 " + this.cookieCoolTime[name] + "초";
       str += "\n시작 쿨타임: 2초 (고정)";
       return str;
+    } else if(name == "홀리베리") {
+      var str = name + ": 쿨타임 " + this.cookieCoolTime[name] + "초";
+      str += "\n시작 쿨타임: 1초 (고정)";
+      return str;
     } else {
       var str = name + ": 쿨타임 " + this.cookieCoolTime[name] + "초";
       str += "\n" + this.calculate(this.cookieCoolTime[name]);
