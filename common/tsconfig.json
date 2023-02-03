@@ -1,0 +1,14 @@
+{
+  "files": [
+    "./api.ts",
+    "./config.ts",
+    "./global.ts",
+    "./user.ts",
+    "./boss.ts",
+    "./backup.ts",
+    "./routine.ts",
+    "./cooltime.ts",
+    "./coupon.ts",
+    "./main.ts"
+  ]
+}
