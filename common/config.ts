@@ -187,8 +187,7 @@ class _Config {
     var [valid, str] = this.load();
     if(!valid) {
       Logs.e("Error on config.json: "+str, true);
-      // @ts-ignore
-      Api.off(SCRIPT_NAME);
+      Apis.turnOffScript();
     }
   }
 

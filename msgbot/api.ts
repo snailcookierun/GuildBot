@@ -1,4 +1,3 @@
-
 class _Files {
   read(path: string): [boolean, string] {
     // @ts-ignore
@@ -58,3 +57,22 @@ class _Logs {
   }
 }
 const Logs = new _Logs();
+
+class _Apis {
+  sendHttpRequestPost(url:string, body:string) :string {
+    //@ts-ignore
+    var res = org.jsoup.Jsoup.connect(url)
+    .header("Content-Type", "application/json")
+    .header("Accept", "application/json")
+    .ignoreContentType(true)
+    .ignoreHttpErrors(true)
+    .requestBody(body)
+    .post().body().text();
+    return res;
+  }
+  turnOffScript(){
+    //@ts-ignore
+    Api.off(SCRIPT_NAME);
+  }
+}
+const Apis = new _Apis();

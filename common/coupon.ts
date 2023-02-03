@@ -81,16 +81,9 @@ class _Coupon {
 
   sendHttpRequest(email:string, coupon:string) : number {
     try {
-    //@ts-ignore
-    var res = org.jsoup.Jsoup.connect("https://account.devplay.com/v2/coupon/ck")
-    .header("Content-Type", "application/json")
-    .header("Accept", "application/json")
-    .ignoreContentType(true)
-    .ignoreHttpErrors(true)
-    .requestBody(JSON.stringify({"email": email, "coupon_code": coupon}))
-    .post().body().text();
-    var code = JSON.parse(res).code;
-    return Number(code);
+      var res = Apis.sendHttpRequestPost("https://account.devplay.com/v2/coupon/ck",JSON.stringify({"email": email, "coupon_code": coupon}));
+      var code = JSON.parse(res).code;
+      return Number(code);
     } catch (e) {
       Logs.d(e,false);
       return 99999;
