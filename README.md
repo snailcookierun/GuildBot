@@ -5,9 +5,9 @@ Written by @snailcookierun
 © 2022-present snailcookierun, all rights reserved.
 
 ## Development environment setup
-- Install npm
-- `npm install --save-dev typescript`
-- `npm install --save-dev @types/node`
+1. Install npm
+2. `npm install --save-dev typescript`
+3. `npm install --save-dev @types/node`
 
 ## Device setup
 1. Install '메신저봇R' in your phone.
@@ -21,8 +21,9 @@ Written by @snailcookierun
 5. Copy `GuildBot.js` to `GuildBot` phone directory and overwrite the existing file.
 6. Copy `modules/main.js` to `GuildBot/modules` phone directory.
 7. Copy `../common/config.json` to `GuildBot` phone directory.
-8. Press compile button (it looks like refresh button) in your 메신저봇R.
-9. Run GuildBot.
+8. Copy `../common/config-cooltime.json` to `GuildBot` phone directory.
+9. Press compile button (it looks like refresh button) in your 메신저봇R.
+10. Run GuildBot.
 
 ## FAQ
 - If you want to change your bot name (GuildBot -> different name), you must change `scriptName` in `common/config.ts`.
