@@ -1,0 +1,7 @@
+.vscode
+editor_shortcuts.txt
+node_modules/
+package.json
+package-lock.json
+msgbot/main.js 
+Bots/
