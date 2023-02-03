@@ -1,5 +1,16 @@
 {
-  "extends": "../common/tsconfig.json",
+  "files": [
+    "api.ts",
+    "../common/config.ts",
+    "../common/global.ts",
+    "../common/user.ts",
+    "../common/boss.ts",
+    "../common/backup.ts",
+    "../common/routine.ts",
+    "../common/cooltime.ts",
+    "../common/coupon.ts",
+    "../common/main.ts"
+  ],
   "compilerOptions": {
     "target": "es5",
     "outFile": "modules/main.js"

@@ -19,7 +19,7 @@ class _Routine {
     } else {
       str = "자동저장이 꺼져있음";
     }
-    Logs.d(str);
+    Logs.d(str,false);
     return str;
   }
 
@@ -74,7 +74,7 @@ class _Routine {
       }
       this.lastTsDay = day;
     }
-    Logs.d(str);
+    Logs.d(str,false);
     return str;
   }
 

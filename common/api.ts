@@ -1,61 +1,16 @@
 
-class _Files {
-  read(path: string): [boolean, string] {
-    // @ts-ignore
-    var res = FileStream.read(path);
-    if (res == null) {
-      return [false, ""];
-    } else {
-      return [true, res];
-    }
-  }
-  write(path: string, data: string): boolean {
-    // @ts-ignore
-    var res = FileStream.write(path, data);
-    if (res == null) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-  append(path: string, data: string): boolean {
-    // @ts-ignore
-    var res = FileStream.append(path, data);
-    if (res == null) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-  remove(path: string): boolean {
-    // @ts-ignore
-    var res = FileStream.remove(path);
-    if (res == true) {
-      return true;
-    } else {
-      return false;
-    }
-  }
+declare class _Files {
+  read(path: string): [boolean, string];
+  write(path: string, data: string): boolean;
+  append(path: string, data: string): boolean;
+  remove(path: string): boolean;
 }
 const Files = new _Files();
 
-
-class _Logs {
-  d(data: string, showToast = false) {
-    // @ts-ignore
-    Log.d(data, showToast);
-  }
-  e(data: string, showToast = false) {
-    // @ts-ignore
-    Log.e(data, showToast);
-  }
-  i(data: string, showToast = false) {
-    // @ts-ignore
-    Log.i(data, showToast);
-  }
-  clear() {
-    // @ts-ignore
-    Log.clear();
-  }
+declare class _Logs {
+  d(data: string, showToast: boolean):void;
+  e(data: string, showToast: boolean):void;
+  i(data: string, showToast: boolean):void;
+  clear():void;
 }
 const Logs = new _Logs();

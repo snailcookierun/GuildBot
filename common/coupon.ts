@@ -92,7 +92,7 @@ class _Coupon {
     var code = JSON.parse(res).code;
     return Number(code);
     } catch (e) {
-      Logs.d(e);
+      Logs.d(e,false);
       return 99999;
     }
   }
