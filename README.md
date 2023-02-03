@@ -2,7 +2,7 @@
 
 Written by @snailcookierun
 
-© 2022 snailcookierun, all rights reserved.
+© 2022-present snailcookierun, all rights reserved.
 
 ## Development environment setup
 - Install npm
@@ -10,19 +10,20 @@ Written by @snailcookierun
 - `npm install --save-dev @types/node`
 
 ## Device setup
-- Install '메신저봇R' in your phone.
-- Create 'GuildBot'.
+1. Install '메신저봇R' in your phone.
+2. Create 'GuildBot'.
 
-## How to run
-- Move to Bots/GuildBot directory. `cd Bots/GuildBot`
-- Change `config-example.json` file and save as `config.json`.
-- Compile scripts. `tsc`
-- Copy `GuildBot.js` to `GuildBot` phone directory and overwrite the existing file.
-- Copy `modules/main.js` to `GuildBot/modules` phone directory.
-- Copy `config.json` to `GuildBot` phone directory.
-- Press compile button (it looks like refresh button) in your 메신저봇R.
-- Run GuildBot.
+## How to run GuildBot on 메신저봇R
+1. Move to common directory. `cd common`
+2. Edit `config-example.json` file and save as `config.json`.
+3. Move to msgbot directory. `cd ../msgbot`
+4. type `tsc`.
+5. Copy `GuildBot.js` to `GuildBot` phone directory and overwrite the existing file.
+6. Copy `modules/main.js` to `GuildBot/modules` phone directory.
+7. Copy `../common/config.json` to `GuildBot` phone directory.
+8. Press compile button (it looks like refresh button) in your 메신저봇R.
+9. Run GuildBot.
 
 ## FAQ
-- If you want to change your bot name, you must change `scriptName` in `config.ts`.
+- If you want to change your bot name (GuildBot -> different name), you must change `scriptName` in `common/config.ts`.
 - `tsc` authorization error in Windows: type `Set-ExecutionPolicy RemoteSigned`
