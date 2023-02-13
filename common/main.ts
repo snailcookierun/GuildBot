@@ -286,7 +286,10 @@ class _Commands {
           if (commands[3] == LOG_TYPE.DUPLICATE) {
             addStr = "\n중복 참여입니다.";
             isDuplicateAllowed = true;
-          } else if (commands[3] == LOG_TYPE.RELAY) {
+          } else if (commands[3] == LOG_TYPE.RELAY || commands[3] == "ㅇㄷ") {
+            if(boss.getAvgNumber() > 1) {
+              return "보스체력이 많아 이어하기가 불가능합니다.";
+            }
             addStr = "\n이어하기를 하지 않을 경우 중복 처리됩니다.";
             isDuplicateAllowed = true;
           } else {
