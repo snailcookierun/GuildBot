@@ -24,6 +24,7 @@ interface IBoss {
   counts: number;
   maxDamage: number;
   minDamage: number;
+  isPaused: boolean;
 }
 
 class Boss {
@@ -40,6 +41,7 @@ class Boss {
   counts: number;
   maxDamage: number;
   minDamage: number;
+  isPaused: boolean;
 
   // constructor - type:BOSS_TYPE, name:boss's nickname
   constructor(type: BOSS_TYPE, name: Array<string>, max: number, min: number);
@@ -60,6 +62,7 @@ class Boss {
       this.counts = 0;
       this.maxDamage = max;
       this.minDamage = min;
+      this.isPaused = false;
     } else {
       this.type = first.type;
       this.name = first.name;
@@ -74,6 +77,7 @@ class Boss {
       this.counts = first.counts;
       this.maxDamage = first.maxDamage;
       this.minDamage = first.minDamage;
+      this.isPaused = first.isPaused;
     }
   }
 

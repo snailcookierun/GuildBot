@@ -273,7 +273,10 @@ class _Commands {
       if (!Bosses.isPossibleToParticipate(boss.type)) {
         var arr = Object.keys(Bosses.bossList).map(x => x + ": " + Bosses.bossList[x].counts + "/" + MAX_BOSS_COUNTS);
         return "보스 별 또는 시즌 총 전투 가능 횟수를 모두 사용하였습니다.\n" + "토벌 진행 횟수: " + Bosses.totalCounts + "/" + MAX_TOTAL_COUNTS + "\n" + arr.join(", ");
-      }      
+      }
+      if (boss.isPaused) {
+        return boss.type + " 보스는 현재 토벌이 중지된 보스입니다.";
+      }     
       if (boss.holdingUsers.includes(user)) {
         return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계의 '/홀딩' 명령어를 입력하셨습니다.";
       }
@@ -402,7 +405,8 @@ class _Commands {
           && Bosses.bossList[x].relayUsers[Bosses.bossList[x].curLevel].includes(user)).map(x => Bosses.bossList[x]);
         // Find bosses which the user is in holding mode
         var holdingBosses: Boss[] = Object.keys(Bosses.bossList).filter(x => Bosses.bossList[x].holdingUsers.includes(user)).map(x => Bosses.bossList[x]);
-        var bossesUnion = unionArray(unionArray(participatedBosses, relayBosses),holdingBosses);
+        var unfilteredBossesUnion = unionArray(unionArray(participatedBosses, relayBosses),holdingBosses);
+        var bossesUnion = unfilteredBossesUnion.filter(b => !b.isPaused);
 
         if (bossesUnion.length > 1) {
           var appendStr = participatedBosses.length > 0 ? ("참여: " + participatedBosses.map(x => x.type).join(" ")) : "";
@@ -420,6 +424,9 @@ class _Commands {
           }
           */
         } else if (bossesUnion.length < 1) {
+          if (unfilteredBossesUnion.length > 0) {
+            return "딜량 입력이 가능한 보스가 현재 토벌 중지 상태입니다. (" + unfilteredBossesUnion.map(x => x.type).join(", ") + ")";
+          }
           return commands[1] + " 님은 현재 참여 중인 보스가 없습니다.";
         }
         var boss = bossesUnion[0];
@@ -944,7 +951,7 @@ class _Commands {
   }
 
   printDamageLogs(commands: Array<string>): string {
-    if (commands.length == 1 || commands.length == 2 || commands.length == 3) {
+    if (commands.length == 1 || commands.length == 2 || commands.length == 3 || commands.length == 4) {
       if (Users.userList.length < 1) {
         return "유저가 없습니다.";
       }
@@ -952,7 +959,7 @@ class _Commands {
 
       if (commands.length == 1) {
         Users.userList.forEach(function (user) { if (user.log.length > 0) { userLogsArray = userLogsArray.concat(user.log); } });
-      } else if ((commands.length == 2 || commands.length == 3) && !isNumber(commands[1])) {
+      } else if ((commands.length == 2 || commands.length == 3 || commands.length == 4) && !isNumber(commands[1])) {
         if (!Bosses.isNameExist(commands[1])) {
           return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
         }
@@ -974,11 +981,27 @@ class _Commands {
             var filtered = user.log.filter(l => l.boss == boss.type && l.level == level);
             if (filtered.length > 0) { userLogsArray = userLogsArray.concat(filtered); }
           });
+        } else if (commands.length == 4 && isNatural(commands[2]) && isNatural(commands[3])) {
+          var startLevel = Number(commands[2]);
+          var endLevel = Number(commands[3]);
+          if(startLevel > endLevel){
+            return "시작단계(" + startLevel + ")가 끝단계(" + endLevel + ")보다 큽니다.";
+          }
+          if (!boss.isLevelExist(startLevel)) {
+            return boss.type + " " + startLevel + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
+          }
+          if (!boss.isLevelExist(endLevel)) {
+            return boss.type + " " + endLevel + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
+          }
+          Users.userList.forEach(function (user) {
+            var filtered = user.log.filter(l => l.boss == boss.type && l.level >= startLevel && l.level <= endLevel);
+            if (filtered.length > 0) { userLogsArray = userLogsArray.concat(filtered); }
+          });
         } else {
-          return "명령어 오입력\n- /딜로그\n- /딜로그 보스명\n- /딜로그 보스명 단계";
+          return "명령어 오입력\n- /딜로그\n- /딜로그 보스명\n- /딜로그 보스명 단계\n- /딜로그 보스명 시작단계 끝단계";
         }
       } else {
-        return "명령어 오입력\n- /딜로그\n- /딜로그 보스명\n- /딜로그 보스명 단계";
+        return "명령어 오입력\n- /딜로그\n- /딜로그 보스명\n- /딜로그 보스명 단계\n- /딜로그 보스명 시작단계 끝단계";
       }
 
       if (userLogsArray.length < 1) {
@@ -988,7 +1011,7 @@ class _Commands {
       var str = userLogsArray.map(l => l.user + "," + l.boss + "," + l.level + "," + l.damage + "," + l.type).join("\n");
       return "유저,보스,단계,딜량,타입\n" + str;
     } else {
-      return "명령어 오입력\n- /딜로그\n- /딜로그 보스명\n- /딜로그 보스명 단계";
+      return "명령어 오입력\n- /딜로그\n- /딜로그 보스명\n- /딜로그 보스명 단계\n- /딜로그 보스명 시작단계 끝단계";
     }
   }
 
@@ -1195,7 +1218,7 @@ class _Commands {
         var start = Number(commands[2]);
         var end = Number(commands[3]);
         if (start > end) {
-          return "시작 단계(" + start + ")가 끝 단계(" + end + ")보다 작습니다.";
+          return "시작 단계(" + start + ")가 끝 단계(" + end + ")보다 큽니다.";
         }
         if (end > boss.curLevel) {
           return boss.type + " 보스의 현재 단계(" + boss.curLevel + ")가 끝 단계(" + end + ")보다 작습니다."; 
@@ -1246,7 +1269,7 @@ class _Commands {
       var start = Number(commands[2]);
       var end = Number(commands[3]);
       if (start > end) {
-        return "시작 단계(" + start + ")가 끝 단계(" + end + ")보다 작습니다.";
+        return "시작 단계(" + start + ")가 끝 단계(" + end + ")보다 큽니다.";
       }
       if (!boss.isLevelExist(end)) {
         return boss.type + " " + end + "단계는 현재 체력이 입력되지 않은 단계입니다.\n- /체력추가 보스명 체력1 체력2";
@@ -1337,6 +1360,52 @@ class _Commands {
       return boss.type + " 최소 딜량이 " + boss.minDamage + "만으로 수정되었습니다.";
     } else {
       return "명령어 오입력\n- /최소딜수정 보스명 딜량";
+    }
+  }
+
+  printBossMinMaxDamage(commands: Array<string>): string {
+    if(commands.length == 1) {
+      return Object.keys(Bosses.bossList).map(x => Bosses.bossList[x].type + ": 최소 " + Bosses.bossList[x].minDamage + "만, 최대 " + Bosses.bossList[x].maxDamage + "만").join("\n");
+    } else if (commands.length == 2 && !isNumber(commands[1])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      return boss.type + ": 최소 " + boss.minDamage + "만, 최대 " + boss.maxDamage + "만";
+    } else {
+      return "명령어 오입력\n- /딜범위\n- /딜범위 보스명";
+    }
+  }
+
+  pauseBoss(commands: Array<string>): string {
+    if(commands.length == 2 && !isNumber(commands[1])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      boss.isPaused = true;
+      return boss.type + " 토벌을 마무리합니다.";
+    } else {
+      return "명령어 오입력\n- /중지(마무리) 보스명";
+    }
+  }
+
+  resumeBoss(commands: Array<string>): string {
+    if(commands.length == 2 && !isNumber(commands[1])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      boss.isPaused = false;
+      return boss.type + " 토벌을 재개합니다.";
+    } else {
+      return "명령어 오입력\n- /재시작(재개) 보스명";
     }
   }
 
@@ -1594,7 +1663,7 @@ class _Commands {
   }
 
   hotFix(commands: Array<string>): string {
-    Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].holdingUsers = [])
+    //Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].holdingUsers = [])
     return "핫픽스 완료";
   }
 }
@@ -1648,6 +1717,11 @@ function processCommand(msg: string): string {
     case '/딜확인': return Commands.printUserDamage(commands); break;
     case '/ㄷㅍㄱ':
     case '/딜평균': return Commands.printUserAvgDamage(commands); break;
+    case '/딜범위': return Commands.printBossMinMaxDamage(commands); break;
+    case '/마무리':
+    case '/중지': return Commands.pauseBoss(commands); break;
+    case '/재개':
+    case '/재시작': return Commands.resumeBoss(commands); break;
     case '/ㅍㄱ':
     case '/평균': return Commands.printAvgDamage(commands); break;
     case '/잔여':
