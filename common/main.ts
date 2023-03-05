@@ -365,7 +365,9 @@ class _Commands {
       if (!boss.curUsers.includes(user)) {
         return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 참여 중이지 않습니다.";
       }
-
+      if (boss.isPaused) {
+        return boss.type + " 보스는 현재 토벌이 중지된 보스입니다.";
+      }
       // Double check with user logs
       if (user.numFoundLogs(boss.type, boss.curLevel, 0, LOG_TYPE.NONE) < 1) {
         return user.name + " 님은 현재 " + boss.type + " " + boss.curLevel + "단계에 대한 참여 기록이 없습니다.";
@@ -516,6 +518,9 @@ class _Commands {
         }
         var boss = possibleBosses[0];
       }
+      if (boss.isPaused) {
+        return boss.type + " 보스는 현재 토벌이 중지된 보스입니다.";
+      }
       var logs = user.log.filter(x => (x.boss == boss.type) && (x.level == boss.curLevel)
         && (x.type != LOG_TYPE.NONE) && (x.type != LOG_TYPE.LAST) && (x.type != LOG_TYPE.SOLO) && (x.type != LOG_TYPE.HOLDLAST));
       if (logs.length < 1) {
@@ -553,6 +558,9 @@ class _Commands {
       }
       var newDamage = Number(commands[2]);
       var boss = Bosses.bossList[log.boss];
+      if (boss.isPaused) {
+        return boss.type + " 보스는 현재 토벌이 중지된 보스입니다.";
+      }
       if (Bosses.bossList[log.boss].curLevel == log.level) {
         boss.changeDamage(log.damage, newDamage);
       }
@@ -575,6 +583,9 @@ class _Commands {
       var boss = Bosses.find(commands[2]);
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";;
+      }
+      if (boss.isPaused) {
+        return boss.type + " 보스는 현재 토벌이 중지된 보스입니다.";
       }
       if (boss.holdingUsers.includes(user)) {
         return user.name + " 님은 이미 " + boss.type + " " + boss.curLevel + "단계의 '/홀딩' 명령어를 입력하셨습니다.";
@@ -617,6 +628,9 @@ class _Commands {
         }
         var boss = participatedBosses[0];
       }
+      if (boss.isPaused) {
+        return boss.type + " 보스는 현재 토벌이 중지된 보스입니다.";
+      }
 
       if (!boss.holdingUsers.includes(user)) {
         return user.name + " 님은 "+ boss.type + " " + boss.curLevel + "단계의 홀딩이 아닙니다.";
@@ -642,7 +656,9 @@ class _Commands {
       if (boss.curLevel <= 0) {
         return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
       }
-
+      if (boss.isPaused) {
+        return boss.type + " 보스는 현재 토벌이 중지된 보스입니다.";
+      }
       var isMultiCutAllowed = false;
       if (commands.length == 3) {
         if (!isNumber(commands[2]) && commands[2] == "동타") {
@@ -717,6 +733,9 @@ class _Commands {
       var boss = Bosses.find(commands[1]);
       if (boss.curLevel <= 1) {
         return "1단계 이하는 '/컷취소'가 불가능합니다.";
+      }
+      if (boss.isPaused) {
+        return boss.type + " 보스는 현재 토벌이 중지된 보스입니다.";
       }
       if (boss.curUsers.length > 0 || boss.loggedUsers.length > 0) {
         return "현재 참여 중이거나 딜량 입력을 한 유저가 있어 '/컷취소'가 불가능합니다.";
