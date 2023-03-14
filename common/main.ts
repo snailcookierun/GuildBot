@@ -932,7 +932,7 @@ class _Commands {
         return boss.type + " 잔여 횟수가 " + n + "회 이상 남으신 분이 없습니다.";
       } else {
         list.sort(function (a, b) { return realCounts(b) - realCounts(a); });
-        var names = list.map(u => u.name + "(" + realCounts(u) + ")")
+        var names = list.map(u => u.name + "(" + realCounts(u) + "/" + u.tickets + ")");
         return boss.type + " 잔여 횟수가 " + n + "회 이상 남으신 분들입니다.\n" + names.join(", ");
       }
     } else {
