@@ -79,14 +79,14 @@ class _Coupon {
     }
   }
 
-  sendHttpRequest(email:string, coupon:string) : number {
+  sendHttpRequest(email:string, coupon:string) : string {
     try {
-      var res = Apis.sendHttpRequestPost("https://account.devplay.com/v2/coupon/ck",JSON.stringify({"email": email, "coupon_code": coupon}));
-      var code = JSON.parse(res).code;
-      return Number(code);
+      var res = Apis.sendHttpRequestPost("https://coupon.devplay.com/v1/coupon/ck",JSON.stringify({"email": email, "game_code": "ck", "coupon_code": coupon}));
+      var code = JSON.parse(res).responseCode;
+      return code;
     } catch (e) {
       Logs.d(e,false);
-      return 99999;
+      return "ERROR";
     }
   }
 
@@ -97,26 +97,28 @@ class _Coupon {
     } else if (!this.emailInfo || Object.keys(this.emailInfo).length == 0) {
       return "등록된 유저가 없습니다.";
     } else {
-      var res: {[key in string] : number} = {};
+      var res: {[key in string] : string} = {};
       Object.keys(this.emailInfo).forEach(name => res[name] = this.sendHttpRequest(this.emailInfo[name], coupon));
 
-      var normal = Object.keys(res).filter(name => res[name] == 20000); //정상
-      var wrongEmail = Object.keys(res).filter(name => res[name] == 40006); //이메일오류
-      var expired = Object.keys(res).filter(name => res[name] == 42501); //만료
-      var wrongCoupon = Object.keys(res).filter(name => res[name] == 42502); //쿠폰오류
-      var sameKind = Object.keys(res).filter(name => res[name] == 42201 || res[name] == 42503); //같은종류
-      var usedCoupon = Object.keys(res).filter(name => res[name] == 42203 || res[name] == 42504); //이미사용
-      var none = Object.keys(res).filter(function(n){ var t = res[n]; return (t != 20000 && t != 40006 && !(t <= 42504 && t >= 42501) && t != 42201 && t != 42203)}); //에러
+      var normal = Object.keys(res).filter(name => res[name] == "RESPONSE_CODE_SUCCESS"); //정상
+      var wrongEmail = Object.keys(res).filter(name => res[name] == "RESPONSE_CODE_ACCOUNT_NOT_FOUND"); //이메일오류
+      var expired = Object.keys(res).filter(name => res[name] == "RESPONSE_CODE_NOT_EVENT_TIME"); //만료
+      var wrongCoupon = Object.keys(res).filter(name => res[name] == "RESPONSE_CODE_COUPON_CODE_NOT_FOUND" || res[name] == "RESPONSE_CODE_NOT_TARGET_COUNTRY"); //쿠폰오류
+      var usedCoupon = Object.keys(res).filter(name => res[name] == "RESPONSE_CODE_COUPON_CODE_ALREADY_USED"); //이미사용
+      var fcfsCoupon = Object.keys(res).filter(name => res[name] == "RESPONSE_CODE_COUPON_USAGE_ALREADY_MAX"); //선착순만료
+      var none = Object.keys(res).filter(function(n){ var t = res[n]; return (t == "ERROR") || (t != "RESPONSE_CODE_SUCCESS" 
+                    && t != "RESPONSE_CODE_ACCOUNT_NOT_FOUND" && t != "RESPONSE_CODE_NOT_EVENT_TIME" && t != "RESPONSE_CODE_COUPON_CODE_NOT_FOUND" && t != "RESPONSE_CODE_NOT_TARGET_COUNTRY"
+                    && t != "RESPONSE_CODE_NOT_EVENT_TIME" && t != "RESPONSE_CODE_COUPON_CODE_ALREADY_USED" && t != "RESPONSE_CODE_COUPON_USAGE_ALREADY_MAX")}); //에러
 
       if (expired.length > 0){
-        return "만료된 쿠폰입니다.";
+        return "쿠폰의 사용 기간을 다시 한번 확인해주세요.";
       } else if (wrongCoupon.length > 0){
         return "쿠폰번호를 다시 한번 확인해주세요.";
       } else {
         var resString = "쿠폰 등록 결과입니다.";
         resString += (normal.length > 0) ? ("\n정상 등록: " + normal.join(", ")) : "";
         resString += (wrongEmail.length > 0) ? ("\n이메일 오타: " + wrongEmail.join(", ")) : "";
-        resString += (sameKind.length > 0) ? ("\n같은 종류 쿠폰 사용: " + sameKind.join(", ")) : "";
+        resString += (fcfsCoupon.length > 0) ? ("\n선착순 끝: " + fcfsCoupon.join(", ")) : "";
         resString += (usedCoupon.length > 0) ? ("\n이미 사용: " + usedCoupon.join(", ")) : "";
         resString += (none.length > 0) ? ("\n에러: " + none.join(", ")) : "";
         return resString;
