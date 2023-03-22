@@ -92,7 +92,7 @@ class _Coupon {
 
   addCoupon(coupon:string) : string {
     var couponformat = /^[A-Za-z0-9]*$/;
-    if(coupon.length != 16 || !coupon.match(couponformat)) {
+    if(!(coupon.length >= 2 && coupon.length <= 20) || !coupon.match(couponformat)) {
       return "쿠폰 형식이 맞지 않습니다.";
     } else if (!this.emailInfo || Object.keys(this.emailInfo).length == 0) {
       return "등록된 유저가 없습니다.";
