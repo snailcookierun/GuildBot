@@ -91,8 +91,10 @@ class _Coupon {
   }
 
   addCoupon(coupon:string) : string {
-    var couponformat = /^[A-Za-z0-9]*$/;
-    if(!(coupon.length >= 2 && coupon.length <= 20) || !coupon.match(couponformat)) {
+    var couponformat = /^[A-Za-z0-9ㄱ-ㅎㅏ-ㅣ가-힇]*$/;
+    if(!(coupon.length >= 2 && coupon.length <= 20)) {
+      return "쿠폰 코드는 2~20자리입니다. 다시 한번 확인해주세요.";
+    } else if(!coupon.match(couponformat)) {
       return "쿠폰 형식이 맞지 않습니다.";
     } else if (!this.emailInfo || Object.keys(this.emailInfo).length == 0) {
       return "등록된 유저가 없습니다.";
