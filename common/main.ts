@@ -797,6 +797,21 @@ class _Commands {
     }
   }
 
+  printHoldingDamage(commands: Array<string>): string {
+    if (commands.length == 2 && !isNumber(commands[1])) {
+      if (!Bosses.isNameExist(commands[1])) {
+        return commands[1] + " 은(는) 없는 보스명입니다.\n" + Bosses.printNames();
+      }
+      var boss = Bosses.find(commands[1]);
+      if (boss.curLevel <= 0) {
+        return "시즌 시작이 되어 있지 않습니다.\n- /시즌시작";
+      }
+      return boss.type + " " + boss.curLevel + "단계\n홀딩딜: " + (boss.hps[boss.curLevel] - boss.getRemained()) + "만 (잔여: " + boss.getRemained() + "만)";
+    } else {
+      return "명령어 오입력\n- /홀딩딜(ㅎㄷㄷ) 보스명";
+    }
+  }
+
   calculateRemained(commands: Array<string>): string {
     if (commands.length == 1 || commands.length == 2 || (commands.length == 3 && !isNumber(commands[1]) && isNatural(commands[2]))) {
       if (commands.length == 1 || (commands.length == 2 && isNatural(commands[1]))) {
@@ -1809,6 +1824,8 @@ function processCommand(msg: string): string {
     case '/홀드':
     case '/홀딩': return Commands.addHoldingUser(commands); break;
     case '/홀딩취소': return Commands.deleteHoldingUser(commands); break;
+    case '/ㅎㄷㄷ':
+    case '/홀딩딜': return Commands.printHoldingDamage(commands); break;
     case '/현황':
     case '/ㅎㅎ': return Commands.printTicketsAndCounts(commands); break;
     case '/ㅌㅌ':
