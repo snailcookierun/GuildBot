@@ -521,6 +521,9 @@ class _Commands {
       if (boss.isPaused) {
         return boss.type + " 보스는 현재 토벌이 중지된 보스입니다.";
       }
+      if (boss.curUsers.includes(user)) {
+        return user.name + " 님은 현재 " + boss.type + " " +  boss.curLevel + "단계에 참여 중입니다. /오타 후 딜취소를 해주세요.";
+      }
       var logs = user.log.filter(x => (x.boss == boss.type) && (x.level == boss.curLevel)
         && (x.type != LOG_TYPE.NONE) && (x.type != LOG_TYPE.LAST) && (x.type != LOG_TYPE.SOLO) && (x.type != LOG_TYPE.HOLDLAST));
       if (logs.length < 1) {
