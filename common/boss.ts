@@ -156,6 +156,30 @@ class Boss {
     }
     this.loggedUsers = removeItemOnceIfExist(this.loggedUsers, user);
   }
+
+  estimateHps(level: number): number[] {
+    if(this.hps.length > level) {
+      return [];
+    } else {
+      var startLevel = this.hps.length - 1;
+      var start = this.hps[startLevel];
+      var length = level - startLevel;
+      return Array.from(Array(length).keys()).map(i => Math.round(start * Math.pow(Config.HP_RATE, i+1)));
+    }
+  }
+
+  hpRange(start: number, end: number): number[] {
+    if (!this.isLevelExist(start) && !this.isLevelExist(end)) {
+      var estimatedHps = this.estimateHps(end);
+      return estimatedHps.slice(start - end - 1);
+    } else if (this.isLevelExist(start) && !this.isLevelExist(end)) {
+      var estimatedHps = this.estimateHps(end);
+      var currentHps = this.hps.slice(start - this.hps.length);
+      return currentHps.concat(estimatedHps);
+    } else {
+      return this.hps.slice(start, end + 1);
+    }
+  }
 }
 
 const bossList: { [key in BOSS_TYPE]: Boss } = {
