@@ -10,6 +10,7 @@ let MAX_TOTAL_COUNTS = TICKETS_PER_DAY * 6 * 30; // max count for one season
 let MAX_BOSS_COUNTS = MAX_COUNTS * 30; // max boss count for one season
 let AVG_LEVEL = 34; // minimum boss level to calculate average
 let HP_RATE = 1.030225; // Bosses' HP rate by level
+let HP_MAX_LEVEL = 120; // Bosses' HP limit level
 
 class BossConfig {
   type: BOSS_TYPE;
@@ -43,6 +44,7 @@ class _Config {
   MAX_TICKETS: number;
   AVG_LEVEL: number;
   HP_RATE: number;
+  HP_MAX_LEVEL: number;
   skipMsgs: Array<string>;
   roomName: Array<string>;
   publicRoomName: Array<string>;
@@ -56,6 +58,7 @@ class _Config {
     this.MAX_TICKETS = MAX_TICKETS;
     this.AVG_LEVEL = AVG_LEVEL;
     this.HP_RATE = HP_RATE;
+    this.HP_MAX_LEVEL = HP_MAX_LEVEL;
     this.skipMsgs = [];
     this.roomName = [];
     this.bosses = [];
@@ -87,6 +90,10 @@ class _Config {
     var _HP_RATE = obj["HP_RATE"];
     if(_HP_RATE == undefined || !(typeof _HP_RATE == "number")) { 
       return [false, "Error on config.json: HP_RATE"]; }
+
+    var _HP_MAX_LEVEL = obj["HP_MAX_LEVEL"];
+    if(_HP_MAX_LEVEL == undefined || !(typeof _HP_MAX_LEVEL == "number")) { 
+      return [false, "Error on config.json: HP_MAX_LEVEL"]; }
 
     var _skipMsgs = obj["skipMsgs"];
     if(_skipMsgs == undefined || !Array.isArray(_skipMsgs) || !_skipMsgs.every(v => typeof v == "string")) { 
@@ -137,6 +144,9 @@ class _Config {
     this.MAX_COUNTS = _MAX_COUNTS;
     this.TICKETS_PER_DAY = _TICKETS_PER_DAY;
     this.MAX_TICKETS = _MAX_TICKETS;
+    this.AVG_LEVEL = _AVG_LEVEL;
+    this.HP_RATE = _HP_RATE;
+    this.HP_MAX_LEVEL = _HP_MAX_LEVEL;
     this.skipMsgs = _skipMsgs;
     this.roomName = _roomName;
     this.publicRoomName = _publicRoomName;

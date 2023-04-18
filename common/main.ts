@@ -717,7 +717,11 @@ class _Commands {
 
       // add estimated boss hp
       if(boss.curLevel > 1 && !boss.isLevelExist(boss.curLevel)) {
-        boss.hps = boss.hps.concat(Math.round(boss.hps[boss.curLevel-1]*HP_RATE));
+        if (boss.curLevel <= Config.HP_MAX_LEVEL) {
+          boss.hps = boss.hps.concat(Math.round(boss.hps[boss.curLevel-1]*HP_RATE));
+        } else {
+          boss.hps = boss.hps.concat(boss.hps[boss.curLevel-1]);
+        }
         text += "예상 ";
       }
       text += boss.printRemainedAndTactics();
