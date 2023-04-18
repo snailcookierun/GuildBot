@@ -903,8 +903,9 @@ class _Commands {
       if (start == boss.curLevel) { hps[0] = boss.getRemained() };
 
       var requiredCounts = hps.map(x => ((Math.ceil(x / boss.maxDamage) < 1) ? 1 : Math.ceil(x / boss.maxDamage)));
+      var sum = requiredCounts.reduce((a,b) => a+b,0);
 
-      return requiredCounts.map((n, i) => (start + i) + "단계: " + n + "명, " + Math.round(hps[i] / n) + "만").join("\n");
+      return requiredCounts.map((n, i) => (start + i) + "단계: " + n + "명, " + Math.round(hps[i] / n) + "만").join("\n") + "\n예상 총 인원: " + sum + "명";
 
     } else {
       return "명령어 오입력\n- /계산(ㄱㅅ) 보스명\n- /계산 보스명 [잔여체력/단계]\n- /계산 보스명 시작단계 끝단계";
