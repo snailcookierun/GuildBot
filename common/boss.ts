@@ -160,24 +160,11 @@ class Boss {
   estimateHps(level: number): number[] {
     if(this.hps.length > level) {
       return [];
-    } else if (level <= Config.HP_MAX_LEVEL) {
-      var startLevel = this.hps.length - 1;
-      var start = this.hps[startLevel];
-      var length = level - startLevel;
-      return Array.from(Array(length).keys()).map(i => Math.round(start * Math.pow(Config.HP_RATE, i+1)));
-    } else if (this.hps.length -1 <= Config.HP_MAX_LEVEL) {
-      var startLevel = this.hps.length - 1;
-      var start = this.hps[startLevel];
-      var length1 = Config.HP_MAX_LEVEL - startLevel;
-      var arr1 = Array.from(Array(length1).keys()).map(i => Math.round(start * Math.pow(Config.HP_RATE, i+1)));
-      var length2 = level - Config.HP_MAX_LEVEL;
-      var arr2 = Array(length2).fill(arr1[arr1.length - 1]);
-      return arr1.concat(arr2);
     } else {
       var startLevel = this.hps.length - 1;
       var start = this.hps[startLevel];
       var length = level - startLevel;
-      return Array(length).fill(start);
+      return Array.from(Array(length).keys()).map(i => Math.round(start * Math.pow(Config.HP_RATE, i+1)));
     }
   }
 
