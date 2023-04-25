@@ -728,7 +728,7 @@ class _Commands {
       }
       text += boss.printRemainedAndTactics();
 
-      return boss.type + " " + boss.curLevel + "단계로 넘어갑니다.\n" + addStr + text;
+      return boss.type + " " + boss.curLevel + "단계로 이동 (" + boss.counts + "/" + MAX_BOSS_COUNTS + ")\n" + addStr + text;
     } else {
       return "명령어 오입력\n- /컷(ㅋ) 보스명\n - /컷 보스명 동타";
     }
