@@ -45,6 +45,7 @@ class _Config {
   AVG_LEVEL: number;
   HP_RATE: number;
   HP_MAX_LEVEL: number;
+  countBosses: Array<string>;
   skipMsgs: Array<string>;
   roomName: Array<string>;
   publicRoomName: Array<string>;
@@ -94,6 +95,10 @@ class _Config {
     var _HP_MAX_LEVEL = obj["HP_MAX_LEVEL"];
     if(_HP_MAX_LEVEL == undefined || !(typeof _HP_MAX_LEVEL == "number")) { 
       return [false, "Error on config.json: HP_MAX_LEVEL"]; }
+
+    var _countBosses = obj["countBosses"];
+    if(_countBosses == undefined || !Array.isArray(_countBosses) || !_countBosses.every(v => typeof v == "string")) { 
+      return [false, "Error on config.json: countBosses"]; }
 
     var _skipMsgs = obj["skipMsgs"];
     if(_skipMsgs == undefined || !Array.isArray(_skipMsgs) || !_skipMsgs.every(v => typeof v == "string")) { 
@@ -147,6 +152,7 @@ class _Config {
     this.AVG_LEVEL = _AVG_LEVEL;
     this.HP_RATE = _HP_RATE;
     this.HP_MAX_LEVEL = _HP_MAX_LEVEL;
+    this.countBosses = _countBosses;
     this.skipMsgs = _skipMsgs;
     this.roomName = _roomName;
     this.publicRoomName = _publicRoomName;
@@ -177,6 +183,9 @@ class _Config {
     MAX_TICKETS = this.MAX_TICKETS;
     MAX_TOTAL_COUNTS = TICKETS_PER_DAY * 6 * 30; // max count for one season
     MAX_BOSS_COUNTS = MAX_COUNTS * 30; // max boss count for one season
+    AVG_LEVEL = this.AVG_LEVEL;
+    HP_RATE = this.HP_RATE;
+    HP_MAX_LEVEL = this.HP_MAX_LEVEL;
   }
 
   findBoss(b:BOSS_TYPE): [boolean, BossConfig] {

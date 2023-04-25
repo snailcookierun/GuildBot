@@ -4,6 +4,7 @@
   "MAX_TICKETS": 9,
   "AVG_LEVEL": 34,
   "HP_RATE": 1.030225,
+  "countBosses": ["용", "천사", "감초"],
   "skipMsgs": ["/건너","/뛸","/명령어"],
   "roomName": ["톡방 이름","또는","보낸 사람 이름"],
   "publicRoomName": ["봇 Public 테스트"],

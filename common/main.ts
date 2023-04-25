@@ -305,7 +305,7 @@ class _Commands {
         }
       }
       if (Bosses.duplicateAllowed) {
-        addStr = "\n중복 참여 허용 모드입니다.";
+        addStr = "\n(중복 참여 허용)";
         isDuplicateAllowed = true;
       }
       if (!isDuplicateAllowed && boss.loggedUsers.includes(user) && !(boss.isRelayLogged && (boss.relayUsers[boss.curLevel])[0] == user)) {
@@ -322,7 +322,13 @@ class _Commands {
       user.addParticipate(boss.type, boss.curLevel);
       boss.addParticipate(user);
       Bosses.increaseTotalCounts();
-      return user.name + " 님이 " + boss.type + " " + boss.curLevel + "단계에 참여합니다.\n토핑!! 덱!!! 보스!!!! 연모!!!!! (" + boss.curUsers.length + "/" + boss.getAvgNumber() + ")" + addStr;
+      var res = user.name + " 님이 " + boss.type + " " + boss.curLevel + "단계에 참여합니다.\n";
+      res += "[잔여 티켓: " + user.tickets;
+      if (Config.countBosses.length > 0) {
+        res += "(" + Config.countBosses.map(b => user.counts[b]).join("/") +  ")";
+      }
+      res += ", 대기 인원: " + boss.curUsers.length + "/" + boss.getAvgNumber() + "]" + addStr;
+      return res;
     } else {
       return "명령어 오입력\n- /참여(ㅊㅇ) 이름 보스명\n- /참여 이름 보스명 [이달/중복]";
     }
@@ -472,7 +478,7 @@ class _Commands {
         user.log.push(new DLog(boss.type, boss.curLevel, 0, LOG_TYPE.NONE, user.name));
       } else if (boss.loggedUsers.includes(user)) {
         logType = LOG_TYPE.DUPLICATE;
-        str = "\n중복으로 기록되었습니다. 참여 [이달/중복]은 특수한 경우에만 사용하세요.";
+        str = "\n중복으로 기록되었습니다.";
       }
 
       // Double-check with user log
@@ -485,7 +491,7 @@ class _Commands {
       user.addDamage(boss.type, boss.curLevel, damage, logType);
       boss.addDamage(user, damage);
 
-      return boss.type + " " + boss.curLevel + "단계\n" + boss.printRemainedAndTactics() + str;
+      return boss.type + " " + boss.curLevel + "단계 (" + boss.counts + "/" + MAX_BOSS_COUNTS + ")\n" + boss.printRemainedAndTactics() + str;
 
     } else {
       return "명령어 오입력\n- /딜량(딜, ㄷㄹ, ㄷ) 이름 딜량\n- /딜 이름 보스명 딜량";
