@@ -1,7 +1,7 @@
 .vscode
 editor_shortcuts.txt
 node_modules/
-package.json
-package-lock.json
+/package.json
+/package-lock.json
 msgbot/modules
 Bots/

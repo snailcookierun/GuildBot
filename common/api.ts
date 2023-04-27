@@ -1,3 +1,8 @@
+/* Script Name */
+const SCRIPT_NAME = "GuildBot";
+const ROOT_DIR = "./";
+exports.scriptName = SCRIPT_NAME;
+
 declare class _Files {
   read(path: string): [boolean, string];
   write(path: string, data: string): boolean;

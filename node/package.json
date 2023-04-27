@@ -1,0 +1,8 @@
+{
+  "version": "0.0.1",
+  "main": "dist/GuildBot.js",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build tsconfig-module.json && tsc"
+  }
+}

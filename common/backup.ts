@@ -1,7 +1,7 @@
 
 class _Backup {
   load(): boolean {
-    var base = "/storage/emulated/0/msgbot/Bots/" + SCRIPT_NAME + "/data/";
+    var base = ROOT_DIR + "/data/";
     var [valid1, userListStr] = Files.read(base + "userList.json");
     var [valid2, bossListStr] = Files.read(base + "bossList.json");
     var [valid3, totalCountsStr] = Files.read(base + "totalCounts.json");
@@ -36,7 +36,7 @@ class _Backup {
     }
   }
   save(): boolean {
-    var base = "/storage/emulated/0/msgbot/Bots/" + SCRIPT_NAME + "/data/";
+    var base = ROOT_DIR + "/data/";
     var bossListCopy = {};
     Object.keys(Bosses.bossList).forEach(function (x) {
       var bossCopy: any = new Boss(Bosses.bossList[x]);

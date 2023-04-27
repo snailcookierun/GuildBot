@@ -1,7 +1,3 @@
-/* Script Name */
-const SCRIPT_NAME = "GuildBot";
-exports.scriptName = SCRIPT_NAME;
-
 /* Global constants */
 let MAX_COUNTS = 9; //max count for each boss
 let TICKETS_PER_DAY = 3; //charged tickets per day
@@ -67,7 +63,7 @@ class _Config {
   }
 
   load() : [boolean, string] {
-    var path = "/storage/emulated/0/msgbot/Bots/" + SCRIPT_NAME + "/config.json";
+    var path = ROOT_DIR + "/config.json";
     var [valid, str] = Files.read(path);
     if(!valid) { return [false, "Error on config.json: missing " + path]; }
     var obj = JSON.parse(str);
@@ -136,7 +132,7 @@ class _Config {
       return true;
     })) { return [false, "Error on config.json: bosses"]; }
 
-    var path2 = "/storage/emulated/0/msgbot/Bots/" + SCRIPT_NAME + "/config-cooltime.json";
+    var path2 = ROOT_DIR + "/config-cooltime.json";
     var [valid2, str2] = Files.read(path2);
     if(!valid2) { return [false, "Error on config-cooltime.json: missing " + path2]; }
     var obj2 = JSON.parse(str2);

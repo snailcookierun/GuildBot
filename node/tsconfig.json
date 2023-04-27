@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonJS",
+    "rootDirs": ["."],
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noImplicitUseStrict": true,
+    "outDir": "dist"
+  },
+  "files": [
+    "modules/main.js",
+    "GuildBot.ts"
+  ]
+}

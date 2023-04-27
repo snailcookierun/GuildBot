@@ -232,7 +232,7 @@ class _Bosses {
   }
 
   updateConfig() {
-    Object.keys(this.bossList).forEach(function(x){
+    Object.keys(this.bossList).forEach(x => {
       var [valid, config] = Config.findBoss(this.bossList[x].type);
       if (valid) {
         this.bossList[x].hps = config.hps;

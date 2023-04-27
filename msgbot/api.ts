@@ -1,3 +1,8 @@
+/* Script Name */
+const SCRIPT_NAME = "GuildBot";
+const ROOT_DIR = "/storage/emulated/0/msgbot/Bots/" + SCRIPT_NAME;
+exports.scriptName = SCRIPT_NAME;
+
 class _Files {
   read(path: string): [boolean, string] {
     // @ts-ignore
