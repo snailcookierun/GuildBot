@@ -12,6 +12,7 @@ class _Files {
       var res = fs.readFileSync(path);
       return [true, res.toString()];
     } catch (e) {
+      console.error(e);
       return [false, ""];
     }
   }
@@ -20,6 +21,7 @@ class _Files {
       fs.writeFileSync(path, data);
       return true;
     } catch(e) {
+      console.error(e);
       return false;
     }
   }
@@ -28,6 +30,7 @@ class _Files {
       fs.appendFileSync(path, data);
       return true;
     } catch(e) {
+      console.error(e);
       return false;
     }
   }
@@ -36,6 +39,7 @@ class _Files {
       fs.unlink(path, (e) => {if(e) throw e;});
       return true;
     } catch(e) {
+      console.error(e);
       return false;
     }
   }
