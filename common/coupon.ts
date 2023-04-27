@@ -82,10 +82,10 @@ class _Coupon {
   sendHttpRequest(email:string, coupon:string) : string {
     try {
       var res = Apis.sendHttpRequestPost("https://coupon.devplay.com/v1/coupon/ck",JSON.stringify({"email": email, "game_code": "ck", "coupon_code": coupon}));
-      var code = JSON.parse(res).responseCode;
+      var code = res.responseCode;
       return code;
     } catch (e) {
-      Logs.d(e,false);
+      Logs.e(e,false);
       return "ERROR";
     }
   }

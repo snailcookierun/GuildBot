@@ -64,7 +64,7 @@ class _Logs {
 const Logs = new _Logs();
 
 class _Apis {
-  sendHttpRequestPost(url:string, body:string) :string {
+  sendHttpRequestPost(url:string, body:string) :any {
     //@ts-ignore
     var res = org.jsoup.Jsoup.connect(url)
     .header("Content-Type", "application/json")
@@ -73,7 +73,7 @@ class _Apis {
     .ignoreHttpErrors(true)
     .requestBody(body)
     .post().body().text();
-    return res;
+    return JSON.parse(res);
   }
   turnOffScript(){
     //@ts-ignore

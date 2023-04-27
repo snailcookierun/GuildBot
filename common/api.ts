@@ -20,7 +20,7 @@ declare class _Logs {
 const Logs = new _Logs();
 
 declare class _Apis {
-  sendHttpRequestPost(url:string, body:string):string;
+  sendHttpRequestPost(url:string, body:string):any;
   turnOffScript():void;
 }
 const Apis = new _Apis();

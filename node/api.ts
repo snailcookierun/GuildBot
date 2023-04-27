@@ -1,5 +1,5 @@
 const fs = require('fs');
-const http = require('http');
+const request = require('sync-request');
 
 /* Script Name */
 const SCRIPT_NAME = "GuildBot";
@@ -59,30 +59,15 @@ class _Logs {
 const Logs = new _Logs();
 
 class _Apis {
-  sendHttpRequestPost(url:string, body:string):string {
-    var options = {
-      host: url,
-      method: 'POST',
+  sendHttpRequestPost(url:string, body:string):any {
+    var res = request('POST', url, {
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json"
-      }
-    }
-    var resData = '';
-    var req = http.request(options, function(res) {
-      res.on('data', function(chunk) {
-        resData += chunk;
-      });
-      res.on('end', function() {
-        console.log(resData);
-      });
+      },
+      json: JSON.parse(body)
     })
-    req.on('error', function(err) {
-      console.log(err.message);
-    });
-    req.write(body);
-    req.end();
-    return '';
+    return JSON.parse(res.getBody());
   }
   turnOffScript(){
     return;
