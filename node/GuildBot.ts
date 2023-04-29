@@ -31,3 +31,9 @@ server.on('message', async (msg) => {
 });
 
 server.start(3000);
+
+function autoSave() {
+  main.autoSave();
+}
+
+setInterval(autoSave, 600000);

@@ -2,3 +2,5 @@ dist
 modules
 config.json
 config-cooltime.json
+GuildBot-Crystal
+tsconfig-crystal.json

@@ -1916,6 +1916,10 @@ function checkNotification(sbn) {
   Routine.checkNotification(sbn);
 }
 
+function autoSave() {
+  Routine.autoSave();
+}
+
 
 exports.processCommand = processCommand;
 exports.processPublicCommand = processPublicCommand;
@@ -1924,3 +1928,4 @@ exports.checkSkipMsgs = checkSkipMsgs;
 exports.checkRoomName = checkRoomName;
 exports.checkPublicRoomName = checkPublicRoomName;
 exports.checkNotification = checkNotification;
+exports.autoSave = autoSave;
