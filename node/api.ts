@@ -1,6 +1,10 @@
 const fs = require('fs');
 const request = require('sync-request');
 
+function now():string {
+  return new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+}
+
 /* Script Name */
 const SCRIPT_NAME = "GuildBot";
 const ROOT_DIR = "./";
@@ -12,7 +16,7 @@ class _Files {
       var res = fs.readFileSync(path);
       return [true, res.toString()];
     } catch (e) {
-      console.error(e);
+      console.error('[' + now() + '] ' + e);
       return [false, ""];
     }
   }
@@ -21,7 +25,7 @@ class _Files {
       fs.writeFileSync(path, data);
       return true;
     } catch(e) {
-      console.error(e);
+      console.error('[' + now() + '] ' + e);
       return false;
     }
   }
@@ -30,7 +34,7 @@ class _Files {
       fs.appendFileSync(path, data);
       return true;
     } catch(e) {
-      console.error(e);
+      console.error('[' + now() + '] ' + e);
       return false;
     }
   }
@@ -39,7 +43,7 @@ class _Files {
       fs.unlink(path, (e) => {if(e) throw e;});
       return true;
     } catch(e) {
-      console.error(e);
+      console.error('[' + now() + '] ' + e);
       return false;
     }
   }
@@ -48,13 +52,13 @@ const Files = new _Files();
 
 class _Logs {
   d(data: string, showToast: boolean):void {
-    console.debug(data);
+    console.debug('[' + now() + '] ' + data);
   }
   e(data: string, showToast: boolean):void {
-    console.error(data);
+    console.error('[' + now() + '] ' + data);
   }
   i(data: string, showToast: boolean):void {
-    console.info(data);
+    console.info('[' + now() + '] ' + data);
   }
   clear():void {
     console.clear();
