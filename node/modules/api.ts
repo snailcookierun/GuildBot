@@ -1,5 +1,5 @@
-const fs = require('fs');
-const request = require('sync-request');
+var fs = require('fs');
+var request = require('sync-request');
 
 function now():string {
   return new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');

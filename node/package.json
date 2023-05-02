@@ -3,6 +3,6 @@
   "main": "dist/GuildBot.js",
   "private": true,
   "scripts": {
-    "build": "tsc --build tsconfig-module.json && tsc"
+    "build": "tsc --build modules/tsconfig.json && tsc"
   }
 }

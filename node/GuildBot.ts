@@ -9,7 +9,9 @@ main.init();
 
 server.on('message', async (msg) => {
   if(main.checkRoomName(msg.room) && (msg.content.startsWith(prefix) || msg.content.startsWith(prefix2)) && !main.checkSkipMsgs(msg.content)) {
-    msg.reply(main.processCommand(msg.content));
+    if(main.isPluginCommand(msg)){ main.processPluginCommand(msg);
+      } else { msg.reply(main.processCommand(msg.content));
+      };
   } else if (main.checkPublicRoomName(msg.room) && (msg.content.startsWith(prefix) || msg.content.startsWith(prefix2)) && !main.checkSkipMsgs(msg.content)) {
     msg.reply(main.processPublicCommand(msg.content));
   }

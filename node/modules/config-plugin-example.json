@@ -1,0 +1,10 @@
+{
+  "cafe":{
+    "client_id": "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET",
+    "host": "http://localhost",
+    "port": 8888,
+    "clubid": 30291108,
+    "menuid": 64
+  }
+}

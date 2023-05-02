@@ -1,6 +1,6 @@
 dist
-modules
 config.json
 config-cooltime.json
+modules/config-plugin.json
 GuildBot-Crystal
 tsconfig-crystal.json

@@ -5,12 +5,10 @@
     "rootDirs": ["."],
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "allowJs": true,
     "noImplicitUseStrict": true,
     "outDir": "dist"
   },
   "files": [
-    "modules/main.js",
     "GuildBot.ts"
   ]
 }
