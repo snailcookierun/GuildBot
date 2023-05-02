@@ -41,7 +41,7 @@ app.get('/callback', function (req, res) {
 
 /*
 app.get('/refresh', function (req, res) {
-  api_url = 'https://nid.naver.com/oauth2.0/token?grant_type=refresh_token&'
+  var api_url = 'https://nid.naver.com/oauth2.0/token?grant_type=refresh_token&'
     + "client_id=" + client_id + '&client_secret=' + client_secret + '&refresh_token=' + refresh_token;
   axios.get(api_url).then(function (response) {
     console.log(response.data);
@@ -110,7 +110,7 @@ function writeCafePost(msg) {
 
 
 async function cafeCommand(msg) {
-  var commands = await msg.content.trim().split(/\s+/);
+  var commands = msg.content.trim().split(/\s+/);
   switch (commands[1]) {
     default: msg.reply("명령어 오입력\n- /카페 로그인\n- /카페 글작성"); break;
     case '글작성': refreshToken(msg, writeCafePost); break;
