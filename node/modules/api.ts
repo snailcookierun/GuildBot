@@ -2,7 +2,7 @@ var fs = require('fs');
 var request = require('sync-request');
 
 function now():string {
-  return new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+  return new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul'});
 }
 
 /* Script Name */
