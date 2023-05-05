@@ -6,6 +6,11 @@
     "port": 8888,
     "clubid": 30291108,
     "menuid": 64,
-    "token_path": "TOKEN_PATH"
+    "token_path": "NAVER_TOKEN_PATH"
+  },
+  "google":{
+    "credentials_path": "CREDENTIALS_PATH",
+    "formid": "GOOGLE_FORM_ID",
+    "token_path": "GOOGLE_TOKEN_PATH"
   }
 }

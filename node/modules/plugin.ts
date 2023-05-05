@@ -1,5 +1,6 @@
 const commandMap:{ [key: string]: Function } = {
-  '/카페': cafeCommand
+  '/카페': cafeCommand,
+  '/구글': googleCommand
 }
 
 function isPluginCommand(msg) {

@@ -18,6 +18,7 @@
     "../../common/cooltime.ts",
     "../../common/coupon.ts",
     "cafe.ts",
+    "google.ts",
     "plugin.ts",
     "../../common/main.ts"
   ]
