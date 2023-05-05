@@ -1,4 +1,4 @@
-var fs = require('fs');
+var fs_sync = require('fs');
 var request = require('sync-request');
 
 function now():string {
@@ -13,7 +13,7 @@ exports.scriptName = SCRIPT_NAME;
 class _Files {
   read(path: string): [boolean, string] {
     try {
-      var res = fs.readFileSync(path);
+      var res = fs_sync.readFileSync(path);
       return [true, res.toString()];
     } catch (e) {
       console.error('[' + now() + '] ' + e);
@@ -22,7 +22,7 @@ class _Files {
   }
   write(path: string, data: string): boolean {
     try {
-      fs.writeFileSync(path, data);
+      fs_sync.writeFileSync(path, data);
       return true;
     } catch(e) {
       console.error('[' + now() + '] ' + e);
@@ -31,7 +31,7 @@ class _Files {
   }
   append(path: string, data: string): boolean {
     try {
-      fs.appendFileSync(path, data);
+      fs_sync.appendFileSync(path, data);
       return true;
     } catch(e) {
       console.error('[' + now() + '] ' + e);
@@ -40,7 +40,7 @@ class _Files {
   }
   remove(path: string): boolean {
     try {
-      fs.unlink(path, (e) => {if(e) throw e;});
+      fs_sync.unlink(path, (e) => {if(e) throw e;});
       return true;
     } catch(e) {
       console.error('[' + now() + '] ' + e);

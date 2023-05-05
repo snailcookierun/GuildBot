@@ -1,6 +1,6 @@
 var express = require('express');
 var axios = require('axios');
-var fs = require('fs');
+var fs = require('fs').promises;
 var crypto: Crypto = require('crypto');
 
 class _Cafe {
@@ -33,7 +33,7 @@ class _Cafe {
 
   async saveTokenToFile() {
     var payload = JSON.stringify({refresh_token: this.refresh_token});
-    await fs.writeFile(this.config.cafe.token_path, payload, (e) => {if(e){Logs.e(e,false)}});
+    await fs.writeFile(this.config.cafe.token_path, payload);
   }
 
   async loadSavedTokenIfExist():Promise<string> {
@@ -42,6 +42,7 @@ class _Cafe {
       const credentials = JSON.parse(content);
       return credentials.refresh_token;
     } catch (err) {
+      Logs.e(err, false);
       return "";
     }
   }
@@ -64,7 +65,7 @@ class _Cafe {
       successCallback(msg);
     }).catch(function (error) {
       Logs.e(error,false);
-      msg.reply("리프레시에 실패하였습니다.");
+      if(verbose) { msg.reply("리프레시에 실패하였습니다."); }
     })
   }
 
@@ -108,11 +109,9 @@ Cafe.app.get('/callback', function (req, res) {
   })
 });
 
-
 Cafe.app.listen(Cafe.config.cafe.port, function () {
   Logs.d(Cafe.config.cafe.host + ':' + Cafe.config.cafe.port + '/naverlogin listening on port 8888!',false);
 });
-
 
 function cafeCommand(msg) {
   var commands = msg.content.trim().split(/\s+/);
