@@ -27,8 +27,8 @@ class _Cafe {
 
     this.clubid = this.config.cafe.clubid;
     this.menuid = this.config.cafe.menuid;
-    this.subject = encodeURI("테스트입니다.");
-    this.content = encodeURI("테스트 글입니다.");
+    this.subject = "";
+    this.content = "";
   }
 
   async saveTokenToFile() {
@@ -69,7 +69,24 @@ class _Cafe {
     })
   }
 
-  writeCafePost(msg, verbose:boolean) {
+  async writeCafePost(msg, verbose:boolean) {
+    if(this.subject == "" || this.content == "") {
+      try {
+        var data = await fs.readFile(this.config.cafe.form_path);
+        var dataStr = JSON.parse(data);
+        if (dataStr.subject == undefined || dataStr.content == undefined || dataStr.subject == "" || dataStr.content == "") {
+          msg.reply("구인글이 비어있습니다.");
+          return;
+        } else {
+          this.subject = dataStr.subject;
+          this.content = dataStr.content;
+        }
+      } catch(e) {
+        Logs.e(e,false);
+        msg.reply("구인글이 비어있습니다.");
+        return;
+      }
+    }
     var header = "Bearer " + this.access_token;
     var api_url = 'https://openapi.naver.com/v1/cafe/' + this.clubid + '/menu/' + this.menuid + '/articles';
     var form = new FormData();
@@ -81,6 +98,13 @@ class _Cafe {
       Logs.e(error, false);
       msg.reply("포스트에 실패하였습니다.");
     });
+  }
+
+  async updateContents(sub:string, con:string) {
+    this.subject = encodeURI(sub).replace(/%0A/g, "%5Cn");
+    this.content = encodeURI(con).replace(/%0A/g, "%5Cn");
+    var payload = JSON.stringify({subject: this.subject, content: this.content});
+    await fs.writeFile(this.config.cafe.form_path, payload);
   }
 }
 
