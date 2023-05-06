@@ -1912,6 +1912,11 @@ function checkPublicRoomName(room: string): boolean {
   return Config.publicRoomName.some(x => room.startsWith(x));
 }
 
+/* checkAdminRoomName: check adminRoomName */
+function checkAdminRoomName(room: string): boolean {
+  return Config.adminRoomName.some(x => room.startsWith(x));
+}
+
 function checkNotification(sbn) {
   Routine.checkNotification(sbn);
 }
@@ -1927,5 +1932,6 @@ exports.init = init;
 exports.checkSkipMsgs = checkSkipMsgs;
 exports.checkRoomName = checkRoomName;
 exports.checkPublicRoomName = checkPublicRoomName;
+exports.checkAdminRoomName = checkAdminRoomName;
 exports.checkNotification = checkNotification;
 exports.autoSave = autoSave;

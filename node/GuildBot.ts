@@ -8,14 +8,19 @@ const server = new Server();
 main.init();
 
 server.on('message', async (msg) => {
-  if(main.checkRoomName(msg.room) && (msg.content.startsWith(prefix) || msg.content.startsWith(prefix2)) && !main.checkSkipMsgs(msg.content)) {
-    if(main.isPluginCommand(msg)){ main.processPluginCommand(msg);
-      } else { msg.reply(main.processCommand(msg.content));
-      };
-  } else if (main.checkPublicRoomName(msg.room) && (msg.content.startsWith(prefix) || msg.content.startsWith(prefix2)) && !main.checkSkipMsgs(msg.content)) {
-    msg.reply(main.processPublicCommand(msg.content));
+  if ((msg.content.startsWith(prefix) || msg.content.startsWith(prefix2)) && !main.checkSkipMsgs(msg.content)) {
+    if (main.checkAdminRoomName(msg.room)) {
+      if (main.isPluginCommand(msg)) {
+        main.processPluginCommand(msg);
+      } else {
+        msg.reply(main.processCommand(msg.content));
+      }
+    } else if (main.checkRoomName(msg.room)) {
+      msg.reply(main.processCommand(msg.content));
+    } else if (main.checkPublicRoomName(msg.room)) {
+      msg.reply(main.processPublicCommand(msg.content));
+    }
   }
-
   /*
   if (!msg.content.startsWith(prefix)) return;
 

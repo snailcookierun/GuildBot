@@ -45,6 +45,7 @@ class _Config {
   skipMsgs: Array<string>;
   roomName: Array<string>;
   publicRoomName: Array<string>;
+  adminRoomName: Array<string>;
   bosses: Array<BossConfig>;
   routines: Array<RoutineConfig>;
   cookieCoolTime: {[key in string] : number};
@@ -58,6 +59,8 @@ class _Config {
     this.HP_MAX_LEVEL = HP_MAX_LEVEL;
     this.skipMsgs = [];
     this.roomName = [];
+    this.publicRoomName = [];
+    this.adminRoomName = [];
     this.bosses = [];
     this.routines = [];
   }
@@ -108,6 +111,10 @@ class _Config {
     if(_publicRoomName == undefined || !Array.isArray(_publicRoomName)) { 
       return [false, "Error on config.json: publicRoomName"]; }
 
+    var _adminRoomName = obj["adminRoomName"];
+    if(_adminRoomName == undefined || !Array.isArray(_adminRoomName)) { 
+      return [false, "Error on config.json: adminRoomName"]; }
+
     var _bosses = obj["bosses"];
     if(_bosses == undefined || !Array.isArray(_bosses) || !_bosses.every(function(boss){
       var t = boss["type"];
@@ -151,6 +158,7 @@ class _Config {
     this.countBosses = _countBosses;
     this.skipMsgs = _skipMsgs;
     this.roomName = _roomName;
+    this.adminRoomName = _adminRoomName;
     this.publicRoomName = _publicRoomName;
 
     this.bosses = _bosses.map(function(boss){
