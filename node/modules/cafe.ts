@@ -116,6 +116,19 @@ class _Cafe {
     await fs.writeFile(this.config.cafe.form_path, payload);
   }
 
+  async showSavedContents(msg) {
+    try {
+      const f = await fs.readFile(this.config.cafe.form_path);
+      const data = JSON.parse(f);
+      const subject = decodeURI(data.subject.replace(/%5Cn/g, "%0A"));
+      const content = decodeURI(data.content.replace(/%5Cn/g, "%0A"));
+      msg.reply("제목: " + subject + "\n\n내용\n\n" + content);
+    } catch (err) {
+      Logs.e(err, false);
+      msg.reply("저장된 구인글에 에러가 있습니다.");
+    }
+  }
+
   async loadTimePeriodIfExist() {
     try {
       const content = await fs.readFile(this.config.cafe.setting_path);

@@ -134,8 +134,9 @@ Google.resetOtp();
 function googleFormCommand(msg) {
   var commands = msg.content.trim().split(/\s+/);
   switch (commands[1]) {
-    default: msg.reply("명령어 오입력\n- /구인글 작성\n- /구인글 업데이트"); break;
+    default: msg.reply("명령어 오입력\n- /구인글 작성\n- /구인글 업데이트\n- /구인글 보기"); break;
     case '작성': Google.showForm(msg); break;
     case '업데이트': Google.updateFormResponses(msg); break;
+    case '보기': Cafe.showSavedContents(msg); break;
   }
 }
