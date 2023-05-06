@@ -19,6 +19,7 @@ class _Cafe {
   period: number;
   start: number;
   end: number;
+  timeObj: NodeJS.Timeout;
 
   constructor() {
     this.config = require('./config-plugin.json');
@@ -33,14 +34,18 @@ class _Cafe {
     this.menuid = this.config.cafe.menuid;
     this.subject = "";
     this.content = "";
+
+    this.start = 10;
+    this.end = 23;
+    this.period = 2;
   }
 
   async saveTokenToFile() {
-    var payload = JSON.stringify({refresh_token: this.refresh_token});
+    var payload = JSON.stringify({ refresh_token: this.refresh_token });
     await fs.writeFile(this.config.cafe.token_path, payload);
   }
 
-  async loadSavedTokenIfExist():Promise<string> {
+  async loadSavedTokenIfExist(): Promise<string> {
     try {
       const content = await fs.readFile(this.config.cafe.token_path);
       const credentials = JSON.parse(content);
@@ -51,7 +56,7 @@ class _Cafe {
     }
   }
 
-  async refreshToken(msg, verbose:boolean, successCallback:Function) {
+  async refreshToken(msg, verbose: boolean, successCallback: Function) {
     if (this.refresh_token == "") {
       this.refresh_token = await this.loadSavedTokenIfExist();
     }
@@ -59,35 +64,35 @@ class _Cafe {
       + "client_id=" + this.client_id + '&client_secret=' + this.client_secret + '&refresh_token=' + this.refresh_token;
     axios.get(api_url).then(function (response) {
       if (response.data.error != null) {
-        if(verbose) { msg.reply("리프레시에 실패하였습니다."); }
+        if (verbose) { msg.reply("리프레시에 실패하였습니다."); }
       } else {
         Cafe.access_token = response.data.access_token;
         Cafe.refresh_token = response.data.refresh_token;
         Cafe.saveTokenToFile();
-        if(verbose) { msg.reply("리프레시에 성공하였습니다."); }
+        if (verbose) { msg.reply("리프레시에 성공하였습니다."); }
       }
       successCallback(msg);
     }).catch(function (error) {
-      Logs.e(error,false);
-      if(verbose) { msg.reply("리프레시에 실패하였습니다."); }
+      Logs.e(error, false);
+      if (verbose) { msg.reply("리프레시에 실패하였습니다."); }
     })
   }
 
-  async writeCafePost(msg, verbose:boolean) {
-    if(this.subject == "" || this.content == "") {
+  async writeCafePost(msg, verbose: boolean) {
+    if (this.subject == "" || this.content == "") {
       try {
         var data = await fs.readFile(this.config.cafe.form_path);
         var dataStr = JSON.parse(data);
         if (dataStr.subject == undefined || dataStr.content == undefined || dataStr.subject == "" || dataStr.content == "") {
-          msg.reply("구인글이 비어있습니다.");
+          if(verbose) {msg.reply("구인글이 비어있습니다.");}
           return;
         } else {
           this.subject = dataStr.subject;
           this.content = dataStr.content;
         }
-      } catch(e) {
-        Logs.e(e,false);
-        msg.reply("구인글이 비어있습니다.");
+      } catch (e) {
+        Logs.e(e, false);
+        if(verbose) {msg.reply("구인글이 비어있습니다.");}
         return;
       }
     }
@@ -97,17 +102,17 @@ class _Cafe {
     form.append('subject', this.subject);
     form.append('content', this.content);
     axios.post(api_url, form, { headers: { 'Authorization': header } }).then(function (response) {
-      if(verbose) { msg.reply("포스트에 성공하였습니다.\n" + response.data.message.result.articleUrl); }
+      if (verbose) { msg.reply("포스트에 성공하였습니다.\n" + response.data.message.result.articleUrl); }
     }).catch(function (error) {
       Logs.e(error, false);
-      msg.reply("포스트에 실패하였습니다.");
+      if(verbose) {msg.reply("포스트에 실패하였습니다.");}
     });
   }
 
-  async updateContents(sub:string, con:string) {
+  async updateContents(sub: string, con: string) {
     this.subject = encodeURI(sub).replace(/%0A/g, "%5Cn");
     this.content = encodeURI(con).replace(/%0A/g, "%5Cn");
-    var payload = JSON.stringify({subject: this.subject, content: this.content});
+    var payload = JSON.stringify({ subject: this.subject, content: this.content });
     await fs.writeFile(this.config.cafe.form_path, payload);
   }
 
@@ -120,7 +125,7 @@ class _Cafe {
       this.period = Number(data.period);
       return;
     } catch (err) {
-      Logs.e(err,false);
+      Logs.e(err, false);
       this.start = 9;
       this.end = 24;
       this.period = 2;
@@ -129,7 +134,7 @@ class _Cafe {
   }
 
   async saveTimePeriod() {
-    const data = JSON.stringify({start:this.start, end:this.end, period:this.period});
+    const data = JSON.stringify({ start: this.start, end: this.end, period: this.period });
     await fs.writeFile(this.config.cafe.setting_path, data);
   }
 
@@ -137,8 +142,8 @@ class _Cafe {
     await this.loadTimePeriodIfExist();
     msg.reply("시작: " + this.start + ", 끝: " + this.end + ", 주기: " + this.period);
   }
-  
-  async setTimePeriod(msg, argStart:number|null, argEnd:number|null, argPeriod:number|null) {
+
+  async setTimePeriod(msg, argStart: number | null, argEnd: number | null, argPeriod: number | null) {
     await this.loadTimePeriodIfExist();
     if (argStart != null && !Number.isNaN(argStart)) {
       this.start = argStart;
@@ -149,55 +154,41 @@ class _Cafe {
     if (argPeriod != null && !Number.isNaN(argPeriod)) {
       this.period = argPeriod;
     }
-    if(this.start >= this.end) {
-      msg.reply("시작(" + this.start + "이 끝(" + this.end + ")보다 크거나 같습니다.");
-      await this.showTimePeriod(msg);
-      return;
-    }
-    if(this.period > 24) {
-      msg.reply("주기(" + this.period + ")가 24시간보다 큽니다.");
-      await this.showTimePeriod(msg);
-      return;
-    }
     await this.saveTimePeriod();
     await this.showTimePeriod(msg);
   }
 
   async setTime(msg) {
     const commands = msg.content.trim().split(/\s+/);
-    if(commands.length != 5) {
+    if (commands.length != 5) {
       msg.reply("명령어 오입력\n- /카페 설정 시간 시작 끝(0~24)");
       return;
     }
-    if(!isNumber(commands[3])) {
-      msg.reply("시작(" + commands[3] + ")이 숫자가 아닙니다.\n- /카페 설정 시간 시작 끝(0~24)");
+    if (!isNumber(commands[3])) {
+      msg.reply("시작(" + commands[3] + ")이 숫자가 아닙니다.\n- /카페 설정 시간 시작 끝(0~23)");
       return;
     }
-    if(!isNumber(commands[4])) {
-      msg.reply("끝(" + commands[4] + ")이 숫자가 아닙니다.\n- /카페 설정 시간 시작 끝(0~24)");
+    if (!isNumber(commands[4])) {
+      msg.reply("끝(" + commands[4] + ")이 숫자가 아닙니다.\n- /카페 설정 시간 시작 끝(0~23)");
       return;
     }
     const argStart = Number(commands[3]);
     const argEnd = Number(commands[4]);
 
-    if(argStart > 24) {
-      msg.reply("시작(" + argStart + ")이 24보다 큽니다.");
+    if (argStart > 23) {
+      msg.reply("시작(" + argStart + ")이 23보다 큽니다.");
       return;
     }
-    if(argStart < 0) {
-      msg.reply("시작(" + argStart + ")이 0시간보다 작습니다.");
+    if (argStart < 0) {
+      msg.reply("시작(" + argStart + ")이 0보다 작습니다.");
       return;
     }
-    if(argEnd > 24) {
-      msg.reply("끝(" + argEnd + ")이 24보다 큽니다.");
+    if (argEnd > 23) {
+      msg.reply("끝(" + argEnd + ")이 23보다 큽니다.");
       return;
     }
-    if(argEnd < 0) {
-      msg.reply("끝(" + argEnd + ")이 0시간보다 작습니다.");
-      return;
-    }
-    if(argStart >= argEnd) {
-      msg.reply("시작(" + argStart + ")이 끝(" + argEnd + ")보다 같거나 큽니다.");
+    if (argEnd < 0) {
+      msg.reply("끝(" + argEnd + ")이 0보다 작습니다.");
       return;
     }
     await this.setTimePeriod(msg, argStart, argEnd, null);
@@ -205,45 +196,74 @@ class _Cafe {
 
   async setPeriod(msg) {
     const commands = msg.content.trim().split(/\s+/);
-    if(commands.length != 4) {
-      msg.reply("명령어 오입력\n- /카페 설정 주기 시간(1~23)");
+    if (commands.length != 4) {
+      msg.reply("명령어 오입력\n- /카페 설정 주기 시간(1~24)");
       return;
     }
-    if(!isNumber(commands[3])) {
+    if (!isNumber(commands[3])) {
       msg.reply("시간(" + commands[3] + ")이 숫자가 아닙니다.\n- /카페 설정 주기 시간(1~24)");
       return;
     }
     const argPeriod = Number(commands[3]);
-    if(argPeriod > 24) {
+    if (argPeriod > 24) {
       msg.reply("시간(" + argPeriod + ")이 24시간보다 큽니다.");
       return;
     }
-    if(argPeriod < 1) {
+    if (argPeriod < 1) {
       msg.reply("시간(" + argPeriod + ")이 1시간보다 작습니다.");
       return;
     }
-    await this.setTimePeriod(msg, null, null, this.period);
+    await this.setTimePeriod(msg, null, null, argPeriod);
   }
 
   settings(msg) {
     const commands = msg.content.trim().split(/\s+/);
     switch (commands[2]) {
       default: msg.reply("명령어 오입력\n- /카페 설정 시간\n- /카페 설정 주기\n- /카페 설정 보기"); break;
-      case '시간': Cafe.setTime(msg); break;  
+      case '시간': Cafe.setTime(msg); break;
       case '주기': Cafe.setPeriod(msg); break;
       case '보기': Cafe.showTimePeriod(msg); break;
     }
   }
 
-  autoWrite(msg) {
+  autoWriteOnOff(msg) {
     const commands = msg.content.trim().split(/\s+/);
-    if(commands[2] == "켜기") {
-
+    if (commands[2] == "켜기") {
+      var nextTimeout = this.getNextTimeInterval();
+      this.timeObj = setTimeout(this.autoWrite.bind(Cafe), nextTimeout);
+      msg.reply("자동 작성을 킵니다.");
     } else if (commands[2] == "끄기") {
-
+      if(this.timeObj != null && this.timeObj != undefined) {
+        clearTimeout(this.timeObj);
+      }
+      msg.reply("자동 작성을 끕니다.");
     } else {
       msg.reply("명령어 오입력\n- /카페 자동작성 [커기/끄기]");
     }
+  }
+
+  getNextTimeInterval() {
+    var datetime = new Date();
+    var hour = datetime.getHours();
+    var start = this.start;
+    var end = this.end;
+    var period = this.period;
+    var end = (start > end) ? end + 24 : end;
+    var count = Math.ceil((end - start + 1) / period);
+    var arr = Array.from(Array(count).keys()).map(x => ((x * period + start >= 24) ? (x * period + start - 24) : x * period + start)).sort((a, b) => (a - b));
+    var filter = arr.filter(x => x > hour);
+    var nextHour = filter.length > 0 ? filter.sort((a,b)=>(a-b))[0] : arr[0];
+    nextHour = (hour >= nextHour) ? (nextHour + 24) : nextHour;
+    var nextDateTime = new Date(datetime);
+    nextDateTime.setHours(nextHour, 0, 0, 0);
+    return nextDateTime.getTime() - datetime.getTime();
+  }
+
+  autoWrite() {
+    var nextTimeout = this.getNextTimeInterval();
+    Logs.d("카페 구인글 자동 작성 완료",false);
+    this.writeCafePost(null, false);
+    this.timeObj = setTimeout(this.autoWrite.bind(Cafe), nextTimeout);
   }
 }
 
@@ -273,7 +293,7 @@ Cafe.app.get('/callback', function (req, res) {
 });
 
 Cafe.app.listen(Cafe.config.cafe.port, function () {
-  Logs.d(Cafe.config.cafe.host + ':' + Cafe.config.cafe.port + '/naverlogin listening on port 8888!',false);
+  Logs.d(Cafe.config.cafe.host + ':' + Cafe.config.cafe.port + '/naverlogin listening on port 8888!', false);
 });
 
 function cafeCommand(msg) {
@@ -282,6 +302,6 @@ function cafeCommand(msg) {
     default: msg.reply("명령어 오입력\n- /카페 설정\n- /카페 글작성\n- /카페 자동작성"); break;
     case '글작성': Cafe.refreshToken(msg, false, (msg) => Cafe.writeCafePost(msg, true)); break;
     case '설정': Cafe.settings(msg); break;
-    case '자동작성': Cafe.autoWrite(msg); break;
+    case '자동작성': Cafe.autoWriteOnOff(msg); break;
   }
 }
