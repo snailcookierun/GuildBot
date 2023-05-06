@@ -7,7 +7,8 @@
     "clubid": 30291108,
     "menuid": 64,
     "form_path": "FORM_DATA_PATH",
-    "token_path": "NAVER_TOKEN_PATH"
+    "token_path": "NAVER_TOKEN_PATH",
+    "setting_path": "TIME_PERIOD_SETTING_PATH"
   },
   "google":{
     "credentials_path": "CREDENTIALS_PATH",
