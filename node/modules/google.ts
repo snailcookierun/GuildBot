@@ -68,14 +68,14 @@ class _Google {
   resetOtp():string {
     const array = new Uint16Array(1);
     crypto.getRandomValues(array);
-    Google.otp = String(array[0]).slice(-4).padStart(4,'0');
-    return Google.otp;
+    this.otp = String(array[0]).slice(-4).padStart(4,'0');
+    return this.otp;
   }
 
   generateOtp():string {
-    Google.otp = Google.resetOtp();
-    setTimeout(Google.resetOtp, 60*60*1000);
-    return Google.otp;
+    this.otp = this.resetOtp();
+    setTimeout(this.resetOtp.bind(Google), 60*60*1000);
+    return this.otp;
   }
 
   async showForm(msg) {
