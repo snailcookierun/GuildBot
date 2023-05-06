@@ -16,6 +16,10 @@ class _Cafe {
   subject: string;
   content: string;
 
+  period: number;
+  start: number;
+  end: number;
+
   constructor() {
     this.config = require('./config-plugin.json');
     this.app = express();
@@ -106,6 +110,141 @@ class _Cafe {
     var payload = JSON.stringify({subject: this.subject, content: this.content});
     await fs.writeFile(this.config.cafe.form_path, payload);
   }
+
+  async loadTimePeriodIfExist() {
+    try {
+      const content = await fs.readFile(this.config.cafe.setting_path);
+      const data = JSON.parse(content);
+      this.start = Number(data.start);
+      this.end = Number(data.end);
+      this.period = Number(data.period);
+      return;
+    } catch (err) {
+      Logs.e(err,false);
+      this.start = 9;
+      this.end = 24;
+      this.period = 2;
+      return;
+    }
+  }
+
+  async saveTimePeriod() {
+    const data = JSON.stringify({start:this.start, end:this.end, period:this.period});
+    await fs.writeFile(this.config.cafe.setting_path, data);
+  }
+
+  async showTimePeriod(msg) {
+    await this.loadTimePeriodIfExist();
+    msg.reply("시작: " + this.start + ", 끝: " + this.end + ", 주기: " + this.period);
+  }
+  
+  async setTimePeriod(msg, argStart:number|null, argEnd:number|null, argPeriod:number|null) {
+    await this.loadTimePeriodIfExist();
+    if (argStart != null && !Number.isNaN(argStart)) {
+      this.start = argStart;
+    }
+    if (argEnd != null && !Number.isNaN(argEnd)) {
+      this.end = argEnd;
+    }
+    if (argPeriod != null && !Number.isNaN(argPeriod)) {
+      this.period = argPeriod;
+    }
+    if(this.start >= this.end) {
+      msg.reply("시작(" + this.start + "이 끝(" + this.end + ")보다 크거나 같습니다.");
+      await this.showTimePeriod(msg);
+      return;
+    }
+    if(this.period > 24) {
+      msg.reply("주기(" + this.period + ")가 24시간보다 큽니다.");
+      await this.showTimePeriod(msg);
+      return;
+    }
+    await this.saveTimePeriod();
+    await this.showTimePeriod(msg);
+  }
+
+  async setTime(msg) {
+    const commands = msg.content.trim().split(/\s+/);
+    if(commands.length != 5) {
+      msg.reply("명령어 오입력\n- /카페 설정 시간 시작 끝(0~24)");
+      return;
+    }
+    if(!isNumber(commands[3])) {
+      msg.reply("시작(" + commands[3] + ")이 숫자가 아닙니다.\n- /카페 설정 시간 시작 끝(0~24)");
+      return;
+    }
+    if(!isNumber(commands[4])) {
+      msg.reply("끝(" + commands[4] + ")이 숫자가 아닙니다.\n- /카페 설정 시간 시작 끝(0~24)");
+      return;
+    }
+    const argStart = Number(commands[3]);
+    const argEnd = Number(commands[4]);
+
+    if(argStart > 24) {
+      msg.reply("시작(" + argStart + ")이 24보다 큽니다.");
+      return;
+    }
+    if(argStart < 0) {
+      msg.reply("시작(" + argStart + ")이 0시간보다 작습니다.");
+      return;
+    }
+    if(argEnd > 24) {
+      msg.reply("끝(" + argEnd + ")이 24보다 큽니다.");
+      return;
+    }
+    if(argEnd < 0) {
+      msg.reply("끝(" + argEnd + ")이 0시간보다 작습니다.");
+      return;
+    }
+    if(argStart >= argEnd) {
+      msg.reply("시작(" + argStart + ")이 끝(" + argEnd + ")보다 같거나 큽니다.");
+      return;
+    }
+    await this.setTimePeriod(msg, argStart, argEnd, null);
+  }
+
+  async setPeriod(msg) {
+    const commands = msg.content.trim().split(/\s+/);
+    if(commands.length != 4) {
+      msg.reply("명령어 오입력\n- /카페 설정 주기 시간(1~23)");
+      return;
+    }
+    if(!isNumber(commands[3])) {
+      msg.reply("시간(" + commands[3] + ")이 숫자가 아닙니다.\n- /카페 설정 주기 시간(1~24)");
+      return;
+    }
+    const argPeriod = Number(commands[3]);
+    if(argPeriod > 24) {
+      msg.reply("시간(" + argPeriod + ")이 24시간보다 큽니다.");
+      return;
+    }
+    if(argPeriod < 1) {
+      msg.reply("시간(" + argPeriod + ")이 1시간보다 작습니다.");
+      return;
+    }
+    await this.setTimePeriod(msg, null, null, this.period);
+  }
+
+  settings(msg) {
+    const commands = msg.content.trim().split(/\s+/);
+    switch (commands[2]) {
+      default: msg.reply("명령어 오입력\n- /카페 설정 시간\n- /카페 설정 주기\n- /카페 설정 보기"); break;
+      case '시간': Cafe.setTime(msg); break;  
+      case '주기': Cafe.setPeriod(msg); break;
+      case '보기': Cafe.showTimePeriod(msg); break;
+    }
+  }
+
+  autoWrite(msg) {
+    const commands = msg.content.trim().split(/\s+/);
+    if(commands[2] == "켜기") {
+
+    } else if (commands[2] == "끄기") {
+
+    } else {
+      msg.reply("명령어 오입력\n- /카페 자동작성 [커기/끄기]");
+    }
+  }
 }
 
 const Cafe = new _Cafe;
@@ -138,10 +277,11 @@ Cafe.app.listen(Cafe.config.cafe.port, function () {
 });
 
 function cafeCommand(msg) {
-  var commands = msg.content.trim().split(/\s+/);
+  const commands = msg.content.trim().split(/\s+/);
   switch (commands[1]) {
-    default: msg.reply("명령어 오입력\n- /카페 리프레시\n- /카페 글작성"); break;
+    default: msg.reply("명령어 오입력\n- /카페 설정\n- /카페 글작성\n- /카페 자동작성"); break;
     case '글작성': Cafe.refreshToken(msg, false, (msg) => Cafe.writeCafePost(msg, true)); break;
-    case '리프레시': Cafe.refreshToken(msg, true, function (msg) { }); break;
+    case '설정': Cafe.settings(msg); break;
+    case '자동작성': Cafe.autoWrite(msg); break;
   }
 }
