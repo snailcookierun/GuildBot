@@ -56,29 +56,27 @@ class _Cafe {
     }
   }
 
-  async refreshToken(msg, verbose: boolean, successCallback: Function) {
+  async refreshToken() {
     if (this.refresh_token == "") {
       this.refresh_token = await this.loadSavedTokenIfExist();
     }
     var api_url = 'https://nid.naver.com/oauth2.0/token?grant_type=refresh_token&'
       + "client_id=" + this.client_id + '&client_secret=' + this.client_secret + '&refresh_token=' + this.refresh_token;
-    axios.get(api_url).then(function (response) {
+    await axios.get(api_url).then(async function (response) {
       if (response.data.error != null) {
-        if (verbose) { msg.reply("리프레시에 실패하였습니다."); }
+        Logs.e(response.data.error, false);
       } else {
         Cafe.access_token = response.data.access_token;
         Cafe.refresh_token = response.data.refresh_token;
-        Cafe.saveTokenToFile();
-        if (verbose) { msg.reply("리프레시에 성공하였습니다."); }
+        await Cafe.saveTokenToFile();
       }
-      successCallback(msg);
     }).catch(function (error) {
       Logs.e(error, false);
-      if (verbose) { msg.reply("리프레시에 실패하였습니다."); }
     })
   }
 
   async writeCafePost(msg, verbose: boolean) {
+    await this.refreshToken();
     if (this.subject == "" || this.content == "") {
       try {
         var data = await fs.readFile(this.config.cafe.form_path);
@@ -313,7 +311,7 @@ function cafeCommand(msg) {
   const commands = msg.content.trim().split(/\s+/);
   switch (commands[1]) {
     default: msg.reply("명령어 오입력\n- /카페 설정\n- /카페 글작성\n- /카페 자동작성"); break;
-    case '글작성': Cafe.refreshToken(msg, false, (msg) => Cafe.writeCafePost(msg, true)); break;
+    case '글작성': Cafe.writeCafePost(msg, true); break;
     case '설정': Cafe.settings(msg); break;
     case '자동작성': Cafe.autoWriteOnOff(msg); break;
   }
