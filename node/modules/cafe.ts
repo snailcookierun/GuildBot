@@ -240,6 +240,9 @@ class _Cafe {
   autoWriteOnOff(msg) {
     const commands = msg.content.trim().split(/\s+/);
     if (commands[2] == "켜기") {
+      if(this.timeObj != null && this.timeObj != undefined) {
+        clearTimeout(this.timeObj);
+      }
       var nextTimeout = this.getNextTimeInterval();
       this.timeObj = setTimeout(this.autoWrite.bind(Cafe), nextTimeout);
       msg.reply("자동 작성을 킵니다.");
