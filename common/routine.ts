@@ -43,6 +43,7 @@ class _Routine {
     Bosses.duplicateAllowed = false;
     Users.userList.forEach(x => x.tickets = TICKETS_PER_DAY);
     Users.userList.forEach(x => x.prevRelics = x.relics);
+    Users.userList.forEach(x => x.prevRelicScore = x.relicScore);
     Users.userList.forEach(x => x.resetCountsAndLogs());
     Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].relayUsers = {});
     Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].setLevel(1));

@@ -1527,9 +1527,49 @@ class _Commands {
         return commands[1] + " 님은 없는 닉네임입니다.";
       }
       var user = Users.find(commands[1]);
-      return user.name + " 님의 유물 수: " + user.relics + "개 (+" + (user.relics - user.prevRelics) + "개)";
+      return user.name + " 님의 유물 수: " + user.relics + " (+" + (user.relics - user.prevRelics) + "개)";
+    } else if (commands.length == 7 && !isNumber(commands[1]) && isNumber(commands[2]) && isNumber(commands[3]) && isNumber(commands[4]) && isNumber(commands[5]) && isNumber(commands[6])) {
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
+
+      var newLegend = Number(commands[2]);
+      var newEpic = Number(commands[3]);
+      var newRare = Number(commands[4]);
+      var newCommon = Number(commands[5]);
+      var newScore = Number(commands[6]);
+
+      var calcScoreDiff = newLegend * Config.relics.legend + newEpic * Config.relics.epic + newRare * Config.relics.rare + newCommon * Config.relics.common;
+      var scoreDiff = newScore - user.prevRelicScore;
+      var relicDiff = newLegend + newEpic + newRare + newCommon;
+
+      if (calcScoreDiff > scoreDiff) {
+        return "유물 개수가 점수 증가량보다 큽니다. 유물이 입력되지 않습니다.\n- 계산된 점수: " + calcScoreDiff + "\n- 점수 증가량: " + scoreDiff;  
+      } else if (calcScoreDiff < scoreDiff) {
+        user.relics = user.prevRelics + relicDiff;
+        user.relicScore = newScore;
+        return "점수 증가량이 유물 개수보다 크지만, 유물이 입력됩니다.\n- 유물 개수: " + user.relics + "개 (+" + relicDiff + "개)\n- 유물 점수: " + newScore + " (+" + scoreDiff + ")";
+      } else {
+        user.relics = user.prevRelics + relicDiff;
+        user.relicScore = newScore;
+        return user.name + " 님의 유물 현황\n- 유물 개수: " + user.relics + "개 (+" + relicDiff + "개)\n- 유물 점수: " + newScore + " (+" + scoreDiff + ")";
+      }
     } else {
-      return "명령어 오입력\n- /유물(ㅇㅁ) 이름 개수";
+      return "명령어 오입력\n- /유물(ㅇㅁ) 이름 레전 에픽 레어 커먼 유물점수";
+    }
+  }
+
+  setRelicScore(commands: Array<string>): string {
+    if (commands.length == 3 && !isNumber(commands[1]) && isNumber(commands[2])) {
+      if (!Users.isNameExist(commands[1])) {
+        return commands[1] + " 님은 없는 닉네임입니다.";
+      }
+      var user = Users.find(commands[1]);
+      user.relicScore = Number(commands[2]);
+      return user.name + " 님의 유물 점수: " + user.relicScore;
+    } else {
+      return "명령어 오입력\n- /유물점수(ㅇㅁㅈㅅ) 이름 유물점수"
     }
   }
 
@@ -1752,7 +1792,8 @@ class _Commands {
   }
 
   hotFix(commands: Array<string>): string {
-    //Object.keys(Bosses.bossList).forEach(x => Bosses.bossList[x].holdingUsers = [])
+    //@ts-ignore
+    //Users.userList.forEach(u => {u.relicScore = 0; u.prevRelicScore = 0;});
     return "핫픽스 완료";
   }
 }
@@ -1839,6 +1880,8 @@ function processCommand(msg: string): string {
     case '/택틱': return Commands.printTactics(commands); break;
     case '/ㅇㅁ':
     case '/유물': return Commands.checkOrAddRelics(commands); break;
+    case '/ㅇㅁㅈㅅ':
+    case '/유물점수': return Commands.setRelicScore(commands); break;
     case '/ㅇㅁㅎㅎ':
     case '/유물현황': return Commands.printRelics(commands); break;
     case '/쿨':

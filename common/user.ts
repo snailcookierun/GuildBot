@@ -45,6 +45,8 @@ interface IUser {
   tickets: number;
   relics: number;
   prevRelics: number;
+  relicScore: number;
+  prevRelicScore: number;
   counts: { [key in BOSS_TYPE]: number };
   log: Array<DLog>;
 }
@@ -54,6 +56,8 @@ class User {
   tickets: number;
   relics: number;
   prevRelics: number;
+  relicScore: number;
+  prevRelicScore: number;
   counts: { [key in BOSS_TYPE]: number };
   log: Array<DLog>;
 
@@ -66,6 +70,8 @@ class User {
       this.tickets = Number(tickets);
       this.relics = 0;
       this.prevRelics = 0;
+      this.relicScore = 0;
+      this.prevRelicScore = 0;
       this.counts = Object.assign({}, ...bossTypeMap((x) => ({ [x]: 0 })));
       this.log = [];
     } else {
@@ -73,6 +79,8 @@ class User {
       this.tickets = first.tickets;
       this.relics = first.relics;
       this.prevRelics = first.prevRelics;
+      this.relicScore = first.relicScore;
+      this.prevRelicScore = first.prevRelicScore;
       this.counts = first.counts;
       this.log = first.log;
     }
