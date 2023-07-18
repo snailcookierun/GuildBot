@@ -4,7 +4,7 @@
 
 ## 명령어
 
-- 명령어 [노션 링크](https://www.notion.so/snailcookierun/826e99d07410464ab64394ea7ac8cf4b)
+- 명령어 [노션 링크](https://snailcookierun.notion.site/826e99d07410464ab64394ea7ac8cf4b)
 
 ## 개발 환경 셋팅
 
